@@ -1,0 +1,423 @@
+#pragma once
+
+#include "td/utils/port/EventFd.h"  // for EventFd
+
+#if !TD_WINDOWS
+#include <poll.h>  // for pollfd, poll, POLLIN
+#include <sched.h>
+#endif
+#include <atomic>   // for atomic_thread_fence, atomic, etc
+#include <utility>  // for aligned_storage
+#include <thread>
+
+using std::atomic_thread_fence;
+using std::atomic;
+using std::memory_order_acquire;
+using std::memory_order_release;
+using std::memory_order_relaxed;
+using std::memory_order_seq_cst;
+
+namespace td {
+class Backoff {
+ private:
+  int cnt;
+
+ public:
+  Backoff() : cnt(0) {
+  }
+
+  bool next() {
+    // TODO: find out better strategy
+    // TODO: try adaptive backoff
+    // TODO: different strategy one core cpu
+    // return false;
+
+    cnt++;
+    if (cnt < 1) {  // 50
+      return true;
+    } else {
+      std::this_thread::yield();
+      return cnt < 3;  // 500
+    }
+  }
+};
+
+class InfBackoff {
+ private:
+  int cnt;
+
+ public:
+  InfBackoff() : cnt(0) {
+  }
+
+  bool next() {
+    cnt++;
+    if (cnt < 50) {
+      return true;
+    } else {
+      std::this_thread::yield();
+      return true;
+    }
+  }
+};
+
+template <class T, int P = 10>
+class SPSCBlockQueue {
+ public:
+  typedef T ValueType;
+
+ private:
+  static constexpr int buffer_size() {
+    static_assert(P >= 1 && P <= 20, "Bad size of BlockQueue");
+    return 1 << P;
+  }
+
+  struct Position {
+    atomic<uint32> i;
+    char pad[64 - sizeof(atomic<uint32>)];
+    uint32 local_writer_i;
+    char pad2[64 - sizeof(uint32)];
+    uint32 local_reader_i;
+    char pad3[64 - sizeof(uint32)];
+
+    void init() {
+      i = 0;
+      local_reader_i = 0;
+      local_writer_i = 0;
+    }
+  };
+
+  typename std::aligned_storage<sizeof(ValueType)>::type data_[buffer_size()];
+  Position writer_;
+  Position reader_;
+
+  int fix_i(int i) {
+    return i & (buffer_size() - 1);
+  }
+
+  ValueType &at(int i) {
+    return *(static_cast<ValueType *>(static_cast<void *>(&data_[fix_i(i)])));
+  }
+
+ public:
+  void init() {
+    writer_.init();
+    reader_.init();
+  }
+
+  void destroy() {
+  }
+
+  int writer_size() {
+    return static_cast<int>(writer_.local_reader_i + buffer_size() - writer_.local_writer_i);
+  }
+
+  bool writer_empty() {
+    return writer_.local_reader_i + buffer_size() == writer_.local_writer_i;
+  }
+
+  template <class PutValueType>
+  void writer_put_unsafe(PutValueType &&value) {
+    at(writer_.local_writer_i++) = std::forward<PutValueType>(value);
+  }
+
+  int writer_update() {
+    writer_.local_reader_i = reader_.i.load(memory_order_acquire);
+    return writer_size();
+  }
+
+  void writer_flush() {
+    writer_.i.store(writer_.local_writer_i, memory_order_release);
+  }
+
+  int reader_size() {
+    return static_cast<int>(reader_.local_writer_i - reader_.local_reader_i);
+  }
+
+  int reader_empty() {
+    return reader_.local_writer_i == reader_.local_reader_i;
+  }
+
+  ValueType reader_get_unsafe() {
+    return std::move(at(reader_.local_reader_i++));
+  }
+
+  int reader_update() {
+    reader_.local_writer_i = writer_.i.load(memory_order_acquire);
+    return reader_size();
+  }
+
+  void reader_flush() {
+    reader_.i.store(reader_.local_reader_i, memory_order_release);
+  }
+};
+
+template <class T, class BlockQueueT = SPSCBlockQueue<T> >
+class SPSCChainQueue {
+ public:
+  typedef T ValueType;
+
+  void init() {
+    head_ = tail_ = create_node();
+  }
+
+  ~SPSCChainQueue() {
+    destroy();
+  }
+
+  void destroy() {
+    while (head_ != nullptr) {
+      Node *to_delete = head_;
+      head_ = head_->next_;
+      delete_node(to_delete);
+    }
+    tail_ = nullptr;
+  }
+
+  int writer_size() {
+    return tail_->q_.writer_size();
+  }
+
+  bool writer_empty() {
+    return tail_->q_.writer_empty();
+  }
+
+  template <class PutValueType>
+  void writer_put_unsafe(PutValueType &&value) {
+    tail_->q_.writer_put_unsafe(std::forward<PutValueType>(value));
+  }
+
+  int writer_update() {
+    int res = tail_->q_.writer_update();
+    if (res != 0) {
+      return res;
+    }
+
+    writer_flush();
+
+    Node *new_tail = create_node();
+    tail_->next_ = new_tail;
+    tail_->is_closed_.store(true, memory_order_release);
+    tail_ = new_tail;
+    return tail_->q_.writer_update();
+  }
+
+  void writer_flush() {
+    tail_->q_.writer_flush();
+  }
+
+  int reader_size() {
+    return head_->q_.reader_size();
+  }
+
+  int reader_empty() {
+    return head_->q_.reader_empty();
+  }
+
+  ValueType reader_get_unsafe() {
+    return std::move(head_->q_.reader_get_unsafe());
+  }
+
+  int reader_update() {
+    int res = head_->q_.reader_update();
+    if (res != 0) {
+      return res;
+    }
+
+    if (!head_->is_closed_.load(memory_order_acquire)) {
+      return 0;
+    }
+
+    res = head_->q_.reader_update();
+    if (res != 0) {
+      return res;
+    }
+
+    // reader_flush();
+
+    Node *old_head = head_;
+    head_ = head_->next_;
+    delete_node(old_head);
+
+    return head_->q_.reader_update();
+  }
+
+  void reader_flush() {
+    head_->q_.reader_flush();
+  }
+
+ private:
+  struct Node {
+    BlockQueueT q_;
+    atomic<bool> is_closed_;
+    Node *next_;
+
+    void init() {
+      q_.init();
+      is_closed_ = false;
+      next_ = nullptr;
+    }
+
+    void destroy() {
+      q_.destroy();
+      next_ = nullptr;
+    }
+  };
+
+  Node *head_;
+  char pad[64 - sizeof(Node *)];
+  Node *tail_;
+  char pad2[64 - sizeof(Node *)];
+
+  Node *create_node() {
+    Node *res = new Node();
+    res->init();
+    return res;
+  }
+
+  void delete_node(Node *node) {
+    node->destroy();
+    delete node;
+  }
+};
+
+template <class T, class QueueT = SPSCChainQueue<T>, class BackoffT = Backoff>
+class BackoffQueue : public QueueT {
+ public:
+  typedef T ValueType;
+
+  template <class PutValueType>
+  void writer_put(PutValueType &&value) {
+    // fprintf (stderr, "%d\n", this->writer_size());
+    if (this->writer_empty()) {
+      int sz = this->writer_update();
+      CHECK(sz != 0);
+    }
+    this->writer_put_unsafe(std::forward<PutValueType>(value));
+  }
+
+  int reader_wait() {
+    BackoffT backoff;
+    int res = 0;
+    do {
+      res = this->reader_update();
+    } while (res == 0 && backoff.next());
+    return res;
+  }
+};
+
+template <class T, class QueueT = SPSCChainQueue<T> >
+using InfBackoffQueue = BackoffQueue<T, QueueT, InfBackoff>;
+
+template <class T, class ObserverT = Observer, class QueueT = BackoffQueue<T> >
+class PollQueue : public QueueT {
+ public:
+  typedef T ValueType;
+  typedef QueueT QueueType;
+
+  void init() {
+    QueueType::init();
+    event_fd_.init();
+    wait_state_ = 0;
+    writer_wait_state_ = 0;
+  }
+
+  ~PollQueue() {
+    destroy_impl();
+  }
+  void destroy() {
+    destroy_impl();
+    QueueType::destroy();
+  }
+
+  void writer_flush() {
+    int old_wait_state = get_wait_state();
+
+    atomic_thread_fence(memory_order_seq_cst);
+
+    QueueType::writer_flush();
+
+    atomic_thread_fence(memory_order_seq_cst);
+
+    int wait_state = get_wait_state();
+    if ((wait_state & 1) && wait_state != writer_wait_state_) {
+      // fprintf(stderr, "%p: release\n", this);
+      event_fd_.release();
+      writer_wait_state_ = old_wait_state;
+    }
+  }
+
+  EventFd &reader_get_event_fd() {
+    return event_fd_;
+  }
+
+  // if 0 is returned than it is useless to rerun it before fd is
+  // ready to read.
+  int reader_wait_nonblock() {
+    int res;
+
+    if ((get_wait_state() & 1) == 0) {
+      res = this->QueueType::reader_wait();
+      if (res != 0) {
+        return res;
+      }
+
+      inc_wait_state();
+
+      atomic_thread_fence(memory_order_seq_cst);
+
+      res = this->reader_update();
+      if (res != 0) {
+        inc_wait_state();
+        return res;
+      }
+    }
+
+    event_fd_.acquire();
+    atomic_thread_fence(memory_order_seq_cst);
+    res = this->reader_update();
+    if (res != 0) {
+      inc_wait_state();
+    }
+    return res;
+  }
+
+// Just example of usage
+#if !TD_WINDOWS
+  int reader_wait() {
+    int res;
+
+    // fprintf(stderr, "%p: wait\n", this);
+    while ((res = reader_wait_nonblock()) == 0) {
+      // TODO: reader_flush?
+      pollfd fd;
+      fd.fd = reader_get_event_fd().get_fd().get_native_fd();
+      fd.events = POLLIN;
+      // fprintf(stderr, "%p: poll\n", this);
+      poll(&fd, 1, -1);
+    }
+    // fprintf(stderr, "%p: wait %d\n", this, res);
+    return res;
+  }
+#endif
+
+ private:
+  EventFd event_fd_;
+  atomic<int> wait_state_;
+  int writer_wait_state_;
+
+  int get_wait_state() {
+    return wait_state_.load(memory_order_relaxed);
+  }
+
+  void inc_wait_state() {
+    wait_state_.store(get_wait_state() + 1, memory_order_relaxed);
+  }
+
+  void destroy_impl() {
+    if (!event_fd_.empty()) {
+      event_fd_.close();
+    }
+  }
+};
+}  // end namespace td

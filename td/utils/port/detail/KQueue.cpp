@@ -1,0 +1,133 @@
+#include "td/utils/port/config.h"
+
+#ifdef TD_POLL_KQUEUE
+
+#include <unistd.h>
+
+#include "td/utils/port/detail/KQueue.h"
+
+namespace td {
+namespace detail {
+/*** KQueue ***/
+KQueue::KQueue() {
+  kq = -1;
+}
+KQueue::~KQueue() {
+  clear();
+}
+void KQueue::init() {
+  kq = kqueue();
+  auto kqueue_errno = errno;
+  LOG_IF(FATAL, kq == -1) << Status::PosixError(kqueue_errno, "kqueue creation failed");
+
+  // TODO: const
+  events.resize(1000);
+  changes_n = 0;
+}
+
+void KQueue::clear() {
+  if (kq == -1) {
+    return;
+  }
+  events.clear();
+  close(kq);
+  kq = -1;
+}
+
+int KQueue::update(int nevents, const struct timespec *timeout) {
+  //  fprintf (stderr, "kq = %d, changes_n = %d, events_n = %d\n", kq, changes_n, nevents);
+  int err = kevent(kq, &events[0], changes_n, &events[0], nevents, timeout);
+  auto kevent_errno = errno;
+  LOG_IF(FATAL, err == -1 && kevent_errno != EINTR) << Status::PosixError(kevent_errno, "kevent failed");
+  changes_n = 0;
+  return err;
+}
+
+void KQueue::flush_changes() {
+  if (!changes_n) {
+    return;
+  }
+  int n = update(0, nullptr);
+  CHECK(n == 0);
+}
+
+void KQueue::add_change(uintptr_t ident, int16 filter, uint16 flags, uint32 fflags, intptr_t data, void *udata) {
+  if (changes_n == static_cast<int>(events.size())) {
+    flush_changes();
+  }
+  EV_SET(&events[changes_n], ident, filter, flags, fflags, data, udata);
+  VLOG(fd) << "Subscribe [fd:" << ident << "] [filter:" << filter << "] [udata: " << udata << "]";
+  changes_n++;
+}
+
+void KQueue::subscribe(const Fd &fd, Fd::Flags flags) {
+  if (flags & Fd::Read) {
+    add_change(fd.get_native_fd(), EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, nullptr);
+  }
+  if (flags & Fd::Write) {
+    add_change(fd.get_native_fd(), EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, nullptr);
+  }
+}
+
+void KQueue::invalidate(const Fd &fd) {
+  for (int i = 0; i < changes_n; i++) {
+    if (events[i].ident == static_cast<uintptr_t>(fd.get_native_fd())) {
+      changes_n--;
+      std::swap(events[i], events[changes_n]);
+      i--;
+    }
+  }
+}
+
+void KQueue::unsubscribe(const Fd &fd) {
+  invalidate(fd);
+  add_change(fd.get_native_fd(), EVFILT_READ, EV_DELETE, 0, 0, nullptr);
+  add_change(fd.get_native_fd(), EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+  flush_changes();
+}
+
+void KQueue::unsubscribe_before_close(const Fd &fd) {
+  invalidate(fd);
+
+  // just to avoid O(changes_n ^ 2)
+  if (changes_n != 0) {
+    flush_changes();
+  }
+}
+
+void KQueue::run(int timeout_ms) {
+  struct timespec timeout_data;
+  struct timespec *timeout_ptr;
+  if (timeout_ms == -1) {
+    timeout_ptr = nullptr;
+  } else {
+    timeout_data.tv_sec = timeout_ms / 1000;
+    timeout_data.tv_nsec = timeout_ms % 1000 * 1000000;
+    timeout_ptr = &timeout_data;
+  }
+
+  int n = update(static_cast<int>(events.size()), timeout_ptr);
+  for (int i = 0; i < n; i++) {
+    struct kevent *event = &events[i];
+    Fd::Flags flags = 0;
+    if (event->filter == EVFILT_WRITE) {
+      flags |= Fd::Write;
+    }
+    if (event->filter == EVFILT_READ) {
+      flags |= Fd::Read;
+    }
+    if (event->flags & EV_EOF) {
+      flags |= Fd::Close;
+    }
+    if (event->fflags & EV_ERROR) {
+      LOG(FATAL, "EV_ERROR in kqueue is not supported");
+    }
+    VLOG(fd) << "Event [fd:" << event->ident << "] [filter:" << event->filter << "] [udata: " << event->udata << "]";
+    // LOG(WARNING) << "event->ident = " << event->ident << "event->filter = " << event->filter;
+    Fd(static_cast<int>(event->ident), Fd::Mode::Reference).update_flags_notify(flags);
+  }
+}
+}  // end namespace detail
+}  // end namespace td
+
+#endif  // TD_POLL_KQUEUE

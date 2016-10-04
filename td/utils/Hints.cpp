@@ -1,0 +1,149 @@
+#include "td/utils/Hints.h"
+#include "td/utils/misc.h"
+
+namespace td {
+
+vector<string> Hints::get_words(const string &name) {
+  bool in_word = false;
+  string word;
+  vector<string> words;
+  for (auto c : name) {
+    if ((c & 0x7f) == c) {
+      // TODO unicode lowercase
+      if (isalpha(c) || isdigit(c)) {
+        c = tolower(c);
+      } else {
+        c = ' ';
+      }
+    }
+    if (c == ' ') {
+      if (in_word) {
+        words.push_back(std::move(word));
+        word.clear();
+        in_word = false;
+      }
+    } else {
+      in_word = true;
+      word.push_back(c);
+    }
+  }
+  if (in_word) {
+    words.push_back(std::move(word));
+  }
+  std::sort(words.begin(), words.end());
+
+  size_t new_words_size = 0;
+  for (size_t i = 0; i != words.size(); i++) {
+    if (i == words.size() - 1 || !begins_with(words[i + 1], words[i])) {
+      if (i != new_words_size) {
+        words[new_words_size] = std::move(words[i]);
+      }
+      // LOG(ERROR) << "Get word " << words[new_words_size];
+      new_words_size++;
+    }
+  }
+  words.resize(new_words_size);
+  return words;
+}
+
+void Hints::add(KeyT key, const string &name) {
+  // LOG(ERROR) << "Add " << key << ": " << name;
+  auto it = key_to_name_.find(key);
+  if (it != key_to_name_.end()) {
+    if (it->second == name) {
+      return;
+    }
+    auto old_words = get_words(it->second);
+    for (auto &old_word : old_words) {
+      vector<KeyT> &keys = word_to_keys_[old_word];
+      auto key_it = std::find(keys.begin(), keys.end(), key);
+      CHECK(key_it != keys.end());
+      if (keys.size() == 1) {
+        word_to_keys_.erase(old_word);
+      } else {
+        CHECK(keys.size() > 1);
+        *key_it = keys.back();
+        keys.pop_back();
+      }
+    }
+  }
+  auto words = get_words(name);
+  if (words.empty()) {
+    if (it != key_to_name_.end()) {
+      key_to_name_.erase(it);
+    }
+    key_to_rating_.erase(key);
+  }
+  for (auto &word : words) {
+    vector<KeyT> &keys = word_to_keys_[word];
+    CHECK(std::find(keys.begin(), keys.end(), key) == keys.end());
+    keys.push_back(key);
+  }
+  key_to_name_[key] = name;
+}
+
+void Hints::set_rating(KeyT key, RatingT rating) {
+  // LOG(ERROR) << "Set rating " << key << ": " << rating;
+  key_to_rating_[key] = rating;
+}
+
+vector<Hints::KeyT> Hints::search_word(const string &word) const {
+  // LOG(ERROR) << "Search word " << word;
+  vector<KeyT> results;
+  auto it = word_to_keys_.lower_bound(word);
+  while (it != word_to_keys_.end() && begins_with(it->first, word)) {
+    results.insert(results.end(), it->second.begin(), it->second.end());
+    ++it;
+  }
+
+  std::sort(results.begin(), results.end());
+  results.erase(std::unique(results.begin(), results.end()), results.end());
+  return results;
+}
+
+vector<Hints::KeyT> Hints::search(const string &query, int32 limit) const {
+  // LOG(ERROR) << "Search " << query;
+  vector<KeyT> results;
+
+  if (limit <= 0) {
+    return results;
+  }
+
+  auto words = get_words(query);
+
+  for (size_t i = 0; i < words.size(); i++) {
+    vector<KeyT> keys = search_word(words[i]);
+    if (i == 0) {
+      results = std::move(keys);
+      continue;
+    }
+
+    // now need to intersect two lists
+    size_t results_pos = 0;
+    size_t keys_pos = 0;
+    size_t new_results_size = 0;
+    while (results_pos != results.size() && keys_pos != keys.size()) {
+      if (results[results_pos] < keys[keys_pos]) {
+        results_pos++;
+      } else if (results[results_pos] > keys[keys_pos]) {
+        keys_pos++;
+      } else {
+        results[new_results_size++] = results[results_pos];
+        results_pos++;
+        keys_pos++;
+      }
+    }
+    results.resize(new_results_size);
+  }
+
+  if (results.size() < static_cast<size_t>(limit)) {
+    std::sort(results.begin(), results.end(), CompareByRating(key_to_rating_));
+  } else {
+    std::partial_sort(results.begin(), results.begin() + limit, results.end(), CompareByRating(key_to_rating_));
+    results.resize(limit);
+  }
+
+  return results;
+}
+
+}  // namespace td
