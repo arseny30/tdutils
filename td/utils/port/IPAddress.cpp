@@ -2,16 +2,16 @@
 
 #include "td/utils/port/IPAddress.h"
 
+#include "td/utils/ScopeGuard.h"
 #include "td/utils/format.h"
 #include "td/utils/misc.h"
-#include "td/utils/ScopeGuard.h"
 
 #if !TD_WINDOWS
-#include <sys/types.h>
-#include <sys/socket.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #endif
 
 #include <algorithm>
@@ -141,13 +141,16 @@ Status IPAddress::init_host_port(const CSlice &host, int port) {
   };
 
   // prefer ipv4
-  for (auto *ptr = info; ptr != nullptr; ptr = ptr->ai_next) {
+  struct addrinfo *best_info = info;
+  for (auto *ptr = info->ai_next; ptr != nullptr; ptr = ptr->ai_next) {
     if (ptr->ai_socktype == AF_INET) {
-      return init_sockaddr(ptr->ai_addr, narrow_cast<socklen_t>(ptr->ai_addrlen));
+      best_info = ptr;
+      break;
     }
   }
   // just use first address
-  return init_sockaddr(info->ai_addr, narrow_cast<socklen_t>(info->ai_addrlen));
+  CHECK(best_info != nullptr);
+  return init_sockaddr(best_info->ai_addr, narrow_cast<socklen_t>(best_info->ai_addrlen));
 }
 
 Status IPAddress::init_sockaddr(struct sockaddr *addr, socklen_t len) {
