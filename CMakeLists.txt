@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 include_directories (".")
 
 # DEPENDS ON:
-# ZLIB
+# ZLIB OPENSSL
 find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIR})
 
@@ -25,6 +25,7 @@ set (TDUTILS_SOURCE
   td/utils/base64.cpp
   td/utils/buffer.cpp
   td/utils/common.cpp
+  td/utils/crypto.cpp
   td/utils/Gzip.cpp
   td/utils/GzipByteFlow.cpp
   td/utils/Hints.cpp
@@ -35,6 +36,7 @@ set (TDUTILS_SOURCE
   td/utils/Timer.cpp
   td/utils/tl_parser.cpp
   td/utils/utf8.cpp
+
 
   td/utils/port/Clocks.h
   td/utils/port/config.h
@@ -66,6 +68,7 @@ set (TDUTILS_SOURCE
   td/utils/ByteFlow.h
   td/utils/Closure.h
   td/utils/common.h
+  td/utils/crypto.h
   td/utils/FileLog.h
   td/utils/format.h
   td/utils/Gzip.h
@@ -102,4 +105,4 @@ add_library (tdutils STATIC ${TDUTILS_SOURCE})
 if (MSVC)
   target_link_libraries(tdutils PUBLIC ws2_32 Mswsock)
 endif()
-target_link_libraries(tdutils PUBLIC ${ZLIB_LIBRARIES})
+target_link_libraries(tdutils PUBLIC ${ZLIB_LIBRARIES} ${OPENSSL_LIBRARIES})
