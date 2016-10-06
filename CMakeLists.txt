@@ -33,6 +33,7 @@ set (TDUTILS_SOURCE
   td/utils/MimeType.cpp
   td/utils/Time.cpp
   td/utils/Timer.cpp
+  td/utils/tl_parser.cpp
   td/utils/utf8.cpp
 
   td/utils/port/Clocks.h
@@ -90,6 +91,8 @@ set (TDUTILS_SOURCE
   td/utils/StringBuilder.h
   td/utils/Time.h
   td/utils/Timer.h
+  td/utils/tl_parser.h
+  td/utils/tl_storer.h
   td/utils/utf8.h
 )
 
