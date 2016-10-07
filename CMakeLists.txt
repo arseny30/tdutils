@@ -2,11 +2,14 @@ cmake_minimum_required(VERSION 3.0.2)
 include_directories (".")
 
 # DEPENDS ON:
-# ZLIB OPENSSL
+# ZLIB OPENSSL gperf
 find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIR})
 
-#SOURCE SETS
+add_subdirectory(generate)
+
+# TDUTILS
+set_source_files_properties(${TDMIME_AUTO} PROPERTIES GENERATED TRUE)
 set (TDUTILS_SOURCE
   td/utils/port/Fd.cpp
   td/utils/port/FileFd.cpp
@@ -21,6 +24,7 @@ set (TDUTILS_SOURCE
   td/utils/port/detail/EventFdWindows.cpp
   td/utils/port/detail/KQueue.cpp
   td/utils/port/detail/Select.cpp
+  ${TDMIME_AUTO}
 
   td/utils/base64.cpp
   td/utils/buffer.cpp
@@ -105,4 +109,8 @@ add_library (tdutils STATIC ${TDUTILS_SOURCE})
 if (MSVC)
   target_link_libraries(tdutils PUBLIC ws2_32 Mswsock)
 endif()
+add_dependencies(tdutils tdmime_auto)
 target_link_libraries(tdutils PUBLIC ${ZLIB_LIBRARIES} ${OPENSSL_LIBRARIES})
+
+
+
