@@ -4,8 +4,6 @@ include_directories (".")
 # Generate files for mime types
 file(MAKE_DIRECTORY auto)
 
-  set (CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -Wno-deprecated-declarations -Wconversion -Wno-sign-conversion -std=c++14 -DUSE_READLINE=1 -DTD_USE_GTEST=1 -fno-omit-frame-pointer")
-
 set (TDMIME_SOURCE
   ${CMAKE_CURRENT_SOURCE_DIR}/auto/mime_type_to_extension.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/auto/extension_to_mime_type.cpp
@@ -58,4 +56,3 @@ add_custom_command (
 )
 
 add_custom_target(tdmime_auto DEPENDS ${TDMIME_SOURCE})
-

@@ -6,7 +6,9 @@ include_directories (".")
 find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIR})
 
-add_subdirectory(generate)
+if (${GENERATE_SOURCE}) 
+  add_subdirectory(generate)
+endif()
 
 # TDUTILS
 set_source_files_properties(${TDMIME_AUTO} PROPERTIES GENERATED TRUE)
@@ -109,7 +111,9 @@ add_library (tdutils STATIC ${TDUTILS_SOURCE})
 if (MSVC)
   target_link_libraries(tdutils PUBLIC ws2_32 Mswsock)
 endif()
-add_dependencies(tdutils tdmime_auto)
+if(${GENERATE_SOURCE})
+  add_dependencies(tdutils tdmime_auto)
+endif()
 target_link_libraries(tdutils PUBLIC ${ZLIB_LIBRARIES} ${OPENSSL_LIBRARIES})
 
 
