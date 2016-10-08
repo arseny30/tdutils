@@ -13,6 +13,9 @@ set (TDMIME_AUTO
   PARENT_SCOPE
 )
 
+add_custom_target(tdmime_auto DEPENDS ${TDMIME_SOURCE})
+
+if (${GENERATE_SOURCE})
 set (GPERF_FILES
   auto/mime_type_to_extension.gperf
   auto/extension_to_mime_type.gperf
@@ -54,5 +57,5 @@ add_custom_command (
   COMMAND  ${ExtentionToMimeCmd}
   DEPENDS auto/extension_to_mime_type.gperf
 )
+endif()
 
-add_custom_target(tdmime_auto DEPENDS ${TDMIME_SOURCE})

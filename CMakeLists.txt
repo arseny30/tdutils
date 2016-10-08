@@ -6,9 +6,7 @@ include_directories (".")
 find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIR})
 
-if (${GENERATE_SOURCE}) 
-  add_subdirectory(generate)
-endif()
+add_subdirectory(generate)
 
 # TDUTILS
 set_source_files_properties(${TDMIME_AUTO} PROPERTIES GENERATED TRUE)
