@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdarg>
+#include <cstdio>
 
 #include "td/utils/common.h"
 #include "td/utils/Slice-decl.h"
@@ -26,7 +27,7 @@ class StringBuilder {
     return MutableCSlice(begin_ptr_, current_ptr_);
   }
 
-  bool is_error() {
+  bool is_error() const {
     return error_flag_;
   }
 
@@ -35,26 +36,22 @@ class StringBuilder {
   }
 
   StringBuilder &operator<<(const Slice &slice) {
-    char *next_ptr = current_ptr_ + slice.size();
-    size_t size = slice.size();
-    if (unlikely(next_ptr > end_ptr_)) {
-      if (unlikely(end_ptr_ < current_ptr_)) {
-        return on_error();
-      }
-      size = end_ptr_ - current_ptr_;
-      next_ptr = end_ptr_;
+    if (unlikely(end_ptr_ < current_ptr_)) {
+      return on_error();
+    }
+    auto size = static_cast<size_t>(end_ptr_ + reserved_size - 1 - current_ptr_);
+    if (unlikely(slice.size() > size)) {
+      error_flag_ = true;
+    } else {
+      size = slice.size();
     }
     memcpy(current_ptr_, slice.begin(), size);
-    current_ptr_ = next_ptr;
+    current_ptr_ += size;
     return *this;
   }
 
   StringBuilder &operator<<(bool b) {
-    if (b) {
-      return *this << "true";
-    } else {
-      return *this << "false";
-    }
+    return *this << (b ? Slice("true") : Slice("false"));
   }
 
   StringBuilder &operator<<(char c) {
@@ -126,11 +123,19 @@ class StringBuilder {
     if (unlikely(end_ptr_ < current_ptr_)) {
       return on_error();
     }
-    current_ptr_ += snprintf(current_ptr_, reserved_size, "%lf", x);
+    auto left = end_ptr_ + reserved_size - current_ptr_;
+    int len = snprintf(current_ptr_, left, "%lf", x);
+    if (unlikely(len >= left)) {
+      error_flag_ = true;
+      current_ptr_ += left - 1;
+    } else {
+      current_ptr_ += len;
+    }
     return *this;
   }
 
-  StringBuilder &operator<<(const void *ptr) {
+  template <class T>
+  StringBuilder &operator<<(const T *ptr) {
     if (unlikely(end_ptr_ < current_ptr_)) {
       return on_error();
     }
@@ -139,16 +144,18 @@ class StringBuilder {
   }
 
   void vprintf(const char *fmt, va_list list) {
-    if (unlikely(end_ptr_ <= current_ptr_)) {
+    if (unlikely(end_ptr_ < current_ptr_)) {
       on_error();
       return;
     }
-    int len = vsnprintf(current_ptr_, end_ptr_ - current_ptr_ - 1, fmt, list);
-    char *next_ptr = current_ptr_ + len;
-    if (likely(next_ptr <= end_ptr_)) {
-      current_ptr_ = next_ptr;
+
+    auto left = end_ptr_ + reserved_size - current_ptr_;
+    int len = vsnprintf(current_ptr_, left, fmt, list);
+    if (unlikely(len >= left)) {
+      error_flag_ = true;
+      current_ptr_ += left - 1;
     } else {
-      current_ptr_ = end_ptr_;
+      current_ptr_ += len;
     }
   }
 
@@ -164,7 +171,7 @@ class StringBuilder {
   char *current_ptr_;
   char *end_ptr_;
   bool error_flag_ = false;
-  enum { reserved_size = 30 };
+  static constexpr size_t reserved_size = 30;
 
   StringBuilder &on_error() {
     error_flag_ = true;
@@ -173,8 +180,8 @@ class StringBuilder {
 };
 
 template <class T>
-string to_string(const T &x) {
-  const size_t buf_size = 8 * 1024;
+typename std::enable_if<std::is_arithmetic<T>::value, string>::type to_string(const T &x) {
+  const size_t buf_size = 1000;
   auto buf = StackAllocator<>::alloc(buf_size);
   StringBuilder sb(buf.as_slice());
   sb << x;
