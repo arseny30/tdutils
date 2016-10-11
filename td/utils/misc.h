@@ -755,7 +755,7 @@ class PathView {
     if (empty()) {
       return false;
     }
-    return path_[path_.size() - 1] == '/';
+    return path_.back() == '/';
   }
   Slice parent_dir() const {
     return Slice(path_.begin(), last_slash_ + 1);
