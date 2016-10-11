@@ -160,7 +160,7 @@ class Status {
     auto buf = StackAllocator<>::alloc(4096);
     StringBuilder sb(buf.as_slice());
     print(sb);
-    return sb.as_slice().str();
+    return sb.as_cslice().str();
   }
 
   // Default interface
@@ -317,8 +317,7 @@ class Result {
   Result() : status_(Status::Error()) {
   }
   template <class S>
-  Result(S &&x)
-      : status_(), value_(std::forward<S>(x)) {
+  Result(S &&x) : status_(), value_(std::forward<S>(x)) {
   }
   Result(Status &&status) : status_(std::move(status)) {
     CHECK(status_.is_error());
@@ -430,8 +429,7 @@ template <class Facet>
 class usable_facet : public Facet {
  public:
   template <class... Args>
-  usable_facet(Args &&... args)
-      : Facet(std::forward<Args>(args)...) {
+  usable_facet(Args &&... args) : Facet(std::forward<Args>(args)...) {
   }
   ~usable_facet() {
   }

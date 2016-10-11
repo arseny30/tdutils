@@ -21,7 +21,7 @@ class StringBuilder {
     current_ptr_ = begin_ptr_;
     error_flag_ = false;
   }
-  MutableCSlice as_slice() {
+  MutableCSlice as_cslice() {
     ASSERT_CHECK(current_ptr_ < end_ptr_ + reserved_size);
     *current_ptr_ = 0;
     return MutableCSlice(begin_ptr_, current_ptr_);
@@ -185,7 +185,7 @@ typename std::enable_if<std::is_arithmetic<T>::value, string>::type to_string(co
   auto buf = StackAllocator<>::alloc(buf_size);
   StringBuilder sb(buf.as_slice());
   sb << x;
-  return sb.as_slice().str();
+  return sb.as_cslice().str();
 }
 
 }  // end of namespace td;

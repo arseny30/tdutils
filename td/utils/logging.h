@@ -214,24 +214,19 @@ class Logger {
     va_end(list);
     return *this;
   }
-
-  MutableCSlice as_slice() {
-    return sb_.as_slice();
+  MutableCSlice as_cslice() {
+    return sb_.as_cslice();
   }
-
   ~Logger() {
     if (!simple_mode_) {
-      sb_ << "\n";
-      auto slice = as_slice();
-
-      if (!slice.empty()) {
-        if (slice[slice.size() - 1] != '\n') {
-          slice[slice.size() - 1] = '\n';
-        }
+      sb_ << '\n';
+      auto slice = as_cslice();
+      if (slice.back() != '\n') {
+        slice.back() = '\n';
       }
     }
 
-    log_.append(as_slice(), log_level_);
+    log_.append(as_cslice(), log_level_);
   }
 
   StringBuilder &string_builder() {
@@ -260,7 +255,7 @@ class Voidify {
 class Slicify {
  public:
   CSlice operator&(Logger &logger) {
-    return logger.as_slice();
+    return logger.as_cslice();
   }
 };
 

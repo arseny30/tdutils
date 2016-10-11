@@ -56,7 +56,7 @@ class OptionsParser {
     if (sb.is_error()) {
       return Status::Error("Can't parse options");
     }
-    CSlice short_options = sb.as_slice();
+    CSlice short_options = sb.as_cslice();
 
     vector<struct option> long_options;
     for (auto &opt : options_) {

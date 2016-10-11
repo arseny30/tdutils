@@ -261,7 +261,7 @@ class JsonScope {
   template <class T>
   JsonScope &operator<<(const T *x);  // not implemented
   template <size_t N>
-  JsonScope &operator<<(char(&x)[N]) {
+  JsonScope &operator<<(char (&x)[N]) {
     return *this << JsonString(x);
   }
   JsonScope &operator<<(const char *x) {
@@ -673,9 +673,10 @@ template <class StrT, class ValT>
 inline StrT json_encode(const ValT &val) {
   auto buf_len = 1 << 19;
   auto buf = StackAllocator<>::alloc(buf_len);
-  JsonBuilder jb(StringBuilder(MutableSlice(buf.get(), buf_len)));
+  JsonBuilder jb(StringBuilder(buf.as_slice()));
   jb.enter_value() << val;
-  auto slice = jb.string_builder().as_slice();
+  LOG_IF(ERROR, jb.string_builder().is_error()) << "Json buffer overflow";
+  auto slice = jb.string_builder().as_cslice();
   return StrT(slice.begin(), slice.size());
 }
 
