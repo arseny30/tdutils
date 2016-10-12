@@ -32,7 +32,6 @@
 
 #include <cstdarg>  // for va_list, va_end, va_start
 #include <cstdio>   // for snprintf, vsnprintf
-#include <cstdlib>  // for abort
 #include <cstring>  // for memcpy, strrchr
 #include <atomic>
 

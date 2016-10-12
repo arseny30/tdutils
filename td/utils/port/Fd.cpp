@@ -795,11 +795,13 @@ class FdImpl {
   void on_connect_ready() {
     async_read_flag_ = false;
     DWORD bytes_read;
+    VLOG(fd) << "on_connect_ready";
     auto status = GetOverlappedResultEx(get_io_handle(), &read_overlapped_, &bytes_read, 0, false);
     if (status == 0) {
       return on_error(Status::OsError("ConnectEx failed"), Fd::Flag::Write);
     }
     connected_ = true;
+    VLOG(fd) << "connected = true";
   }
 
   void try_read_stdin() {
@@ -836,6 +838,7 @@ class FdImpl {
     DWORD bytes_written;
     memset(&write_overlapped_, 0, sizeof(write_overlapped_));
     write_overlapped_.hEvent = write_event_;
+    VLOG(fd) << "try_start_write";
     auto status =
         WriteFile(get_io_handle(), dest.data(), narrow_cast<DWORD>(dest.size()), &bytes_written, &write_overlapped_);
     if (status != 0) {  // ok
@@ -847,6 +850,7 @@ class FdImpl {
     }
     auto last_error = GetLastError();
     if (last_error == ERROR_IO_PENDING) {
+      VLOG(fd) << "try_start_write: ERROR_IO_PENDING";
       async_write_flag_ = true;
       return;
     }
@@ -900,6 +904,7 @@ class FdImpl {
       // read always
       try_start_read();
     }
+    LOG(ERROR) << (async_write_flag_ == false) << " " << output_reader_.size() << " "<< ((internal_flags_ & Fd::Flag::Write) != 0);
     while (async_write_flag_ == false && output_reader_.size() && (internal_flags_ & Fd::Flag::Write) != 0) {
       // write if we have data to write
       try_start_write();
