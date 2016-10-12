@@ -17,8 +17,8 @@ add_custom_target(tdmime_auto DEPENDS ${TDMIME_SOURCE})
 
 if (${GENERATE_SOURCE})
 set (GPERF_FILES
-  auto/mime_type_to_extension.gperf
-  auto/extension_to_mime_type.gperf
+  ${CMAKE_CURRENT_SOURCE_DIR}/auto/mime_type_to_extension.gperf
+  ${CMAKE_CURRENT_SOURCE_DIR}/auto/extension_to_mime_type.gperf
 )
 
 set (GPERF_GEN_SOURCE generate_mime_types_gperf.cpp)
@@ -54,7 +54,7 @@ endif()
 add_custom_command (
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/auto/extension_to_mime_type.cpp
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMAND  ${ExtentionToMimeCmd}
+  COMMAND ${ExtentionToMimeCmd}
   DEPENDS auto/extension_to_mime_type.gperf
 )
 endif()
