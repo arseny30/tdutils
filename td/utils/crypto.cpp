@@ -1,7 +1,5 @@
 #include "td/utils/crypto.h"
 
-#include "td/utils/port/Clocks.h"
-
 #include "td/utils/int_types.h"
 #include "td/utils/logging.h"
 #include "td/utils/misc.h"
