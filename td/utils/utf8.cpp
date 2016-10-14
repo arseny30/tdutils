@@ -5,17 +5,14 @@
 
 namespace td {
 
-bool check_utf8(MutableCSlice str) {
-  char *data = str.data();
-  char *data_end = data + str.size();
+bool check_utf8(CSlice str) {
+  const char *data = str.data();
+  const char *data_end = data + str.size();
   do {
-    unsigned int a = (unsigned char)(*data++);
+    unsigned int a = static_cast<unsigned char>(*data++);
     if ((a & 0x80) == 0) {
-      if (a == 0) {
-        if (data == data_end + 1) {
-          return true;
-        }
-        data[-1] = ' ';
+      if (data == data_end + 1) {
+        return true;
       }
       continue;
     }
@@ -28,14 +25,14 @@ bool check_utf8(MutableCSlice str) {
 
     ENSURE((a & 0x40) != 0);
 
-    unsigned int b = (unsigned char)(*data++);
+    unsigned int b = static_cast<unsigned char>(*data++);
     ENSURE((b & 0xc0) == 0x80);
     if ((a & 0x20) == 0) {
       ENSURE((a & 0x1e) > 0);
       continue;
     }
 
-    unsigned int c = (unsigned char)(*data++);
+    unsigned int c = static_cast<unsigned char>(*data++);
     ENSURE((c & 0xc0) == 0x80);
     if ((a & 0x10) == 0) {
       int x = (((a & 0x0f) << 6) | (b & 0x20));
@@ -43,7 +40,7 @@ bool check_utf8(MutableCSlice str) {
       continue;
     }
 
-    unsigned int d = (unsigned char)(*data++);
+    unsigned int d = static_cast<unsigned char>(*data++);
     ENSURE((d & 0xc0) == 0x80);
     if ((a & 0x08) == 0) {
       int t = (((a & 0x07) << 6) | (b & 0x30));
