@@ -50,7 +50,7 @@ class tl_parser {
     }
   }
 
-  tl_parser(Slice slice) : tl_parser(slice.begin(), slice.size()) {
+  explicit tl_parser(Slice slice) : tl_parser(slice.begin(), slice.size()) {
   }
 
   void set_error(const string &error_message);
@@ -186,13 +186,18 @@ class tl_parser {
 
 class tl_buffer_parser : public tl_parser {
  public:
-  tl_buffer_parser(const BufferSlice *buffer_slice)
+  explicit tl_buffer_parser(const BufferSlice *buffer_slice)
       : tl_parser(buffer_slice->as_slice().begin(), static_cast<int32>(buffer_slice->as_slice().size()))
       , parent_(buffer_slice) {
   }
   template <class T>
   inline T fetch_string(void) {
     auto result = tl_parser::fetch_string<T>();
+    for (auto &c : result) {
+      if (c == '\0') {
+        c = ' ';
+      }
+    }
     if (check_utf8(result)) {
       return result;
     }
