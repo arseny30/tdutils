@@ -304,6 +304,10 @@ inline string tolower(Slice slice) {
   return result;
 }
 
+inline bool is_utf8_symbol_begin_char(unsigned char c) {
+  return (c & 0xC0) != 0x80;
+}
+
 inline bool isspace(char c) {
   return c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\0' || c == '\v';
 }
@@ -326,19 +330,33 @@ inline bool ishexdigit(char c) {
 }
 
 template <class T>
-inline T trim(T slice) {
-  auto begin = &slice[0];
-  auto end = begin + slice.size();
+T trim(T str) {
+  auto begin = str.data();
+  auto end = begin + str.size();
   while (begin < end && isspace(*begin)) {
     begin++;
   }
   while (begin < end && isspace(end[-1])) {
     end--;
   }
-  if (static_cast<size_t>(end - begin) == slice.size()) {
-    return slice;
+  if (static_cast<size_t>(end - begin) == str.size()) {
+    return std::move(str);
   }
   return T(begin, end);
+}
+
+template <class T>
+T utf8_truncate(T str, size_t length) {
+  for (size_t i = 0; i < str.size(); i++) {
+    if (is_utf8_symbol_begin_char(static_cast<unsigned char>(str[i]))) {
+      if (length == 0) {
+        return str.substr(0, i);
+      } else {
+        length--;
+      }
+    }
+  }
+  return std::move(str);
 }
 
 inline string oneline(Slice str) {
