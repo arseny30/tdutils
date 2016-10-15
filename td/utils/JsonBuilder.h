@@ -540,10 +540,6 @@ class JsonValue : public Jsonable {
 
  private:
   Type type_;
-#if TD_MSVC
-#pragma warning(push)
-#pragma warning(disable : 4624)
-#endif
   union {
     MutableSlice number_;
     bool boolean_;
@@ -551,9 +547,6 @@ class JsonValue : public Jsonable {
     JsonArray array_;
     JsonObject object_;
   };
-#if TD_MSVC
-#pragma warning(pop)
-#endif
 
   void init_null() {
     type_ = Type::Null;
