@@ -12,8 +12,8 @@ StringBuilder &operator<<(StringBuilder &sb, const JsonString &val) {
   auto len = val.str_.size();
 
   for (size_t pos = 0; pos < len; pos++) {
-    auto c = (unsigned char)s[pos];
-    switch (c) {
+    auto ch = (unsigned char)s[pos];
+    switch (ch) {
       case '"':
         sb << '\\' << '"';
         break;
@@ -39,11 +39,11 @@ StringBuilder &operator<<(StringBuilder &sb, const JsonString &val) {
         sb << '\\' << 't';
         break;
       default:
-        if (c <= 7 || c == 11 || (14 <= c && c <= 31)) {
+        if (ch <= 7 || ch == 11 || (14 <= ch && ch <= 31)) {
           sb << JsonOneChar(s[pos]);
           break;
         }
-        if (128 <= c) {
+        if (128 <= ch) {
           int a = s[pos];
           CHECK((a & 0x40) != 0);
 

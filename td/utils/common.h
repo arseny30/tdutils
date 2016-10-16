@@ -111,10 +111,10 @@
 
 #define ASSERT_CHECK assert
 
-#if TD_MSVC
-#define WARN_UNUSED_RESULT _Check_return_
-#else
+#if TD_GCC || TD_CLANG
 #define WARN_UNUSED_RESULT __attribute__((warn_unused_result))
+#else
+#define WARN_UNUSED_RESULT
 #endif
 
 #if TD_CLANG || TD_GCC

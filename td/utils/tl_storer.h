@@ -6,6 +6,7 @@
 #include <cstdint>
 
 #include "td/utils/int_types.h"
+#include "td/utils/logging.h"
 #include "td/utils/Slice.h"
 #include "td/utils/Storer.h"
 
@@ -149,7 +150,8 @@ class tl_storer_to_string {
 
   void store_long(int64_t value) {
     char buf[64];
-    snprintf(buf, 64, "%lld", (long long)value);
+    auto len = snprintf(buf, sizeof(buf), "%lld", (long long)value);
+    CHECK(len < sizeof(buf));
     result += buf;
   }
 
@@ -176,7 +178,8 @@ class tl_storer_to_string {
   void store_field(const char *name, double value) {
     store_field_begin(name);
     char buf[640];
-    snprintf(buf, 640, "%lf", value);
+    auto len = snprintf(buf, sizeof(buf), "%lf", value);
+    CHECK(len < sizeof(buf));
     result += buf;
     store_field_end();
   }
