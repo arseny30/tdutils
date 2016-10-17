@@ -148,10 +148,10 @@ class tl_storer_to_string {
     result += "\n";
   }
 
-  void store_long(int64_t value) {
+  void store_long(int64 value) {
     char buf[64];
     auto len = snprintf(buf, sizeof(buf), "%lld", (long long)value);
-    CHECK(len < sizeof(buf));
+    CHECK(static_cast<size_t>(len) < sizeof(buf));
     result += buf;
   }
 
@@ -179,7 +179,7 @@ class tl_storer_to_string {
     store_field_begin(name);
     char buf[640];
     auto len = snprintf(buf, sizeof(buf), "%lf", value);
-    CHECK(len < sizeof(buf));
+    CHECK(static_cast<size_t>(len) < sizeof(buf));
     result += buf;
     store_field_end();
   }
