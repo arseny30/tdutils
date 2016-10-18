@@ -1,5 +1,6 @@
-#include "td/utils/FileLog.h"
 #include "td/utils/logging.h"
+
+#include "td/utils/FileLog.h"
 #include "td/utils/misc.h"
 
 #include <cstdio>
