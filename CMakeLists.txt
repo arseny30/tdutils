@@ -112,7 +112,7 @@ endif()
 if(${GENERATE_SOURCE})
   add_dependencies(tdutils tdmime_auto)
 endif()
-target_link_libraries(tdutils PUBLIC ${ZLIB_LIBRARIES} ${OPENSSL_LIBRARIES})
+target_link_libraries(tdutils PUBLIC ${ZLIB_LIBRARIES} ${OPENSSL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
 
 
