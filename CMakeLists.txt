@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.0.2)
-include_directories (".")
 
 # DEPENDS ON:
 # ZLIB OPENSSL gperf
@@ -106,6 +105,7 @@ set (TDUTILS_SOURCE
 #RULES
 #LIBRARIES
 add_library (tdutils STATIC ${TDUTILS_SOURCE})
+target_include_directories(tdutils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 if (MSVC)
   target_link_libraries(tdutils PUBLIC ws2_32 Mswsock)
 endif()
