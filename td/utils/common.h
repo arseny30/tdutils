@@ -338,4 +338,19 @@ std::tuple<const Args &...> ctie(const Args &... args) {
   return std::tie(args...);
 }
 
+template <class FunctionT>
+class member_function_class {
+ private:
+  template <class ResultT, class ClassT, class... ArgsT>
+  static auto helper(ResultT (ClassT::*x)(ArgsT...)) {
+    return static_cast<ClassT *>(nullptr);
+  }
+
+ public:
+  using type = std::remove_pointer_t<decltype(helper(static_cast<FunctionT>(nullptr)))>;
+};
+
+template <class FunctionT>
+using member_function_class_t = typename member_function_class<FunctionT>::type;
+
 }  // end of namespace td
