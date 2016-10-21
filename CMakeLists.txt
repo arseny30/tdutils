@@ -29,6 +29,7 @@ set (TDUTILS_SOURCE
   td/utils/buffer.cpp
   td/utils/common.cpp
   td/utils/crypto.cpp
+  td/utils/filesystem.cpp
   td/utils/Gzip.cpp
   td/utils/GzipByteFlow.cpp
   td/utils/Hints.cpp
@@ -73,6 +74,7 @@ set (TDUTILS_SOURCE
   td/utils/common.h
   td/utils/crypto.h
   td/utils/FileLog.h
+  td/utils/filesystem.h
   td/utils/format.h
   td/utils/Gzip.h
   td/utils/GzipByteFlow.h
