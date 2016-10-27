@@ -228,8 +228,6 @@ class MovableValue {
   T val_ = empty_val;
 };
 
-void tdlib_init(string path);
-
 struct Unit {
   template <class... ArgsT>
   void operator()(ArgsT &&... args) {
