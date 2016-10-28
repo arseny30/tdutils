@@ -1,8 +1,5 @@
 #include "utf8.h"
 
-#include "common.h"
-#include "logging.h"
-
 namespace td {
 
 bool check_utf8(CSlice str) {
