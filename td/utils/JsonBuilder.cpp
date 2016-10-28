@@ -3,6 +3,50 @@
 #include <cstdlib>
 
 namespace td {
+StringBuilder &operator<<(StringBuilder &sb, const JsonRawString &val) {
+  sb << '"';
+  SCOPE_EXIT {
+    sb << '"';
+  };
+  auto *s = val.value_.begin();
+  auto len = val.value_.size();
+
+  for (size_t pos = 0; pos < len; pos++) {
+    auto ch = (unsigned char)s[pos];
+    switch (ch) {
+      case '"':
+        sb << '\\' << '"';
+        break;
+      case '\\':
+        sb << '\\' << '\\';
+        break;
+      case '\b':
+        sb << '\\' << 'b';
+        break;
+      case '\f':
+        sb << '\\' << 'f';
+        break;
+      case '\n':
+        sb << '\\' << 'n';
+        break;
+      case '\r':
+        sb << '\\' << 'r';
+        break;
+      case '\t':
+        sb << '\\' << 't';
+        break;
+      default:
+        if (ch <= 7 || ch == 11 || (14 <= ch && ch <= 31)) {
+          sb << JsonOneChar(s[pos]);
+          break;
+        }
+        sb << s[pos];
+        break;
+    }
+  }
+  return sb;
+}
+
 StringBuilder &operator<<(StringBuilder &sb, const JsonString &val) {
   sb << '"';
   SCOPE_EXIT {
@@ -19,9 +63,6 @@ StringBuilder &operator<<(StringBuilder &sb, const JsonString &val) {
         break;
       case '\\':
         sb << '\\' << '\\';
-        break;
-      case '/':
-        sb << '\\' << '/';
         break;
       case '\b':
         sb << '\\' << 'b';

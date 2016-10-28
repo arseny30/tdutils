@@ -17,10 +17,9 @@ bool check_utf8(CSlice str) {
       continue;
     }
 
-#define ENSURE(condition)                                                                                       \
-  if (!(condition)) {                                                                                           \
-    LOG(WARNING) << "Wrong UTF-8 character at pos " << data - str.data() - 1 << " in string [[" << str << "]]"; \
-    return false;                                                                                               \
+#define ENSURE(condition) \
+  if (!(condition)) {     \
+    return false;         \
   }
 
     ENSURE((a & 0x40) != 0);

@@ -133,9 +133,7 @@ class JsonRawString {
  public:
   explicit JsonRawString(Slice value) : value_(value) {
   }
-  friend StringBuilder &operator<<(StringBuilder &sb, const JsonRawString &val) {
-    return sb << '"' << val.value_ << '"';
-  }
+  friend StringBuilder &operator<<(StringBuilder &sb, const JsonRawString &val);
 
  private:
   Slice value_;
