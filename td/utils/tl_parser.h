@@ -203,6 +203,7 @@ class tl_buffer_parser : public tl_parser {
       return result;
     }
     CHECK(!result.empty());
+    LOG(WARNING) << "Wrong UTF-8 string [[" << result << "]]";
 
     // try to remove last character
     size_t new_size = result.size() - 1;
