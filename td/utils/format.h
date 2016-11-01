@@ -140,10 +140,10 @@ inline StringBuilder &operator<<(StringBuilder &builder, const Escaped &escaped)
   Slice str = escaped.str;
   for (size_t i = 0; i < str.size(); i++) {
     unsigned char c = str[i];
-    if (c >= 31 && c < 127) {
+    if (c > 31 && c < 127 && c != '"' && c != '\\') {
       builder << static_cast<char>(c);
     } else {
-      builder.printf("\\%d", c);
+      builder.printf("\\%03o", c);
     }
   }
   return builder;
