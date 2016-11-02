@@ -51,6 +51,22 @@ class Parser {
     return result;
   }
 
+  MutableSlice read_till_nofail(Slice str) {
+    if (status_.is_error()) {
+      return MutableSlice();
+    }
+    char *best_till = end_;
+    for (auto c : str) {
+      char *till = reinterpret_cast<char *>(memchr(ptr_, c, end_ - ptr_));
+      if (till != nullptr && till < best_till) {
+        best_till = till;
+      }
+    }
+    MutableSlice result(ptr_, best_till);
+    ptr_ = best_till;
+    return result;
+  }
+
   template <class F>
   MutableSlice read_while(const F &f) {
     auto save_ptr = ptr_;
