@@ -27,10 +27,10 @@ class StackAllocator {
     void *get() {
       return ptr_.get();
     }
-    MutableSlice as_slice() {
+    MutableSlice as_slice() const {
       return MutableSlice(ptr_.get(), size_.get());
     }
-    operator bool() {
+    operator bool() const {
       return bool(ptr_);
     }
 
