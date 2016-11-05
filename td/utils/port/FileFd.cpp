@@ -178,7 +178,7 @@ Result<size_t> FileFd::pread(const MutableSlice &slice, off_t offset) {
 }
 
 Status FileFd::lock(FileFd::LockFlags flags) {
-  static struct flock L;
+  struct flock L;
   memset(&L, 0, sizeof(L));
 
   L.l_type = static_cast<short>([&] {

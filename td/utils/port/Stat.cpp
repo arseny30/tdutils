@@ -145,7 +145,7 @@ Result<MemStat> mem_stat() {
   };
 
   constexpr int TMEM_SIZE = 10000;
-  static char mem[TMEM_SIZE];
+  char mem[TMEM_SIZE];
   TRY_RESULT(size, fd.read(MutableSlice(mem, TMEM_SIZE - 1)));
   CHECK(size < TMEM_SIZE - 1);
   mem[size] = 0;

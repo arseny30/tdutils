@@ -259,14 +259,14 @@ class JsonScope {
   template <class T>
   JsonScope &operator<<(const T *x);  // not implemented
   template <size_t N>
-  JsonScope &operator<<(char (&x)[N]) {
-    return *this << JsonString(x);
+  JsonScope &operator<<(const char (&x)[N]) {
+    return *this << JsonString(Slice(x));
   }
   JsonScope &operator<<(const char *x) {
-    return *this << JsonString(x);
+    return *this << JsonString(Slice(x));
   }
   JsonScope &operator<<(const string &x) {
-    return *this << JsonString(x);
+    return *this << JsonString(Slice(x));
   }
   JsonScope &operator<<(Slice x) {
     return *this << JsonString(x);

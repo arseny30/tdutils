@@ -15,9 +15,6 @@ inline MutableSlice::MutableSlice(void *s, size_t len) : s_(static_cast<char *>(
 inline MutableSlice::MutableSlice(string &s) : MutableSlice(&s[0], s.size()) {
 }
 
-inline MutableSlice::MutableSlice(char *s) : MutableSlice(s, strlen(s)) {
-}
-
 inline MutableSlice::MutableSlice(const Slice &from) : MutableSlice(const_cast<char *>(from.begin()), from.size()) {
 }
 
@@ -141,9 +138,6 @@ inline Slice::Slice(const std::vector<unsigned char> &v) : Slice(v.data(), v.siz
 }
 
 inline Slice::Slice(const std::vector<char> &v) : Slice(v.data(), v.size()) {
-}
-
-inline Slice::Slice(const char *s) : Slice(s, strlen(s)) {
 }
 
 inline Slice::Slice(const void *s, const void *t)

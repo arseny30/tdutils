@@ -1,6 +1,9 @@
 #pragma once
 #include "td/utils/common.h"
 
+#include <cstring>
+#include <type_traits>
+
 namespace td {
 class Slice;
 
@@ -13,12 +16,14 @@ class MutableSlice {
   MutableSlice();
   MutableSlice(void *s, size_t len);
   MutableSlice(string &s);
-  explicit MutableSlice(char *s);
+  template <class T>
+  explicit MutableSlice(T s, std::enable_if_t<std::is_same<char *, T>::value, int> *** = nullptr)
+      : MutableSlice(s, strlen(s)) {
+  }
   explicit MutableSlice(const Slice &from);
   MutableSlice(void *s, void *t);
   template <size_t N>
-  constexpr MutableSlice(char(&a)[N])
-      : s_(a), len_(N - 1) {
+  constexpr MutableSlice(char (&a)[N]) : s_(a), len_(N - 1) {
   }
 
   void clear();
@@ -63,15 +68,21 @@ class Slice {
   Slice(const std::vector<unsigned char> &v);
   Slice(const std::vector<char> &v);
   // FIXME: make it explicit
-  Slice(const char *s);
+  template <class T>
+  Slice(T s, std::enable_if_t<std::is_same<char *, std::remove_const_t<T>>::value, int> *** = nullptr)
+      : Slice(s, strlen(s)) {
+  }
+  template <class T>
+  Slice(T s, std::enable_if_t<std::is_same<const char *, std::remove_const_t<T>>::value, int> *** = nullptr)
+      : Slice(s, strlen(s)) {
+  }
   Slice(const void *s, const void *t);
 
   template <size_t N>
-  constexpr Slice(char(&a)[N]) = delete;
+  constexpr Slice(char (&a)[N]) = delete;
 
   template <size_t N>
-  constexpr Slice(const char(&a)[N])
-      : s_(a), len_(N - 1) {
+  constexpr Slice(const char (&a)[N]) : s_(a), len_(N - 1) {
   }
 
   void clear();
@@ -115,17 +126,13 @@ class MutableCSlice : public MutableSlice {
   MutableCSlice(string &s) : MutableSlice(s) {
   }
   // FIXME: make it explicit
-  MutableCSlice(char *s) : MutableSlice(s) {
+  template <class T>
+  MutableCSlice(T s, std::enable_if_t<std::is_same<char *, T>::value, int> *** = nullptr) : MutableSlice(s) {
   }
   MutableCSlice(void *s, void *t);
 
   template <size_t N>
-  constexpr MutableCSlice(char(&a)[N]) = delete;
-
-  template <size_t N>
-  constexpr MutableCSlice(const char(&a)[N])
-      : Slice(a) {
-  }
+  constexpr MutableCSlice(char (&a)[N]) = delete;
 
   const char *c_str() const {
     return begin();
@@ -142,16 +149,20 @@ class CSlice : public Slice {
   CSlice(const string &s) : Slice(s) {
   }
   // FIXME: make it explicit
-  CSlice(const char *s) : Slice(s) {
+  template <class T>
+  CSlice(T s, std::enable_if_t<std::is_same<char *, std::remove_const_t<T>>::value, int> *** = nullptr) : Slice(s) {
+  }
+  template <class T>
+  CSlice(T s, std::enable_if_t<std::is_same<const char *, std::remove_const_t<T>>::value, int> *** = nullptr)
+      : Slice(s) {
   }
   CSlice(const char *s, const char *t);
 
   template <size_t N>
-  constexpr CSlice(char(&a)[N]) = delete;
+  constexpr CSlice(char (&a)[N]) = delete;
 
   template <size_t N>
-  constexpr CSlice(const char(&a)[N])
-      : Slice(a) {
+  constexpr CSlice(const char (&a)[N]) : Slice(a) {
   }
 
   const char *c_str() const {
