@@ -12,12 +12,14 @@ class MutableSlice {
   char *s_;
   size_t len_;
 
+  struct private_tag {};
+
  public:
   MutableSlice();
   MutableSlice(void *s, size_t len);
   MutableSlice(string &s);
   template <class T>
-  explicit MutableSlice(T s, std::enable_if_t<std::is_same<char *, T>::value, int> *** = nullptr)
+  explicit MutableSlice(T s, std::enable_if_t<std::is_same<char *, T>::value, private_tag> = {})
       : MutableSlice(s, strlen(s)) {
   }
   explicit MutableSlice(const Slice &from);
@@ -60,6 +62,8 @@ class Slice {
   const char *s_;
   size_t len_;
 
+  struct private_tag {};
+
  public:
   Slice();
   Slice(const MutableSlice &other);
@@ -69,11 +73,11 @@ class Slice {
   Slice(const std::vector<char> &v);
   // FIXME: make it explicit
   template <class T>
-  Slice(T s, std::enable_if_t<std::is_same<char *, std::remove_const_t<T>>::value, int> *** = nullptr)
+  Slice(T s, std::enable_if_t<std::is_same<char *, std::remove_const_t<T>>::value, private_tag> = {})
       : Slice(s, strlen(s)) {
   }
   template <class T>
-  Slice(T s, std::enable_if_t<std::is_same<const char *, std::remove_const_t<T>>::value, int> *** = nullptr)
+  Slice(T s, std::enable_if_t<std::is_same<const char *, std::remove_const_t<T>>::value, private_tag> = {})
       : Slice(s, strlen(s)) {
   }
   Slice(const void *s, const void *t);
@@ -119,6 +123,8 @@ template <class SliceT>
 SliceT trim(SliceT slice);
 
 class MutableCSlice : public MutableSlice {
+  struct private_tag {};
+
  public:
   MutableCSlice() = default;
   MutableCSlice(const MutableCSlice &other) : MutableSlice(other) {
@@ -127,7 +133,7 @@ class MutableCSlice : public MutableSlice {
   }
   // FIXME: make it explicit
   template <class T>
-  MutableCSlice(T s, std::enable_if_t<std::is_same<char *, T>::value, int> *** = nullptr) : MutableSlice(s) {
+  MutableCSlice(T s, std::enable_if_t<std::is_same<char *, T>::value, private_tag> = {}) : MutableSlice(s) {
   }
   MutableCSlice(void *s, void *t);
 
@@ -140,6 +146,8 @@ class MutableCSlice : public MutableSlice {
 };
 
 class CSlice : public Slice {
+  struct private_tag {};
+
  public:
   CSlice() = default;
   explicit CSlice(const MutableSlice &other) : Slice(other) {
@@ -150,10 +158,10 @@ class CSlice : public Slice {
   }
   // FIXME: make it explicit
   template <class T>
-  CSlice(T s, std::enable_if_t<std::is_same<char *, std::remove_const_t<T>>::value, int> *** = nullptr) : Slice(s) {
+  CSlice(T s, std::enable_if_t<std::is_same<char *, std::remove_const_t<T>>::value, private_tag> = {}) : Slice(s) {
   }
   template <class T>
-  CSlice(T s, std::enable_if_t<std::is_same<const char *, std::remove_const_t<T>>::value, int> *** = nullptr)
+  CSlice(T s, std::enable_if_t<std::is_same<const char *, std::remove_const_t<T>>::value, private_tag> = {})
       : Slice(s) {
   }
   CSlice(const char *s, const char *t);
