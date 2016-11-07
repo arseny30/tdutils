@@ -126,7 +126,7 @@ class MutableCSlice : public MutableSlice {
   struct private_tag {};
 
  public:
-  MutableCSlice() = default;
+  MutableCSlice() = delete;
   MutableCSlice(const MutableCSlice &other) : MutableSlice(other) {
   }
   MutableCSlice(string &s) : MutableSlice(s) {
@@ -149,7 +149,6 @@ class CSlice : public Slice {
   struct private_tag {};
 
  public:
-  CSlice() = default;
   explicit CSlice(const MutableSlice &other) : Slice(other) {
   }
   CSlice(const MutableCSlice &other) : Slice(other.begin(), other.size()) {
@@ -171,6 +170,9 @@ class CSlice : public Slice {
 
   template <size_t N>
   constexpr CSlice(const char (&a)[N]) : Slice(a) {
+  }
+
+  CSlice() : CSlice("") {
   }
 
   const char *c_str() const {

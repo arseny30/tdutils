@@ -122,7 +122,7 @@ inline char &MutableSlice::operator[](size_t i) {
 }
 
 /*** Slice ***/
-inline Slice::Slice() : Slice("", (size_t)0) {
+inline Slice::Slice() : Slice(nullptr, (size_t)0) {
 }
 
 inline Slice::Slice(const MutableSlice &other) : Slice(other.begin(), other.size()) {
