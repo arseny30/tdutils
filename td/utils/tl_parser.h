@@ -224,16 +224,23 @@ class tl_buffer_parser : public tl_parser {
 
  private:
   const BufferSlice *parent_;
+
+  BufferSlice as_buffer_slice(Slice slice) {
+    if (reinterpret_cast<uint64>(slice.data()) % 4 == 0) {
+      return parent_->from_slice(slice);
+    }
+    return BufferSlice(slice);
+  }
 };
 
 template <>
 inline BufferSlice tl_buffer_parser::fetch_string<BufferSlice>() {
-  return parent_->from_slice(tl_parser::fetch_string<Slice>());
+  return as_buffer_slice(tl_parser::fetch_string<Slice>());
 }
 
 template <>
 inline BufferSlice tl_buffer_parser::fetch_string_raw<BufferSlice>(const int size) {
-  return parent_->from_slice(tl_parser::fetch_string_raw<Slice>(size));
+  return as_buffer_slice(tl_parser::fetch_string_raw<Slice>(size));
 }
 
 }  // namespace tl
