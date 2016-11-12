@@ -33,7 +33,7 @@ add_custom_command (
 )
 
 if (MSVC)
-  set(MimeToExtentionCmd powershell -ExecutionPolicy ByPass ./mime_to_extention.ps1)
+  set(MimeToExtentionCmd powershell -ExecutionPolicy ByPass \" & gperf -m100 --output-file=auto/mime_type_to_extension.cpp auto/mime_type_to_extension.gperf\")
   message (STATUS "${MimeToExtentionCmd}")
 else()
   set (MimeToExtentionCmd gperf -m100 auto/mime_type_to_extension.gperf | grep -v __gnu_inline__ > auto/mime_type_to_extension.cpp)
@@ -46,7 +46,7 @@ add_custom_command (
 )
 
 if (MSVC)
-  set(ExtentionToMimeCmd powershell -ExecutionPolicy ByPass \" & gperf -m100 auto/extension_to_mime_type.gperf > auto/extension_to_mime_type.cpp\")
+  set(ExtentionToMimeCmd powershell -ExecutionPolicy ByPass \" & gperf -m100 --output-file=auto/extension_to_mime_type.cpp auto/extension_to_mime_type.gperf\")
   message (STATUS "${ExtentionToMimeCmd}")
 else()
   set (ExtentionToMimeCmd gperf -m100 auto/extension_to_mime_type.gperf | grep -v __gnu_inline__ > auto/extension_to_mime_type.cpp)
