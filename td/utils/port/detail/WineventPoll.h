@@ -1,3 +1,5 @@
+#pragma once
+
 #include "td/utils/port/config.h"
 
 #ifdef TD_POLL_WINEVENT

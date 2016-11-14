@@ -1,3 +1,5 @@
+#pragma once
+
 #include "td/utils/port/FileFd.h"
 
 namespace td {
