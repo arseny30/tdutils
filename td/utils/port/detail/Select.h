@@ -2,6 +2,7 @@
 #include "td/utils/port/config.h"
 
 #ifdef TD_POLL_SELECT
+#include "td/utils/port/Fd.h"
 #include "td/utils/port/PollBase.h"
 
 #include <sys/select.h>

@@ -22,7 +22,7 @@ class RwMutex {
     clear();
   }
 
-  bool empty() {
+  bool empty() const {
     return !valid_;
   }
   void init() {
@@ -104,12 +104,11 @@ class RwMutex {
     other.clear();
     return *this;
   }
-
   ~RwMutex() {
     clear();
   }
 
-  bool empty() {
+  bool empty() const {
     return !valid_;
   }
   void init() {
