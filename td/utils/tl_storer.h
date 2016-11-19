@@ -85,7 +85,7 @@ class tl_storer_calc_length {
   tl_storer_calc_length &operator=(const tl_storer_calc_length &other) = delete;
 
  public:
-  tl_storer_calc_length(void) : length(0) {
+  tl_storer_calc_length() : length(0) {
   }
 
   template <class T>
@@ -144,7 +144,7 @@ class tl_storer_to_string {
     }
   }
 
-  void store_field_end(void) {
+  void store_field_end() {
     result += "\n";
   }
 
@@ -156,7 +156,7 @@ class tl_storer_to_string {
   }
 
  public:
-  tl_storer_to_string(void) : result(), shift() {
+  tl_storer_to_string() : result(), shift() {
   }
 
   void store_field(const char *name, bool value) {
@@ -248,7 +248,7 @@ class tl_storer_to_string {
     shift += 2;
   }
 
-  void store_class_end(void) {
+  void store_class_end() {
     shift -= 2;
     for (int i = 0; i < shift; i++) {
       result += ' ';
@@ -257,7 +257,7 @@ class tl_storer_to_string {
     assert(shift >= 0);
   }
 
-  std::string str(void) const {
+  std::string str() const {
     return result;
   }
 };

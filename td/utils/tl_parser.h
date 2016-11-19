@@ -56,7 +56,7 @@ class tl_parser {
 
   void set_error(const string &error_message);
 
-  inline const char *get_error(void) const {
+  inline const char *get_error() const {
     if (error.empty()) {
       return nullptr;
     }
@@ -70,7 +70,7 @@ class tl_parser {
     return Status::Error(PSTR() << error << " at: " << error_pos);
   }
 
-  inline int get_error_pos(void) const {
+  inline int get_error_pos() const {
     return error_pos;
   }
 
@@ -82,33 +82,33 @@ class tl_parser {
     }
   }
 
-  inline int32_t fetch_int_unsafe(void) {
+  inline int32_t fetch_int_unsafe() {
     return *data++;
   }
 
-  inline int32_t fetch_int(void) {
+  inline int32_t fetch_int() {
     check_len(1);
     return fetch_int_unsafe();
   }
 
-  inline int64_t fetch_long_unsafe(void) {
+  inline int64_t fetch_long_unsafe() {
     int64_t result = *reinterpret_cast<const int64_t *>(data);
     data += 2;
     return result;
   }
 
-  inline int64_t fetch_long(void) {
+  inline int64_t fetch_long() {
     check_len(2);
     return fetch_long_unsafe();
   }
 
-  inline double fetch_double_unsafe(void) {
+  inline double fetch_double_unsafe() {
     double result = *reinterpret_cast<const double *>(data);
     data += 2;
     return result;
   }
 
-  inline double fetch_double(void) {
+  inline double fetch_double() {
     check_len(2);
     return fetch_double_unsafe();
   }
@@ -132,7 +132,7 @@ class tl_parser {
   }
 
   template <class T>
-  inline T fetch_string(void) {
+  inline T fetch_string() {
     check_len(1);
     const uint8_t *str = reinterpret_cast<const uint8_t *>(data);
     int result_len = (uint8_t)*str;
@@ -160,13 +160,13 @@ class tl_parser {
     return T(reinterpret_cast<const char *>(str), size);
   }
 
-  inline void fetch_end(void) {
+  inline void fetch_end() {
     if (data_len) {
       set_error("Too much data to fetch");
     }
   }
 
-  inline int get_pos(void) const {
+  inline int get_pos() const {
     return (int)(data - data_begin);
   }
 
@@ -192,7 +192,7 @@ class tl_buffer_parser : public tl_parser {
       , parent_(buffer_slice) {
   }
   template <class T>
-  inline T fetch_string(void) {
+  inline T fetch_string() {
     auto result = tl_parser::fetch_string<T>();
     for (auto &c : result) {
       if (c == '\0') {
