@@ -166,7 +166,7 @@ class Container {
   void for_each(const F &f) {
     auto ids = this->ids();
     for (auto id : ids) {
-      f(*get(id));
+      f(id, *get(id));
     }
   }
   size_t size() const {
