@@ -108,6 +108,12 @@ class BufferSlice {
     }
     return BufferSlice(BufferAllocator::create_reader(buffer_), begin_, end_);
   }
+  BufferSlice copy() const {
+    if (is_null()) {
+      return BufferSlice(BufferReaderPtr(), begin_, end_);
+    }
+    return BufferSlice(as_slice());
+  }
 
   MutableSlice as_slice() const {
     if (is_null()) {
