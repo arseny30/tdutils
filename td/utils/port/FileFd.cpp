@@ -93,10 +93,9 @@ Result<size_t> FileFd::write(const Slice &slice) {
       }
 
       auto error = Status::PosixError(write_errno, PSTR() << "Write to [fd = " << native_fd << "] has failed");
-      if (write_errno == EAGAIN || write_errno == EWOULDBLOCK || write_errno == EIO) {
-        return std::move(error);
+      if (write_errno != EAGAIN && write_errno != EWOULDBLOCK && write_errno != EIO) {
+        LOG(ERROR) << error;
       }
-      LOG(ERROR) << error;
       return std::move(error);
     }
   } while (false);
@@ -116,10 +115,9 @@ Result<size_t> FileFd::read(const MutableSlice &slice) {
       }
 
       auto error = Status::PosixError(read_errno, PSTR() << "Read from [fd = " << native_fd << "] has failed");
-      if (read_errno == EAGAIN || read_errno == EWOULDBLOCK || read_errno == EIO) {
-        return std::move(error);
+      if (read_errno != EAGAIN && read_errno != EWOULDBLOCK && read_errno != EIO) {
+        LOG(ERROR) << error;
       }
-      LOG(ERROR) << error;
       return std::move(error);
     }
   } while (false);
@@ -143,10 +141,9 @@ Result<size_t> FileFd::pwrite(const Slice &slice, off_t offset) {
 
       auto error = Status::PosixError(pwrite_errno, PSTR() << "Pwrite to [fd = " << native_fd
                                                            << "] at [offset = " << offset << "] has failed");
-      if (pwrite_errno == EAGAIN || pwrite_errno == EWOULDBLOCK || pwrite_errno == EIO) {
-        return std::move(error);
+      if (pwrite_errno != EAGAIN && pwrite_errno != EWOULDBLOCK && pwrite_errno != EIO) {
+        LOG(ERROR) << error;
       }
-      LOG(ERROR) << error;
       return std::move(error);
     }
   } while (false);
@@ -167,10 +164,9 @@ Result<size_t> FileFd::pread(const MutableSlice &slice, off_t offset) {
 
       auto error = Status::PosixError(pread_errno, PSTR() << "Pread from [fd = " << native_fd
                                                           << "] at [offset = " << offset << "] has failed");
-      if (pread_errno == EAGAIN || pread_errno == EWOULDBLOCK || pread_errno == EIO) {
-        return std::move(error);
+      if (pread_errno != EAGAIN && pread_errno != EWOULDBLOCK && pread_errno != EIO) {
+        LOG(ERROR) << error;
       }
-      LOG(ERROR) << error;
       return std::move(error);
     }
   } while (false);
