@@ -37,6 +37,7 @@ Fd::Fd(int fd, Mode mode, ObserverBase *observer) : fd_(fd), mode_(mode) {
   auto *info = get_info();
   int old_ref_cnt = info->refcnt.load(std::memory_order_relaxed);
   if (old_ref_cnt == 0) {
+    CHECK(mode_ == Mode::Own) << tag("fd", fd_);
     VLOG(fd) << "FD created [fd:" << fd_ << "]";
 
     auto fcntl_res = fcntl(fd_, F_GETFD);
@@ -49,6 +50,7 @@ Fd::Fd(int fd, Mode mode, ObserverBase *observer) : fd_(fd), mode_(mode) {
     info->flags = 0;
     info->observer = observer;
   } else {
+    CHECK(mode_ == Mode::Reference) << tag("fd", fd_);
     auto fcntl_res = fcntl(fd_, F_GETFD);
     auto fcntl_errno = errno;
     LOG_IF(FATAL, fcntl_res < 0) << Status::PosixError(fcntl_errno, PSTR() << "fcntl F_GET_FD failed");
