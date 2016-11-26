@@ -84,7 +84,7 @@ Result<size_t> FileFd::write(const Slice &slice) {
   CHECK(!fd_.empty());
   ssize_t ssize;
   int native_fd = get_native_fd();
-  do {
+  while (true) {
     ssize = ::write(native_fd, slice.begin(), slice.size());
     auto write_errno = errno;
     if (ssize < 0) {
@@ -98,7 +98,8 @@ Result<size_t> FileFd::write(const Slice &slice) {
       }
       return std::move(error);
     }
-  } while (false);
+    break;
+  }
   return static_cast<size_t>(ssize);
 }
 
@@ -106,7 +107,7 @@ Result<size_t> FileFd::read(const MutableSlice &slice) {
   CHECK(!fd_.empty());
   ssize_t ssize;
   int native_fd = get_native_fd();
-  do {
+  while (true) {
     ssize = ::read(native_fd, slice.begin(), slice.size());
     auto read_errno = errno;
     if (ssize < 0) {
@@ -120,7 +121,8 @@ Result<size_t> FileFd::read(const MutableSlice &slice) {
       }
       return std::move(error);
     }
-  } while (false);
+    break;
+  }
   if (static_cast<size_t>(ssize) < slice.size()) {
     fd_.clear_flags(Read);
   }
@@ -131,7 +133,7 @@ Result<size_t> FileFd::pwrite(const Slice &slice, off_t offset) {
   CHECK(!fd_.empty());
   ssize_t ssize;
   int native_fd = get_native_fd();
-  do {
+  while (true) {
     ssize = ::pwrite(native_fd, slice.begin(), slice.size(), offset);
     auto pwrite_errno = errno;
     if (ssize < 0) {
@@ -146,7 +148,8 @@ Result<size_t> FileFd::pwrite(const Slice &slice, off_t offset) {
       }
       return std::move(error);
     }
-  } while (false);
+    break;
+  }
   return static_cast<size_t>(ssize);
 }
 
@@ -154,7 +157,7 @@ Result<size_t> FileFd::pread(const MutableSlice &slice, off_t offset) {
   CHECK(!fd_.empty());
   ssize_t ssize;
   int native_fd = get_native_fd();
-  do {
+  while (true) {
     ssize = ::pread(native_fd, slice.begin(), slice.size(), offset);
     auto pread_errno = errno;
     if (ssize < 0) {
@@ -169,7 +172,8 @@ Result<size_t> FileFd::pread(const MutableSlice &slice, off_t offset) {
       }
       return std::move(error);
     }
-  } while (false);
+    break;
+  }
   return static_cast<size_t>(ssize);
 }
 
