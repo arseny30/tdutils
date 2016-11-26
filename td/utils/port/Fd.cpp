@@ -38,14 +38,21 @@ Fd::Fd(int fd, Mode mode, ObserverBase *observer) : fd_(fd), mode_(mode) {
   int old_ref_cnt = info->refcnt.load(std::memory_order_relaxed);
   if (old_ref_cnt == 0) {
     VLOG(fd) << "FD created [fd:" << fd_ << "]";
-    CHECK(fcntl(fd_, F_GETFD) != -1) << tag("fd", fd_);
+
+    auto fcntl_res = fcntl(fd_, F_GETFD);
+    auto fcntl_errno = errno;
+    LOG_IF(FATAL, fcntl_res < 0) << Status::PosixError(fcntl_errno, PSTR() << "fcntl F_GET_FD failed");
+
     CHECK(!is_ref());
     CHECK(info->observer == nullptr);
     info->refcnt.store(1);
     info->flags = 0;
     info->observer = observer;
   } else {
-    CHECK(fcntl(fd_, F_GETFD) != -1) << tag("fd", fd_);
+    auto fcntl_res = fcntl(fd_, F_GETFD);
+    auto fcntl_errno = errno;
+    LOG_IF(FATAL, fcntl_res < 0) << Status::PosixError(fcntl_errno, PSTR() << "fcntl F_GET_FD failed");
+
     CHECK(is_ref());
     CHECK(observer == nullptr);
     // VLOG(fd) << "FdRef created [fd:" << fd_ << "]";
@@ -904,7 +911,8 @@ class FdImpl {
       // read always
       try_start_read();
     }
-    LOG(ERROR) << (async_write_flag_ == false) << " " << output_reader_.size() << " "<< ((internal_flags_ & Fd::Flag::Write) != 0);
+    LOG(ERROR) << (async_write_flag_ == false) << " " << output_reader_.size() << " "
+               << ((internal_flags_ & Fd::Flag::Write) != 0);
     while (async_write_flag_ == false && output_reader_.size() && (internal_flags_ & Fd::Flag::Write) != 0) {
       // write if we have data to write
       try_start_write();
