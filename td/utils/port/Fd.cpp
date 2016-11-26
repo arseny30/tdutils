@@ -913,8 +913,8 @@ class FdImpl {
       // read always
       try_start_read();
     }
-    LOG(ERROR) << (async_write_flag_ == false) << " " << output_reader_.size() << " "
-               << ((internal_flags_ & Fd::Flag::Write) != 0);
+    VLOG(fd) << (async_write_flag_ == false) << " " << output_reader_.size() << " "
+             << ((internal_flags_ & Fd::Flag::Write) != 0);
     while (async_write_flag_ == false && output_reader_.size() && (internal_flags_ & Fd::Flag::Write) != 0) {
       // write if we have data to write
       try_start_write();
