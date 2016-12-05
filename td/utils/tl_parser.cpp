@@ -1,11 +1,9 @@
-#include <cassert>
-
 #include "tl_parser.h"
 
 namespace td {
 namespace tl {
 
-const int32_t tl_parser::empty_data[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+const int32 tl_parser::empty_data[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 void tl_parser::set_error(const string &error_message) {
   if (error.empty()) {
@@ -17,8 +15,8 @@ void tl_parser::set_error(const string &error_message) {
     data_len = 0;
   } else {
     data = empty_data;
-    assert(error_pos >= 0);
-    assert(data_len == 0);
+    CHECK(error_pos >= 0);
+    CHECK(data_len == 0);
   }
 }
 

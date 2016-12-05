@@ -1,16 +1,14 @@
 #pragma once
 
 #include "td/utils/buffer.h"
+#include "td/utils/common.h"
 #include "td/utils/logging.h"
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
 #include "td/utils/StringBuilder.h"
 #include "td/utils/utf8.h"
 
-#include <cassert>
-#include <cstddef>
-#include <cstdint>
-
+#include <array>
 #include <limits>
 #include <string>
 
@@ -18,37 +16,59 @@ namespace td {
 namespace tl {
 
 class tl_parser {
-  const int32_t *data;
-  const int32_t *data_begin;
-  int data_len;
+  const int32 *data;
+  const int32 *data_begin;
+  int32 data_len;
   std::string error;
-  int error_pos;
+  int32 error_pos;
 
-  static const int32_t empty_data[8];
+  unique_ptr<int32[]> data_buf;
+  static constexpr size_t SMALL_DATA_ARRAY_SIZE = 6;
+  std::array<int32, SMALL_DATA_ARRAY_SIZE> small_data_array;
+
+  static const int32 empty_data[8];
 
   tl_parser(const tl_parser &other) = delete;
   tl_parser &operator=(const tl_parser &other) = delete;
 
  public:
-  tl_parser(const int32_t *data, int len) : data(data), data_begin(data), data_len(len), error(), error_pos(-1) {
-    CHECK((reinterpret_cast<uint64>(data) & 3) == 0);
+  tl_parser(const int32 *data, int32 len) : data(data), data_begin(data), data_len(len), error(), error_pos(-1) {
   }
 
-  tl_parser(const char *data, int len) : tl_parser(reinterpret_cast<const int32_t *>(data), len / 4) {
-    if (len % 4 != 0) {
-      set_error("Wrong length");
+  tl_parser(const char *data, int32 len) : tl_parser(data, static_cast<size_t>(len)) {
+    if (len < 0) {
+      set_error("Negative length");
     }
   }
 
-  tl_parser(const char *data, size_t len)
-      : tl_parser(reinterpret_cast<const int32_t *>(data), static_cast<int>(len / 4)) {
-    if (len % 4 != 0) {
+  tl_parser(const char *data_ptr, size_t data_ptr_len) {
+    if (data_ptr_len % sizeof(int32) != 0) {
       set_error("Wrong length");
+      return;
     }
-    assert(sizeof(size_t) >= sizeof(int));
-    if (len / 4 > static_cast<size_t>(std::numeric_limits<int>::max())) {
+    static_assert(sizeof(size_t) >= sizeof(int32), "");
+    if (data_ptr_len / sizeof(int32) > static_cast<size_t>(std::numeric_limits<int32>::max())) {
       set_error("Too big length");
+      return;
     }
+
+    data_len = static_cast<int32>(data_ptr_len / sizeof(int32));
+    if (reinterpret_cast<std::uintptr_t>(data_ptr) % sizeof(int32) == 0) {
+      data = reinterpret_cast<const int32 *>(data_ptr);
+    } else {
+      int32 *buf;
+      if (static_cast<size_t>(data_len) <= small_data_array.size()) {
+        buf = small_data_array.begin();
+      } else {
+        LOG(ERROR) << "Unexpected big unaligned data pointer of length " << data_ptr_len << " at " << data_ptr;
+        data_buf = make_unique<int32[]>(data_len);
+        buf = data_buf.get();
+      }
+      memcpy(static_cast<void *>(buf), static_cast<const void *>(data_ptr), data_ptr_len);
+      data = buf;
+    }
+    data_begin = data;
+    error_pos = -1;
   }
 
   explicit tl_parser(Slice slice) : tl_parser(slice.begin(), slice.size()) {
@@ -82,22 +102,22 @@ class tl_parser {
     }
   }
 
-  inline int32_t fetch_int_unsafe() {
+  inline int32 fetch_int_unsafe() {
     return *data++;
   }
 
-  inline int32_t fetch_int() {
+  inline int32 fetch_int() {
     check_len(1);
     return fetch_int_unsafe();
   }
 
-  inline int64_t fetch_long_unsafe() {
-    int64_t result = *reinterpret_cast<const int64_t *>(data);
+  inline int64 fetch_long_unsafe() {
+    int64 result = *reinterpret_cast<const int64 *>(data);
     data += 2;
     return result;
   }
 
-  inline int64_t fetch_long() {
+  inline int64 fetch_long() {
     check_len(2);
     return fetch_long_unsafe();
   }
