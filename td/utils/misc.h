@@ -748,12 +748,11 @@ class OrderedEventsProcessor {
   std::vector<std::pair<DataT, bool>> data_array_;
 };
 
-// TODO Windows support
 class PathView {
  public:
   explicit PathView(Slice path) : path_(path) {
     last_slash_ = static_cast<int32>(path_.size()) - 1;
-    while (last_slash_ >= 0 && path_[last_slash_] != '/') {
+    while (last_slash_ >= 0 && !is_slash(path_[last_slash_])) {
       last_slash_--;
     }
 
@@ -773,7 +772,7 @@ class PathView {
     if (empty()) {
       return false;
     }
-    return path_.back() == '/';
+    return is_slash(path_.back());
   }
   Slice parent_dir() const {
     return Slice(path_.begin(), last_slash_ + 1);
@@ -798,7 +797,7 @@ class PathView {
   }
 
   bool is_absolute() const {
-    return !path_.empty() && path_[0] == '/';
+    return !empty() && is_slash(path_[0]);
   }
   bool is_relative() const {
     return !is_absolute();
@@ -816,14 +815,14 @@ class PathView {
   }
   static Slice dir_and_file(Slice path) {
     auto last_slash = static_cast<int32>(path.size()) - 1;
-    while (last_slash >= 0 && path[last_slash] != '/') {
+    while (last_slash >= 0 && !is_slash(path[last_slash])) {
       last_slash--;
     }
     if (last_slash < 0) {
       return Slice();
     }
     last_slash--;
-    while (last_slash >= 0 && path[last_slash] != '/') {
+    while (last_slash >= 0 && !is_slash(path[last_slash])) {
       last_slash--;
     }
     if (last_slash < 0) {
@@ -833,6 +832,10 @@ class PathView {
   }
 
  private:
+  static bool is_slash(char c) {
+    return c == '/' || c == '\\';
+  }
+
   Slice path_;
   int32 last_slash_;
   int32 last_dot_;
