@@ -58,7 +58,7 @@ class tl_parser {
     } else {
       int32 *buf;
       if (static_cast<size_t>(data_len) <= small_data_array.size()) {
-        buf = small_data_array.begin();
+        buf = &small_data_array[0];
       } else {
         LOG(ERROR) << "Unexpected big unaligned data pointer of length " << data_ptr_len << " at " << data_ptr;
         data_buf = make_unique<int32[]>(data_len);
