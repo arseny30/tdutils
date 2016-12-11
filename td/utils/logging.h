@@ -74,7 +74,11 @@ inline bool no_return_func() {
 #endif
 #ifdef TD_DEBUG
 #if TD_MSVC
-#define CHECK(condition, ...) __analysis_assume(!!(condition)); LOG_IF(FATAL, !(condition), __VA_ARGS__)
+#define CHECK(condition, ...)                \
+  do {                                       \
+    __analysis_assume(!!(condition));        \
+    LOG_IF(FATAL, !(condition), __VA_ARGS__) \
+  } while (false)
 #else
 #define CHECK(condition, ...) LOG_IF(FATAL, !(condition) && no_return_func(), __VA_ARGS__)
 #endif
@@ -177,7 +181,13 @@ class Logger {
     if (simple_mode) {
       return;
     }
-    file_name = file_name.substr(file_name.rfind(TD_DIR_SLASH) + 1);
+
+    auto last_slash_ = static_cast<int32>(file_name.size()) - 1;
+    while (last_slash_ >= 0 && file_name[last_slash_] != '/' && file_name[last_slash_] != '\\') {
+      last_slash_--;
+    }
+    file_name = file_name.substr(last_slash_ + 1);
+
     printf("[%2d]", log_level);
     auto tid = get_thread_id();
     if (tid != -1) {
