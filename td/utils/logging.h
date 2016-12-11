@@ -74,11 +74,9 @@ inline bool no_return_func() {
 #endif
 #ifdef TD_DEBUG
 #if TD_MSVC
-#define CHECK(condition, ...)                \
-  do {                                       \
-    __analysis_assume(!!(condition));        \
-    LOG_IF(FATAL, !(condition), __VA_ARGS__) \
-  } while (false)
+#define CHECK(condition, ...)       \
+  __analysis_assume(!!(condition)); \
+  LOG_IF(FATAL, !(condition), __VA_ARGS__)
 #else
 #define CHECK(condition, ...) LOG_IF(FATAL, !(condition) && no_return_func(), __VA_ARGS__)
 #endif
