@@ -20,7 +20,7 @@ class tl_storer_unsafe {
   tl_storer_unsafe &operator=(const tl_storer_unsafe &other) = delete;
 
  public:
-  tl_storer_unsafe(char *buf) : buf(buf) {
+  explicit tl_storer_unsafe(char *buf) : buf(buf) {
     CHECK((reinterpret_cast<uint64>(buf) & 3) == 0);
   }
 

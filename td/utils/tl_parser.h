@@ -16,8 +16,8 @@ namespace td {
 namespace tl {
 
 class tl_parser {
-  const int32 *data;
-  const int32 *data_begin;
+  const int32 *data = nullptr;
+  const int32 *data_begin = nullptr;
   int32 data_len;
   std::string error;
   int32 error_pos;
