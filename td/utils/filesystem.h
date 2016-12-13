@@ -6,4 +6,5 @@
 namespace td {
 Result<BufferSlice> read_file(CSlice path, off_t size = -1);
 Status copy_file(CSlice from, CSlice to, off_t size = -1);
+Status write_file(CSlice to, Slice data);
 }
