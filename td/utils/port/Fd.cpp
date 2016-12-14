@@ -24,6 +24,7 @@ Fd::Info &Fd::InfoSet::get_info(int32 id) {
 }
 Fd::InfoSet Fd::fd_info_set_;
 
+// TODO(bug) if constuctor call tries to output something to the LOG it will fail, because log is not initialized
 Fd Fd::stderr_(2, Mode::Reference);
 Fd Fd::stdout_(1, Mode::Reference);
 Fd Fd::stdin_(0, Mode::Reference);
