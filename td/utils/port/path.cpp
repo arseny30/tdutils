@@ -215,7 +215,7 @@ Status mkpath(CSlice path, int32 mode) {
 Status rename(CSlice from, CSlice to) {
   TRY_RESULT(wfrom, to_wstring(from));
   TRY_RESULT(wto, to_wstring(to));
-  auto status = MoveFileExW(wfrom.c_str(), wto.c_str(), 0);
+  auto status = MoveFileExW(wfrom.c_str(), wto.c_str(), MOVEFILE_REPLACE_EXISTING);
   if (status == 0) {
     return Status::OsError(PSTR() << "Can't rename \"" << from << "\" to \"" << to << '\"');
   }
