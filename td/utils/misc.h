@@ -284,6 +284,10 @@ inline bool begins_with(Slice str, Slice prefix) {
   return prefix.size() <= str.size() && prefix == Slice(str.data(), prefix.size());
 }
 
+inline bool ends_with(Slice str, Slice suffix) {
+  return suffix.size() <= str.size() && suffix == Slice(str.data() + str.size() - suffix.size(), suffix.size());
+}
+
 inline char tolower(char c) {
   if ('A' <= c && c <= 'Z') {
     return static_cast<char>(c - 'A' + 'a');
