@@ -39,6 +39,7 @@ set (TDUTILS_SOURCE
   td/utils/Time.cpp
   td/utils/Timer.cpp
   td/utils/tl_parser.cpp
+  td/utils/unicode.cpp
   td/utils/utf8.cpp
 
 
@@ -101,6 +102,7 @@ set (TDUTILS_SOURCE
   td/utils/Timer.h
   td/utils/tl_parser.h
   td/utils/tl_storer.h
+  td/utils/unicode.h
   td/utils/utf8.h
 )
 
