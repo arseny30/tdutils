@@ -43,7 +43,7 @@ class Hints {
     }
 
    public:
-    CompareByRating(const std::unordered_map<KeyT, RatingT> &key_to_rating) : key_to_rating_(key_to_rating) {
+    explicit CompareByRating(const std::unordered_map<KeyT, RatingT> &key_to_rating) : key_to_rating_(key_to_rating) {
     }
 
     bool operator()(const KeyT &lhs, const KeyT &rhs) const {
