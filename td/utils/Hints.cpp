@@ -146,4 +146,30 @@ vector<Hints::KeyT> Hints::search(const string &query, int32 limit) const {
   return results;
 }
 
+string Hints::key_to_string(KeyT key) const {
+  auto it = key_to_name_.find(key);
+  if (it == key_to_name_.end()) {
+    return string();
+  }
+  return it->second;
+}
+
+std::vector<Hints::KeyT> Hints::search_empty(int32 limit) const {
+  std::vector<KeyT> results;
+  if (limit <= 0) {
+    return results;
+  }
+  results.reserve(key_to_rating_.size());
+  for (auto &it : key_to_rating_) {
+    results.push_back(it.first);
+  }
+  if (results.size() < static_cast<size_t>(limit)) {
+    std::sort(results.begin(), results.end(), CompareByRating(key_to_rating_));
+  } else {
+    std::partial_sort(results.begin(), results.begin() + limit, results.end(), CompareByRating(key_to_rating_));
+    results.resize(limit);
+  }
+  return results;
+}
+
 }  // namespace td
