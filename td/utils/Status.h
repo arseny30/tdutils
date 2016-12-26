@@ -404,6 +404,11 @@ class Result {
   };
 };
 
+template <>
+inline Result<Unit>::Result(Status &&status) : status_(std::move(status)) {
+  // no assert
+}
+
 inline StringBuilder &operator<<(StringBuilder &string_builder, const Status &status) {
   return status.print(string_builder);
 }
