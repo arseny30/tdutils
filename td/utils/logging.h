@@ -121,6 +121,7 @@ extern int verbosity_td_requests;
 extern int verbosity_actor;
 extern int verbosity_buffer;
 extern int verbosity_files;
+extern int verbosity_sqlite;
 
 class LogInterface {
  public:
