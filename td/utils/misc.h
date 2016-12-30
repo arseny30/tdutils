@@ -641,7 +641,7 @@ class ChangesProcessor {
   using Id = uint64;
 
   void clear() {
-    offset_ += static_cast<int32>(data_array_.size());
+    offset_ += data_array_.size();
     ready_i_ = 0;
     data_array_.clear();
   }
