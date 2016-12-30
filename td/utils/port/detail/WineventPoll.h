@@ -29,7 +29,7 @@ class WineventPoll final : public PollBase {
   }
 
   void unsubscribe(const Fd &fd) override {
-    for (auto it = fds_.begin(); it != fds_.end(); it++) {
+    for (auto it = fds_.begin(); it != fds_.end(); ++it) {
       if (it->fd_ref.get_key() == fd.get_key()) {
         std::swap(*it, fds_.back());
         fds_.pop_back();
