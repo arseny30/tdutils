@@ -72,7 +72,7 @@ class FileFd : public Fd {
   static Result<FileFd> open(const CSlice &filepath, int32 flags, int32 todo = 0) WARN_UNUSED_RESULT {
     auto r_filepath = to_wstring(filepath);
     if (r_filepath.is_error()) {
-      return Status::Error(PSTR() << "Failed to convert path to utf 8" << tag("path", filepath));
+      return Status::Error(PSTR() << "Failed to convert file path \" << filepath << \" to utf16");
     }
     auto w_filepath = r_filepath.move_as_ok();
     DWORD desired_access = 0;
@@ -83,8 +83,7 @@ class FileFd : public Fd {
     } else if (flags & Read) {
       desired_access |= GENERIC_READ;
     } else {
-      return Status::Error(PSTR() << "Failed to open file: invalid flags. [path=" << filepath << "] [flags=" << flags
-                                  << "]");
+      return Status::Error(PSTR() << "Failed to open file \"" << filepath << "\": invalid flags " << flags);
     }
     flags &= ~(Write | Read);
 
@@ -124,20 +123,19 @@ class FileFd : public Fd {
     }
 
     if (flags) {
-      return Status::Error(PSTR() << "Failed to open file: unknown flags. " << tag("path", filepath)
-                                  << tag("flags", flags));
+      return Status::Error(PSTR() << "Failed to open file \"" << filepath << "\": unknown flags " << flags);
     }
 
     auto handle = CreateFile2(w_filepath.c_str(), desired_access, share_mode, creation_disposition, nullptr);
     if (handle == INVALID_HANDLE_VALUE) {
-      return Status::OsError(PSTR() << "Failed to opend file " << tag("path", filepath) << tag("flags", flags));
+      return Status::OsError(PSTR() << "Failed to open file \"" << filepath << "\" with flags " << flags);
     }
     if (append_flag) {
       LARGE_INTEGER offset;
       offset.QuadPart = 0;
       auto set_pointer_res = SetFilePointerEx(handle, offset, nullptr, FILE_END);
       if (!set_pointer_res) {
-        auto res = Status::OsError(PSTR() << "Failed to seek to end of file" << tag("path", filepath));
+        auto res = Status::OsError(PSTR() << "Failed to seek to the end of file \"" << filepath << "\"");
         CloseHandle(handle);
         return res;
       }
