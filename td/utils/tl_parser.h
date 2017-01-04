@@ -41,7 +41,7 @@ class tl_parser {
     }
   }
 
-  tl_parser(const char *data_ptr, size_t data_ptr_len) {
+  tl_parser(const char *data_ptr, size_t data_ptr_len) : data(), data_begin(), data_len(), error(), error_pos(-1) {
     if (data_ptr_len % sizeof(int32) != 0) {
       set_error("Wrong length");
       return;
