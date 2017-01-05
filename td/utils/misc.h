@@ -687,7 +687,7 @@ class OrderedEventsProcessor {
   using SeqNo = uint64;
 
   OrderedEventsProcessor() = default;
-  OrderedEventsProcessor(SeqNo offset) : offset_(offset), begin_(offset_), end_(offset_) {
+  explicit OrderedEventsProcessor(SeqNo offset) : offset_(offset), begin_(offset_), end_(offset_) {
   }
 
   template <class FromDataT, class FunctionT>
