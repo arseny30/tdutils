@@ -33,7 +33,7 @@ class ByteFlowBaseCommon : public ByteFlowInterface {
       return;
     }
     input_->sync_with_writer();
-    if (wating_flag_) {
+    if (waiting_flag_) {
       if (!is_input_active_) {
         finish(Status::OK());
       }
@@ -55,7 +55,7 @@ class ByteFlowBaseCommon : public ByteFlowInterface {
   virtual void loop() = 0;
 
  protected:
-  bool wating_flag_ = false;
+  bool waiting_flag_ = false;
   ChainBufferReader *input_;
   bool is_input_active_ = true;
   size_t need_size_ = 0;
@@ -78,7 +78,7 @@ class ByteFlowBaseCommon : public ByteFlowInterface {
     }
   }
   void consume_input() {
-    wating_flag_ = true;
+    waiting_flag_ = true;
     if (!is_input_active_) {
       finish(Status::OK());
     }

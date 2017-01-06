@@ -108,6 +108,7 @@ class BufferSlice {
     }
     return BufferSlice(BufferAllocator::create_reader(buffer_), begin_, end_);
   }
+
   BufferSlice copy() const {
     if (is_null()) {
       return BufferSlice(BufferReaderPtr(), begin_, end_);
@@ -115,25 +116,36 @@ class BufferSlice {
     return BufferSlice(as_slice());
   }
 
-  MutableSlice as_slice() const {
+  Slice as_slice() const {
+    if (is_null()) {
+      return Slice();
+    }
+    return Slice(buffer_->data_ + begin_, size());
+  }
+
+  MutableSlice as_slice() {
     if (is_null()) {
       return MutableSlice();
     }
     return MutableSlice(buffer_->data_ + begin_, size());
   }
-  MutableSlice prepare_read() const {
+
+  Slice prepare_read() const {
     return as_slice();
   }
-  MutableSlice after(size_t offset) const {
+
+  Slice after(size_t offset) const {
     auto full = as_slice();
     full.remove_prefix(offset);
     return full;
   }
+
   bool confirm_read(size_t size) {
     begin_ += size;
     CHECK(begin_ <= end_);
     return begin_ == end_;
   }
+
   void truncate(size_t limit) {
     if (size() > limit) {
       end_ = begin_ + limit;
@@ -180,7 +192,7 @@ class BufferSlice {
     end_ = buffer_->end_.load(std::memory_order_acquire);
     return end_ - old_end;
   }
-  bool is_writer_alive() {
+  bool is_writer_alive() const {
     CHECK(!is_null());
     return buffer_->has_writer_.load(std::memory_order_acquire);
   }
@@ -375,9 +387,9 @@ class ChainBufferIterator {
     *this = ChainBufferIterator();
   }
 
-  MutableSlice prepare_read() {
+  Slice prepare_read() {
     if (!head_) {
-      return MutableSlice();
+      return Slice();
     }
     while (true) {
       auto res = reader_.prepare_read();
@@ -393,11 +405,11 @@ class ChainBufferIterator {
         }
       }
       if (has_writer) {
-        return MutableSlice();
+        return Slice();
       }
       head_ = ChainBufferNodeAllocator::clone(head_->next_);
       if (!head_) {
-        return MutableSlice();
+        return Slice();
       }
       load_head();
     }
@@ -494,7 +506,7 @@ class ChainBufferReader {
     return ChainBufferReader(begin_.clone(), end_.clone(), sync_flag_);
   }
 
-  MutableSlice prepare_read() {
+  Slice prepare_read() {
     auto res = begin_.prepare_read();
     res.truncate(size());
     return res;
