@@ -10,34 +10,62 @@
 
 namespace td {
 
+// just reads from given reader and writes to given writer
 template <class FdT>
-class BufferedFd : public FdT {
- private:
-  ChainBufferWriter input_writer_;
-  ChainBufferReader input_reader_;
-  ChainBufferWriter output_writer_;
-  ChainBufferReader output_reader_;
-  void init();
-
+class BufferedFdBase : public FdT {
  public:
-  BufferedFd();
-  BufferedFd(FdT &&fd_);
-  BufferedFd(BufferedFd &&) = default;
-  BufferedFd &operator=(BufferedFd &&) = default;
-
-  void close();
+  BufferedFdBase();
+  BufferedFdBase(FdT &&fd_);
+  // TODO: make move safer
+  BufferedFdBase(BufferedFdBase &&) = default;
+  BufferedFdBase &operator=(BufferedFdBase &&) = default;
 
   Result<size_t> flush_read(size_t max_size = static_cast<size_t>(-1)) WARN_UNUSED_RESULT;
   Result<size_t> flush_write() WARN_UNUSED_RESULT;
 
   bool need_flush_write(size_t at_least = 0) {
-    output_reader_.sync_with_writer();
-    return output_reader_.size() > at_least;
+    CHECK(write_);
+    write_->sync_with_writer();
+    return write_->size() > at_least;
   }
   size_t ready_for_flush_write() {
-    output_reader_.sync_with_writer();
-    return output_reader_.size();
+    CHECK(write_);
+    write_->sync_with_writer();
+    return write_->size();
   }
+  void set_input_writer(ChainBufferWriter *read) {
+    read_ = read;
+  }
+  void set_output_reader(ChainBufferReader *write) {
+    write_ = write;
+  }
+
+ private:
+  ChainBufferWriter *read_ = nullptr;
+  ChainBufferReader *write_ = nullptr;
+};
+
+template <class FdT>
+class BufferedFd : public BufferedFdBase<FdT> {
+ private:
+  using Parent = BufferedFdBase<FdT>;
+  ChainBufferWriter input_writer_;
+  ChainBufferReader input_reader_;
+  ChainBufferWriter output_writer_;
+  ChainBufferReader output_reader_;
+  void init();
+  void init_ptr();
+
+ public:
+  BufferedFd();
+  BufferedFd(FdT &&fd_);
+  BufferedFd(BufferedFd &&);
+  BufferedFd &operator=(BufferedFd &&);
+
+  void close();
+
+  Result<size_t> flush_read(size_t max_size = static_cast<size_t>(-1)) WARN_UNUSED_RESULT;
+  Result<size_t> flush_write() WARN_UNUSED_RESULT;
 
   // Yep, direct access to buffers. It is IO interface too.
   ChainBufferReader &input_buffer();
@@ -48,9 +76,53 @@ class BufferedFd : public FdT {
 
 /*** BufferedFd ***/
 template <class FdT>
+BufferedFdBase<FdT>::BufferedFdBase() {
+}
+
+template <class FdT>
+BufferedFdBase<FdT>::BufferedFdBase(FdT &&fd_) : FdT(std::move(fd_)) {
+}
+template <class FdT>
+Result<size_t> BufferedFdBase<FdT>::flush_read(size_t max_read) {
+  CHECK(read_);
+  size_t result = 0;
+  while (::td::can_read(*this) && max_read) {
+    MutableSlice slice = read_->prepare_append().truncate(max_read);
+    TRY_RESULT(x, FdT::read(slice));
+    slice.truncate(x);
+    read_->confirm_append(x);
+    result += x;
+    max_read -= x;
+  }
+  return result;
+}
+
+template <class FdT>
+Result<size_t> BufferedFdBase<FdT>::flush_write() {
+  size_t result = 0;
+  // TODO: sync on demand
+  write_->sync_with_writer();
+  while (!write_->empty() && ::td::can_write(*this)) {
+    Slice slice = write_->prepare_read();
+    TRY_RESULT(x, FdT::write(slice));
+    write_->confirm_read(x);
+    result += x;
+  }
+  return result;
+}
+
+/*** BufferedFd ***/
+template <class FdT>
 void BufferedFd<FdT>::init() {
   input_reader_ = input_writer_.extract_reader();
   output_reader_ = output_writer_.extract_reader();
+  init_ptr();
+}
+
+template <class FdT>
+void BufferedFd<FdT>::init_ptr() {
+  this->set_input_writer(&input_writer_);
+  this->set_output_reader(&output_reader_);
 }
 
 template <class FdT>
@@ -59,9 +131,23 @@ BufferedFd<FdT>::BufferedFd() {
 }
 
 template <class FdT>
-BufferedFd<FdT>::BufferedFd(FdT &&fd_)
-    : FdT(std::move(fd_)) {
+BufferedFd<FdT>::BufferedFd(FdT &&fd_) : Parent(std::move(fd_)) {
   init();
+}
+
+template <class FdT>
+BufferedFd<FdT>::BufferedFd(BufferedFd &&from) {
+  *this = std::move(from);
+}
+template <class FdT>
+BufferedFd<FdT> &BufferedFd<FdT>::operator=(BufferedFd &&from) {
+  FdT::operator=(std::move(static_cast<FdT &>(from)));
+  input_reader_ = std::move(from.input_reader_);
+  input_writer_ = std::move(from.input_writer_);
+  output_reader_ = std::move(from.output_reader_);
+  output_writer_ = std::move(from.output_writer_);
+  init_ptr();
+  return *this;
 }
 
 template <class FdT>
@@ -72,15 +158,7 @@ void BufferedFd<FdT>::close() {
 
 template <class FdT>
 Result<size_t> BufferedFd<FdT>::flush_read(size_t max_read) {
-  size_t result = 0;
-  while (::td::can_read(*this) && max_read) {
-    MutableSlice slice = input_writer_.prepare_append().truncate(max_read);
-    TRY_RESULT(x, FdT::read(slice));
-    slice.truncate(x);
-    input_writer_.confirm_append(x);
-    result += x;
-    max_read -= x;
-  }
+  TRY_RESULT(result, Parent::flush_read(max_read));
   if (result) {
     // TODO: faster sync is possible if you owns writer.
     input_reader_.sync_with_writer();
@@ -91,15 +169,7 @@ Result<size_t> BufferedFd<FdT>::flush_read(size_t max_read) {
 
 template <class FdT>
 Result<size_t> BufferedFd<FdT>::flush_write() {
-  size_t result = 0;
-  // TODO: sync on demand
-  output_reader_.sync_with_writer();
-  while (!output_reader_.empty() && ::td::can_write(*this)) {
-    Slice slice = output_reader_.prepare_read();
-    TRY_RESULT(x, FdT::write(slice));
-    output_reader_.confirm_read(x);
-    result += x;
-  }
+  TRY_RESULT(result, Parent::flush_write());
   if (result) {
     LOG(DEBUG) << "flush_write: +" << format::as_size(result) << tag("left", format::as_size(output_reader_.size()));
   }
