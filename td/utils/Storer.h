@@ -1,13 +1,10 @@
 #pragma once
+#include "td/utils/StorerBase.h"
+
 #include "td/utils/Slice.h"
+#include "td/utils/tl_storer.h"
 
 namespace td {
-class Storer {
- public:
-  virtual size_t size() const = 0;
-  virtual size_t store(uint8 *ptr) const = 0;
-};
-
 class SliceStorer : public Storer {
  private:
   Slice slice;
@@ -52,4 +49,30 @@ class ConcatStorer : public Storer {
 inline ConcatStorer create_storer(const Storer &a, const Storer &b) {
   return ConcatStorer(a, b);
 }
+
+template <class T>
+class DefaultStorer : public Storer {
+ public:
+  explicit DefaultStorer(const T &object) : object_(object) {
+  }
+  size_t size() const override {
+    if (size_ == -1) {
+      size_ = tl::calc_length(object_);
+    }
+    return size_;
+  }
+  size_t store(uint8 *ptr) const override {
+    return tl::store_unsafe(object_, ptr);
+  }
+
+ private:
+  mutable ssize_t size_ = -1;
+  const T &object_;
+};
+
+template <class T>
+inline DefaultStorer<T> create_default_storer(const T &from) {
+  return DefaultStorer<T>(from);
+}
+
 }  // end of namespace td

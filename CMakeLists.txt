@@ -97,6 +97,7 @@ set (TDUTILS_SOURCE
   td/utils/StackAllocator.h
   td/utils/Status.h
   td/utils/Storer.h
+  td/utils/StorerBase.h
   td/utils/StringBuilder.h
   td/utils/Time.h
   td/utils/Timer.h
