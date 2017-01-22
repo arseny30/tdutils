@@ -2,6 +2,7 @@
 
 #include "td/utils/buffer.h"
 #include "td/utils/common.h"
+#include "td/utils/format.h"
 #include "td/utils/logging.h"
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
@@ -208,7 +209,7 @@ class tl_parser {
 class tl_buffer_parser : public tl_parser {
  public:
   explicit tl_buffer_parser(const BufferSlice *buffer_slice)
-      : tl_parser(buffer_slice->as_slice().begin(), static_cast<int32>(buffer_slice->as_slice().size()))
+      : tl_parser(buffer_slice->as_slice().begin(), buffer_slice->as_slice().size())
       , parent_(buffer_slice) {
   }
   template <class T>
@@ -223,7 +224,7 @@ class tl_buffer_parser : public tl_parser {
       return result;
     }
     CHECK(!result.empty());
-    LOG(WARNING) << "Wrong UTF-8 string [[" << result << "]]";
+    LOG(WARNING) << "Wrong UTF-8 string [[" << result << "]] in " << format::as_hex_dump<4>(parent_->as_slice());
 
     // try to remove last character
     size_t new_size = result.size() - 1;
