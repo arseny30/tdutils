@@ -34,7 +34,7 @@ inline const uint8 *next_utf8_unsafe(const uint8 *ptr, uint32 *code) {
     if (code) {
       *code = (a << 18) | ((ptr[1] & 0x3f) << 12) | ((ptr[2] & 0x3f) << 6) | (ptr[3] & 0x3f);
     }
-    return ptr + 3;
+    return ptr + 4;
   }
   UNREACHABLE();
 }
