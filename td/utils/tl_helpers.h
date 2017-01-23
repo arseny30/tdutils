@@ -154,12 +154,6 @@ inline string serialize(const T &object) {
 
 template <class T>
 inline WARN_UNUSED_RESULT Status unserialize(T &object, Slice data) {
-  StackAllocator<>::Ptr ptr;
-  if ((reinterpret_cast<uint64>(data.begin()) & 3) != 0) {  // not aligned
-    ptr = StackAllocator<>::alloc(data.size());
-    memcpy(ptr.get(), data.begin(), data.size());
-    data = ptr.as_slice();
-  }
   tl::tl_parser parser(data.begin(), data.size());
   parse(object, parser);
   parser.fetch_end();
