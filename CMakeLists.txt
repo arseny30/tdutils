@@ -66,6 +66,7 @@ set (TDUTILS_SOURCE
   td/utils/port/detail/Select.h
   td/utils/port/detail/WineventPoll.h
 
+  td/utils/AesCtrByteFlow.h
   td/utils/base64.h
   td/utils/buffer.h
   td/utils/BufferedFd.h

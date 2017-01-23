@@ -245,11 +245,6 @@ ssize_t aes_ctr_xcrypt(const UInt256 &aes_key, AesCtrState *state, Slice from, M
   (void)encrypt_flag;
   AES_KEY key;
   AES_set_encrypt_key(aes_key.raw, 256, &key);
-  // if (encrypt_flag) {
-  // AES_set_encrypt_key(aes_key.raw, 256, &key);
-  //} else {
-  // AES_set_decrypt_key(aes_key.raw, 256, &key);
-  //}
   CHECK(from.size() <= to.size());
   AES_ctr128_encrypt(from.ubegin(), to.ubegin(), from.size(), &key, state->counter.raw, state->key.raw, &state->n);
   return 0;
