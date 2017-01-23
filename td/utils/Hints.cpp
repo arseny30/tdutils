@@ -67,13 +67,14 @@ void Hints::add(KeyT key, const string &name) {
       }
     }
   }
-  auto words = get_words(name);
-  if (words.empty()) {
+  if (name.empty()) {
     if (it != key_to_name_.end()) {
       key_to_name_.erase(it);
     }
     key_to_rating_.erase(key);
+    return;
   }
+  auto words = get_words(name);
   for (auto &word : words) {
     vector<KeyT> &keys = word_to_keys_[word];
     CHECK(std::find(keys.begin(), keys.end(), key) == keys.end());
@@ -159,8 +160,8 @@ std::vector<Hints::KeyT> Hints::search_empty(int32 limit) const {
   if (limit <= 0) {
     return results;
   }
-  results.reserve(key_to_rating_.size());
-  for (auto &it : key_to_rating_) {
+  results.reserve(key_to_name_.size());
+  for (auto &it : key_to_name_) {
     results.push_back(it.first);
   }
   if (results.size() < static_cast<size_t>(limit)) {
