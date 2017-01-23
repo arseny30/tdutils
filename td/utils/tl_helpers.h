@@ -1,21 +1,71 @@
 #pragma once
 
-#include "td/tl/tl_storer.h"
-#include "td/tl/tl_parser.h"
+#include "td/utils/buffer.h"  // for BufferSlice
+#include "td/utils/misc.h"    // narrow_cast
+#include "td/utils/Status.h"
+#include "td/utils/StackAllocator.h"
+#include "td/utils/tl_parser.h"
+#include "td/utils/tl_storer.h"
+
+// TODO split to many cpp/h files
+#define BEGIN_STORE_FLAGS() \
+  uint32 flags = 0;         \
+  uint32 bit_offset = 0;
+
+#define STORE_FLAG(flag)         \
+  flags |= (flag) << bit_offset; \
+  bit_offset++;
+
+#define END_STORE_FLAGS() \
+  CHECK(bit_offset < 32); \
+  td::store(flags, storer);
+
+#define BEGIN_PARSE_FLAGS() \
+  uint32 flags;             \
+  uint32 bit_offset = 0;    \
+  td::parse(flags, parser);
+
+#define PARSE_FLAG(flag)                   \
+  flag = ((flags >> bit_offset) & 1) != 0; \
+  bit_offset++;
+
+#define END_PARSE_FLAGS() CHECK(bit_offset < 32);
 
 namespace td {
-template <class T, class Storer>
-inline void store(const T &val, Storer &storer) {
-  val.store(storer);
+template <class Storer>
+inline void store(bool x, Storer &storer) {
+  storer.template store_binary<int32>(static_cast<int32>(x));
 }
-template <class T, class Parser>
-inline void parse(T &val, Parser &parser) {
-  val.parse(parser);
+template <class Parser>
+inline void parse(bool &x, Parser &parser) {
+  x = parser.fetch_int() != 0;
 }
 
-template <class StorerT>
-inline void store(const Storer &x, StorerT &storer) {
-  storer.store_storer(x);
+template <class Storer>
+inline void store(int32 x, Storer &storer) {
+  storer.template store_binary<int32>(x);
+}
+template <class Parser>
+inline void parse(int32 &x, Parser &parser) {
+  x = parser.fetch_int();
+}
+
+template <class Storer>
+inline void store(uint32 x, Storer &storer) {
+  storer.template store_binary<int32>(x);
+}
+template <class Parser>
+inline void parse(uint32 &x, Parser &parser) {
+  x = static_cast<uint32>(parser.fetch_int());
+}
+
+template <class Storer>
+inline void store(int64 x, Storer &storer) {
+  storer.template store_binary<int64>(x);
+}
+template <class Parser>
+inline void parse(int64 &x, Parser &parser) {
+  x = parser.fetch_long();
 }
 
 template <class Storer>
@@ -27,14 +77,31 @@ inline void parse(double &x, Parser &parser) {
   x = parser.fetch_double();
 }
 
+template <class Storer>
+inline void store(const string &x, Storer &storer) {
+  storer.store_string(x);
+}
+template <class Parser>
+inline void parse(string &x, Parser &parser) {
+  x = parser.template fetch_string<string>();
+}
+
+template <class Storer>
+inline void store(const BufferSlice &x, Storer &storer) {
+  storer.store_string(x);
+}
+template <class Parser>
+inline void parse(BufferSlice &x, Parser &parser) {
+  x = parser.template fetch_string<BufferSlice>();
+}
+
 template <class T, class Storer>
 inline void store(const vector<T> &vec, Storer &storer) {
-  storer.template store_binary<int32>(static_cast<int32>(vec.size()));
+  storer.template store_binary<int32>(narrow_cast<int32>(vec.size()));
   for (auto &val : vec) {
     store(val, storer);
   }
 }
-
 template <class T, class Parser>
 inline void parse(vector<T> &vec, Parser &parser) {
   int32 size = parser.fetch_int();
@@ -44,11 +111,45 @@ inline void parse(vector<T> &vec, Parser &parser) {
   }
 }
 
+template <class T, class Storer>
+inline std::enable_if_t<std::is_enum<T>::value> store(const T &val, Storer &storer) {
+  store(static_cast<int32>(val), storer);
+}
+template <class T, class Parser>
+inline std::enable_if_t<std::is_enum<T>::value> parse(T &val, Parser &parser) {
+  int32 result;
+  parse(result, parser);
+  val = static_cast<T>(result);
+}
+
+template <class T, class Storer>
+inline std::enable_if_t<!std::is_enum<T>::value> store(const T &val, Storer &storer) {
+  val.store(storer);
+}
+template <class T, class Parser>
+inline std::enable_if_t<!std::is_enum<T>::value> parse(T &val, Parser &parser) {
+  val.parse(parser);
+}
+
 template <class T>
 inline string serialize(const T &object) {
-  tl::TlStorer storer;
+  tl::tl_storer_calc_length calc_length;
+  store(object, calc_length);
+  size_t length = calc_length.get_length();
+
+  string key(length, '\0');
+  MutableSlice data = key;
+  StackAllocator<>::Ptr ptr;
+  if (reinterpret_cast<uint64>(data.begin()) & 3) {  // not aligned
+    ptr = StackAllocator<>::alloc(data.size());
+    data = ptr.as_slice();
+  }
+  tl::tl_storer_unsafe storer(data.begin());
   store(object, storer);
-  return storer.move_as<string>();
+  if (ptr) {
+    key.assign(data.begin(), data.size());
+  }
+  return key;
 }
 
 template <class T>
@@ -67,4 +168,4 @@ inline WARN_UNUSED_RESULT Status unserialize(T &object, Slice data) {
   }
   return Status::OK();
 }
-}
+}  // namespace td
