@@ -102,6 +102,7 @@ set (TDUTILS_SOURCE
   td/utils/StringBuilder.h
   td/utils/Time.h
   td/utils/Timer.h
+  td/utils/tl_helpers.h
   td/utils/tl_parser.h
   td/utils/tl_storer.h
   td/utils/unicode.h
