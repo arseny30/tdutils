@@ -43,6 +43,7 @@ Status SocketFd::init_socket(int fd) {
   int flags = 1;
   setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flags, sizeof(flags));
   setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &flags, sizeof(flags));
+  // setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &flags, sizeof(flags));
 
   // TODO: SO_REUSEADDR, SO_KEEPALIVE, TCP_NODELAY, SO_SNDBUF, SO_RCVBUF,
   //      TCP_QUICKACK, SO_LINGER
