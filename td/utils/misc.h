@@ -511,7 +511,7 @@ class CounterStat {
   }
 };
 
-class FloodControl {
+class FloodControlFast {
  public:
   uint32 add_event(int32 now) {
     for (auto &limit : limits_) {
@@ -548,7 +548,7 @@ class FloodControl {
 
 // More strict implementaions of flood control.
 // Should be just fine for small counters.
-class Flood {
+class FloodControlStrict {
  public:
   int32 add_event(int32 now) {
     events_.push_back(Event{now});
