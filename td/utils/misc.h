@@ -534,6 +534,7 @@ class FloodControlFast {
     for (auto &limit : limits_) {
       limit.stat_.clear_events();
     }
+    wakeup_at_ = 0;
   }
 
  private:
@@ -557,17 +558,25 @@ class FloodControlStrict {
     } else {
       update(now);
     }
-    return wakeup_time_;
+    return wakeup_at_;
   }
 
   // no more than count in each duration.
   void add_limit(int32 duration, int32 count) {
     limits_.push_back(Limit{duration, count, 0});
-    min_duration_ = std::min(min_duration_, duration);
   }
 
-  int32 get_wakeup_time() {
-    return wakeup_time_;
+  int32 get_wakeup_at() {
+    return wakeup_at_;
+  }
+
+  void clear_events() {
+    events_.clear();
+    for (auto &limit : limits_) {
+      limit.pos_ = 0;
+    }
+    without_update_ = 0;
+    wakeup_at_ = 0;
   }
 
   int32 update(int32 now) {
@@ -586,7 +595,7 @@ class FloodControlStrict {
 
       if (limit.count_ + limit.pos_ <= events_.size()) {
         CHECK(limit.count_ + limit.pos_ == events_.size());
-        wakeup_time_ = std::max(wakeup_time_, events_[limit.pos_].timestamp_ + limit.duration_);
+        wakeup_at_ = std::max(wakeup_at_, events_[limit.pos_].timestamp_ + limit.duration_);
         without_update_ = 0;
       } else {
         without_update_ = std::min(without_update_, limit.count_ + limit.pos_ - events_.size());
@@ -601,12 +610,11 @@ class FloodControlStrict {
       }
       events_.erase(events_.begin(), events_.begin() + min_pos);
     }
-    return wakeup_time_;
+    return wakeup_at_;
   }
 
  private:
-  int32 wakeup_time_ = 0;
-  int32 min_duration_ = std::numeric_limits<int32>::max();
+  int32 wakeup_at_ = 0;
   struct Event {
     int32 timestamp_;
   };
