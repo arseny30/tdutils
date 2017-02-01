@@ -27,7 +27,7 @@ int verbosity_raw_mtproto = 8;
 int verbosity_fd = 9;
 int verbosity_actor = 10;
 int verbosity_buffer = 10;
-int verbosity_sqlite = 10;
+int verbosity_sqlite = -5;
 
 TD_THREAD_LOCAL const char *Logger::tag_ = nullptr;
 TD_THREAD_LOCAL const char *Logger::tag2_ = nullptr;
