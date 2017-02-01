@@ -173,4 +173,8 @@ std::vector<Hints::KeyT> Hints::search_empty(int32 limit) const {
   return results;
 }
 
+size_t Hints::size() const {
+  return key_to_name_.size();
+}
+
 }  // namespace td

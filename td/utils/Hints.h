@@ -22,9 +22,11 @@ class Hints {
 
   vector<KeyT> search(const string &query, int32 limit) const;  // TODO sort by name instead of sort by rating
 
-  string key_to_string(KeyT) const;
+  string key_to_string(KeyT key) const;
 
   vector<KeyT> search_empty(int32 limit) const;
+
+  size_t size() const;
 
  private:
   std::map<string, vector<KeyT>> word_to_keys_;
