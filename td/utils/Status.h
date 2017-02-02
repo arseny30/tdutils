@@ -424,7 +424,7 @@ inline CSlice strerror_safe(int code) {
   strerror_r(code, buf, size);
   return CSlice(buf, buf + strlen(buf));
 #else
-  return strerror_r(code, buf, size);
+  return CSlice(strerror_r(code, buf, size));
 #endif
 #endif
 }
