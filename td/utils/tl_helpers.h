@@ -159,9 +159,6 @@ inline WARN_UNUSED_RESULT Status unserialize(T &object, Slice data) {
   tl::tl_parser parser(data.begin(), data.size());
   parse(object, parser);
   parser.fetch_end();
-  if (parser.get_error()) {
-    return Status::Error(parser.get_error());
-  }
-  return Status::OK();
+  return parser.get_status();
 }
 }  // namespace td

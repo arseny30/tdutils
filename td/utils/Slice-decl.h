@@ -71,13 +71,12 @@ class Slice {
   Slice(const string &s);
   Slice(const std::vector<unsigned char> &v);
   Slice(const std::vector<char> &v);
-  // FIXME: make it explicit
   template <class T>
-  Slice(T s, std::enable_if_t<std::is_same<char *, std::remove_const_t<T>>::value, private_tag> = {})
+  explicit Slice(T s, std::enable_if_t<std::is_same<char *, std::remove_const_t<T>>::value, private_tag> = {})
       : Slice(s, strlen(s)) {
   }
   template <class T>
-  Slice(T s, std::enable_if_t<std::is_same<const char *, std::remove_const_t<T>>::value, private_tag> = {})
+  explicit Slice(T s, std::enable_if_t<std::is_same<const char *, std::remove_const_t<T>>::value, private_tag> = {})
       : Slice(s, strlen(s)) {
   }
   Slice(const void *s, const void *t);
@@ -131,11 +130,10 @@ class MutableCSlice : public MutableSlice {
   }
   MutableCSlice(string &s) : MutableSlice(s) {
   }
-  // FIXME: make it explicit
   template <class T>
-  MutableCSlice(T s, std::enable_if_t<std::is_same<char *, T>::value, private_tag> = {}) : MutableSlice(s) {
+  explicit MutableCSlice(T s, std::enable_if_t<std::is_same<char *, T>::value, private_tag> = {}) : MutableSlice(s) {
   }
-  MutableCSlice(void *s, void *t);
+  explicit MutableCSlice(void *s, void *t);
 
   template <size_t N>
   constexpr MutableCSlice(char (&a)[N]) = delete;
@@ -155,12 +153,12 @@ class CSlice : public Slice {
   }
   CSlice(const string &s) : Slice(s) {
   }
-  // FIXME: make it explicit
   template <class T>
-  CSlice(T s, std::enable_if_t<std::is_same<char *, std::remove_const_t<T>>::value, private_tag> = {}) : Slice(s) {
+  explicit CSlice(T s, std::enable_if_t<std::is_same<char *, std::remove_const_t<T>>::value, private_tag> = {})
+      : Slice(s) {
   }
   template <class T>
-  CSlice(T s, std::enable_if_t<std::is_same<const char *, std::remove_const_t<T>>::value, private_tag> = {})
+  explicit CSlice(T s, std::enable_if_t<std::is_same<const char *, std::remove_const_t<T>>::value, private_tag> = {})
       : Slice(s) {
   }
   CSlice(const char *s, const char *t);
