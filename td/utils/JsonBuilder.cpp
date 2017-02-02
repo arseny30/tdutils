@@ -542,20 +542,20 @@ Status do_json_skip(Parser &parser) {
 Slice JsonValue::get_type_name(Type type) {
   switch (type) {
     case Type::Null:
-      return "Null";
+      return Slice("Null");
     case Type::Number:
-      return "Number";
+      return Slice("Number");
     case Type::Boolean:
-      return "Boolean";
+      return Slice("Boolean");
     case Type::String:
-      return "String";
+      return Slice("String");
     case Type::Array:
-      return "Array";
+      return Slice("Array");
     case Type::Object:
-      return "Object";
+      return Slice("Object");
     default:
       UNREACHABLE();
-      return "Unknown";
+      return Slice("Unknown");
   }
 }
 
