@@ -10,6 +10,7 @@
 #include <openssl/md5.h>
 #include <openssl/rand.h>
 #include <openssl/sha.h>
+#include <openssl/evp.h>
 
 #include <zlib.h>
 
@@ -17,7 +18,6 @@
 #include <random>
 
 namespace td {
-
 static string BN_to_string(BIGNUM *bn, int size = 0) {
   int num_size = BN_num_bytes(bn);
   if (size == 0) {
@@ -235,25 +235,67 @@ ssize_t aes_ige_decrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, Mut
   return aes_ige_xcrypt(aes_key, aes_iv, from, to, false);
 }
 
-void init_aes_ctr_state(const UInt128 &iv, AesCtrState *state) {
-  state->counter = iv;
-  memset(&state->key, 0, sizeof(state->key));
-  state->n = 0;
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+struct AesCtrStateImpl {
+ public:
+  ~AesCtrStateImpl() {
+    EVP_CIPHER_CTX_cleanup(&ctx_inner_);
+  }
+  EVP_CIPHER_CTX *get() {
+    return &ctx_inner_;
+  }
+
+ private:
+  EVP_CIPHER_CTX ctx_inner_;
+};
+#else
+static void delete_ctx(EVP_CIPHER_CTX *ctx) {
+  EVP_CIPHER_CTX_free(ctx);
+}
+struct AesCtrStateImpl {
+ public:
+  AesCtrStateImpl() : ctx_(EVP_CIPHER_CTX_new(), &delete_ctx) {
+  }
+  EVP_CIPHER_CTX *get() {
+    return ctx_.get();
+  }
+
+ private:
+  std::unique_ptr<EVP_CIPHER_CTX, void (*)(EVP_CIPHER_CTX *)> ctx_;
+};
+#endif
+
+AesCtrState::AesCtrState() = default;
+AesCtrState::~AesCtrState() = default;
+AesCtrState::AesCtrState(AesCtrState &&from) = default;
+AesCtrState &AesCtrState::operator=(AesCtrState &&from) = default;
+
+void init_aes_ctr_state(const UInt256 &key, const UInt128 &iv, AesCtrState *state) {
+  state->ctx_ = std::make_unique<AesCtrStateImpl>();
+  int error;
+  error = EVP_EncryptInit_ex(state->ctx_->get(), EVP_aes_256_ctr(), nullptr, key.raw, iv.raw);
+  CHECK(error);
+  error = EVP_CIPHER_CTX_set_padding(state->ctx_->get(), 0);
+
+  // LOG(ERROR) << EVP_CIPHER_CTX_block_size(state->ctx_->get());
+  // LOG(ERROR) << EVP_CIPHER_CTX_key_length(state->ctx_->get());
+  // LOG(ERROR) << EVP_CIPHER_CTX_iv_length(state->ctx_->get());
+  CHECK(error);
 }
 
-ssize_t aes_ctr_xcrypt(const UInt256 &aes_key, AesCtrState *state, Slice from, MutableSlice to, bool encrypt_flag) {
-  (void)encrypt_flag;
-  AES_KEY key;
-  AES_set_encrypt_key(aes_key.raw, 256, &key);
-  CHECK(from.size() <= to.size());
-  AES_ctr128_encrypt(from.ubegin(), to.ubegin(), from.size(), &key, state->counter.raw, state->key.raw, &state->n);
+ssize_t aes_ctr_xcrypt(AesCtrState *state, Slice from, MutableSlice to, bool encrypt_flag) {
+  int from_size = narrow_cast<int>(from.size());
+  int to_size = narrow_cast<int>(to.size());
+  auto error = EVP_EncryptUpdate(state->ctx_->get(), to.ubegin(), &to_size, from.ubegin(), from_size);
+  CHECK(error);
+  CHECK(to_size == from_size);
   return 0;
 }
-ssize_t aes_ctr_encrypt(const UInt256 &aes_key, AesCtrState *state, Slice from, MutableSlice to) {
-  return aes_ctr_xcrypt(aes_key, state, from, to, true);
+ssize_t aes_ctr_encrypt(AesCtrState *state, Slice from, MutableSlice to) {
+  return aes_ctr_xcrypt(state, from, to, true);
 }
-ssize_t aes_ctr_decrypt(const UInt256 &aes_key, AesCtrState *state, Slice from, MutableSlice to) {
-  return aes_ctr_xcrypt(aes_key, state, from, to, false);
+ssize_t aes_ctr_decrypt(AesCtrState *state, Slice from, MutableSlice to) {
+  return aes_ctr_xcrypt(state, from, to, false);
 }
 
 /*** SHA-1 ***/

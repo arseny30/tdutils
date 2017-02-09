@@ -440,7 +440,7 @@ template <class R, class A>
 R narrow_cast(const A &a) {
   static_assert(std::is_integral<R>::value || std::is_enum<R>::value, "expected integral type to cast to");
   static_assert(std::is_integral<A>::value || std::is_enum<A>::value, "expected integral type to cast from");
-  static_assert(sizeof(R) <= sizeof(A), "invalid narrow_cast");
+  // static_assert(sizeof(R) <= sizeof(A), "invalid narrow_cast");
   auto r = R(a);
   CHECK(A(r) == a);
   return r;

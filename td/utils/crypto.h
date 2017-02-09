@@ -43,15 +43,19 @@ ssize_t aes_ige_xcrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, Muta
 ssize_t aes_ige_encrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to);
 ssize_t aes_ige_decrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to);
 
+struct AesCtrStateImpl;
 struct AesCtrState {
-  UInt128 counter;
-  UInt128 key;
-  uint32 n;
+  AesCtrState();
+  ~AesCtrState();
+  AesCtrState(AesCtrState &&from);
+  AesCtrState &operator=(AesCtrState &&from);
+
+  std::unique_ptr<AesCtrStateImpl> ctx_;
 };
-void init_aes_ctr_state(const UInt128 &iv, AesCtrState *state);
-ssize_t aes_ctr_xcrypt(const UInt256 &aes_key, AesCtrState *state, Slice from, MutableSlice to, bool encrypt_flag);
-ssize_t aes_ctr_encrypt(const UInt256 &aes_key, AesCtrState *state, Slice from, MutableSlice to);
-ssize_t aes_ctr_decrypt(const UInt256 &aes_key, AesCtrState *state, Slice from, MutableSlice to);
+void init_aes_ctr_state(const UInt256 &key, const UInt128 &iv, AesCtrState *state);
+ssize_t aes_ctr_xcrypt(AesCtrState *state, Slice from, MutableSlice to, bool encrypt_flag);
+ssize_t aes_ctr_encrypt(AesCtrState *state, Slice from, MutableSlice to);
+ssize_t aes_ctr_decrypt(AesCtrState *state, Slice from, MutableSlice to);
 
 /*** SHA-1 ***/
 void sha1(Slice data, unsigned char output[20]);
