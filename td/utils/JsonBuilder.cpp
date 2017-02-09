@@ -12,7 +12,7 @@ StringBuilder &operator<<(StringBuilder &sb, const JsonRawString &val) {
   auto len = val.value_.size();
 
   for (size_t pos = 0; pos < len; pos++) {
-    auto ch = (unsigned char)s[pos];
+    auto ch = static_cast<unsigned char>(s[pos]);
     switch (ch) {
       case '"':
         sb << '\\' << '"';
@@ -56,7 +56,7 @@ StringBuilder &operator<<(StringBuilder &sb, const JsonString &val) {
   auto len = val.str_.size();
 
   for (size_t pos = 0; pos < len; pos++) {
-    auto ch = (unsigned char)s[pos];
+    auto ch = static_cast<unsigned char>(s[pos]);
     switch (ch) {
       case '"':
         sb << '\\' << '"';

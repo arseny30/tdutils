@@ -79,6 +79,7 @@ BufferRaw *BufferAllocator::create_buffer_raw(size_t size) {
   auto buf_size = std::max(sizeof(BufferRaw), offsetof(BufferRaw, data_) + size);
   buffer_mem += buf_size;
   auto *buffer_raw = reinterpret_cast<BufferRaw *>(malloc(buf_size));
+  CHECK(buffer_raw);
   new (buffer_raw) BufferRaw();
   buffer_raw->data_size_ = size;
   buffer_raw->begin_ = 0;
