@@ -81,6 +81,7 @@ Status walk_path_subdir(string &path, DIR *dir, Func &&func) {
       status = walk_path_file(path, std::forward<Func>(func));
     }
 #else
+#warning "Slow walk_path"
     status = walk_path(path, std::forward<Func>(func));
 #endif
     if (status.is_error()) {
