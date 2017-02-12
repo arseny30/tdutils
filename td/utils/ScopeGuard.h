@@ -8,13 +8,16 @@
 template <class FunctionT = std::function<void(void)>>
 class ScopeGuard {
  public:
-  ScopeGuard(const FunctionT &func) : func_(func) {
+  explicit ScopeGuard(const FunctionT &func) : func_(func) {
   }
-  ScopeGuard(FunctionT &&func) : func_(std::move(func)) {
+  explicit ScopeGuard(FunctionT &&func) : func_(std::move(func)) {
   }
+  ScopeGuard(const ScopeGuard &other) = delete;
+  ScopeGuard &operator=(const ScopeGuard &other) = delete;
   ScopeGuard(ScopeGuard &&other) : dismissed_(other.dismissed_), func_(std::move(other.func_)) {
     other.dismissed_ = true;
   }
+  ScopeGuard &operator=(ScopeGuard &&other) = delete;
 
   void dismiss() {
     dismissed_ = true;
