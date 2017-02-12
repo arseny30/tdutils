@@ -1,7 +1,9 @@
 #pragma once
+
 #include "td/utils/common.h"
 
 #include <functional>
+#include <type_traits>
 
 template <class FunctionT = std::function<void(void)>>
 class ScopeGuard {
