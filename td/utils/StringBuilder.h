@@ -31,8 +31,8 @@ class StringBuilder {
     return error_flag_;
   }
 
-  StringBuilder &operator<<(const char *slice) {
-    return *this << Slice(slice);
+  StringBuilder &operator<<(const char *str) {
+    return *this << Slice(str);
   }
 
   StringBuilder &operator<<(const Slice &slice) {

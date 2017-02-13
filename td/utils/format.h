@@ -168,7 +168,7 @@ inline StringBuilder &operator<<(StringBuilder &logger, Time t) {
   static constexpr size_t durations_n = sizeof(durations) / sizeof(NamedValue);
 
   size_t i = 0;
-  while (i + 1 < durations_n && t.seconds_ > durations[i + 1].value) {
+  while (i + 1 < durations_n && t.seconds_ > 3 * durations[i + 1].value) {
     i++;
   }
   logger.printf("%.1lf%s", t.seconds_ / durations[i].value, durations[i].name);
@@ -181,27 +181,27 @@ inline Time as_time(double seconds) {
 
 /*** Size to string ***/
 struct Size {
-  size_t size_;
+  uint64 size_;
 };
 
 inline StringBuilder &operator<<(StringBuilder &logger, Size t) {
   struct NamedValue {
     const char *name;
-    size_t value;
+    uint64 value;
   };
 
-  static constexpr NamedValue durations[] = {{"B", 1}, {"KB", 1 << 10}, {"MB", 1 << 20}};
-  static constexpr size_t durations_n = sizeof(durations) / sizeof(NamedValue);
+  static constexpr NamedValue sizes[] = {{"B", 1}, {"KB", 1 << 10}, {"MB", 1 << 20}, {"GB", 1 << 30}};
+  static constexpr size_t sizes_n = sizeof(sizes) / sizeof(NamedValue);
 
   size_t i = 0;
-  while (i + 1 < durations_n && t.size_ > durations[i + 1].value) {
+  while (i + 1 < sizes_n && t.size_ > 3 * sizes[i + 1].value) {
     i++;
   }
-  logger << t.size_ / durations[i].value << Slice(durations[i].name);
+  logger << t.size_ / sizes[i].value << sizes[i].name;
   return logger;
 }
 
-inline Size as_size(size_t size) {
+inline Size as_size(uint64 size) {
   return Size{size};
 }
 
