@@ -69,6 +69,14 @@ template <class Parser>
 inline void parse(int64 &x, Parser &parser) {
   x = parser.fetch_long();
 }
+template <class Storer>
+inline void store(uint64 x, Storer &storer) {
+  storer.template store_binary<int64>(x);
+}
+template <class Parser>
+inline void parse(uint64 &x, Parser &parser) {
+  x = static_cast<uint64>(parser.fetch_long());
+}
 
 template <class Storer>
 inline void store(double x, Storer &storer) {

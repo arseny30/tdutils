@@ -108,7 +108,7 @@ Status update_atime(int native_fd) {
   times[0].tv_nsec = UTIME_NOW;
   // modify time
   times[1].tv_nsec = UTIME_OMIT;
-  //int err = syscall(__NR_utimensat, native_fd, nullptr, times, 0);
+  //  int err = syscall(__NR_utimensat, native_fd, nullptr, times, 0);
   int err = futimens(native_fd, times);
   if (err < 0) {
     auto futimens_errno = errno;

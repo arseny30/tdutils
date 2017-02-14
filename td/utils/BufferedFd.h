@@ -9,7 +9,6 @@
 #include "td/utils/format.h"
 
 namespace td {
-
 // just reads from given reader and writes to given writer
 template <class FdT>
 class BufferedFdBase : public FdT {
