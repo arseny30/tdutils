@@ -168,7 +168,7 @@ inline StringBuilder &operator<<(StringBuilder &logger, Time t) {
   static constexpr size_t durations_n = sizeof(durations) / sizeof(NamedValue);
 
   size_t i = 0;
-  while (i + 1 < durations_n && t.seconds_ > 3 * durations[i + 1].value) {
+  while (i + 1 < durations_n && t.seconds_ > 10 * durations[i + 1].value) {
     i++;
   }
   logger.printf("%.1lf%s", t.seconds_ / durations[i].value, durations[i].name);
@@ -194,7 +194,7 @@ inline StringBuilder &operator<<(StringBuilder &logger, Size t) {
   static constexpr size_t sizes_n = sizeof(sizes) / sizeof(NamedValue);
 
   size_t i = 0;
-  while (i + 1 < sizes_n && t.size_ > 3 * sizes[i + 1].value) {
+  while (i + 1 < sizes_n && t.size_ > 10 * sizes[i + 1].value) {
     i++;
   }
   logger << t.size_ / sizes[i].value << sizes[i].name;
