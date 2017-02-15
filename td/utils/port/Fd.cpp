@@ -38,6 +38,8 @@ Fd::Fd(int fd, Mode mode, ObserverBase *observer) : fd_(fd), mode_(mode) {
   auto *info = get_info();
   int old_ref_cnt = info->refcnt.load(std::memory_order_relaxed);
   if (old_ref_cnt == 0) {
+    old_ref_cnt = info->refcnt.load(std::memory_order_acquire);
+    CHECK(old_ref_cnt == 0);
     CHECK(mode_ == Mode::Own) << tag("fd", fd_);
     VLOG(fd) << "FD created [fd:" << fd_ << "]";
 
@@ -45,9 +47,9 @@ Fd::Fd(int fd, Mode mode, ObserverBase *observer) : fd_(fd), mode_(mode) {
     auto fcntl_errno = errno;
     LOG_IF(FATAL, fcntl_res < 0) << Status::PosixError(fcntl_errno, PSTR() << "fcntl F_GET_FD failed");
 
+    info->refcnt.store(1, std::memory_order_relaxed);
     CHECK(!is_ref());
     CHECK(info->observer == nullptr);
-    info->refcnt.store(1);
     info->flags = 0;
     info->observer = observer;
   } else {
@@ -181,7 +183,7 @@ void Fd::clear_info() {
   CHECK(old_ref_cnt == 1);
   info->flags = 0;
   info->observer = nullptr;
-  info->refcnt.store(0);
+  info->refcnt.store(0, std::memory_order_release);
 }
 
 void Fd::update_flags_notify(Flags flags) {
