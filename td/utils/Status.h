@@ -8,6 +8,7 @@
 
 #include <cerrno>
 #include <cstring>  // for strerror
+#include <new>
 
 #if TD_WINDOWS
 #include <codecvt>
@@ -327,6 +328,7 @@ class Result {
   Result(Result &&other) : status_(std::move(other.status_)) {
     if (status_.is_ok()) {
       new (&value_) T(std::move(other.value_));
+      other.value_.~T();
     }
     other.status_ = Status::Error();
   }
@@ -337,6 +339,7 @@ class Result {
     status_ = std::move(other.status_);
     if (status_.is_ok()) {
       new (&value_) T(std::move(other.value_));
+      other.value_.~T();
     }
     other.status_ = Status::Error();
     return *this;
