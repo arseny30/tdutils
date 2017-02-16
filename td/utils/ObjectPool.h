@@ -176,6 +176,13 @@ class ObjectPool {
   }
 
   ~ObjectPool() {
+    while (head_) {
+      auto to_delete = head_.load();
+      head_ = to_delete->next;
+      delete to_delete;
+      storage_count_--;
+    }
+    CHECK(storage_count_.load() == 0);
   }
 
  private:
@@ -198,6 +205,7 @@ class ObjectPool {
     }
   };
 
+  std::atomic<int32> storage_count_{0};
   std::atomic<Storage *> head_{static_cast<Storage *>(nullptr)};
   bool check_empty_flag_ = false;
 
@@ -207,6 +215,7 @@ class ObjectPool {
   // only one thread, so no aba problem
   Storage *get_storage() {
     if (head_.load() == nullptr) {
+      storage_count_++;
       return new Storage();
     }
     Storage *res;

@@ -5,6 +5,7 @@
 namespace td {
 class PollBase {
  public:
+  virtual ~PollBase() = default;
   virtual void init() = 0;
   virtual void clear() = 0;
   virtual void subscribe(const Fd &fd, Fd::Flags flags) = 0;

@@ -30,6 +30,7 @@ namespace td {
 
 class Test : private ListNode {
  public:
+  virtual ~Test() = default;
   static void run_all() {
     for (auto end = get_tests_list(), cur = end->next; cur != end; cur = cur->next) {
       auto test = static_cast<td::Test *>(cur);

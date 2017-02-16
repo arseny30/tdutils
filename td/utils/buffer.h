@@ -57,12 +57,19 @@ class BufferAllocator {
 
   static size_t get_buffer_mem();
 
+  static void clear_thread_local();
+
  private:
   static ReaderPtr create_reader_fast(size_t size);
 
   static WriterPtr create_writer_exact(size_t size);
 
-  static TD_THREAD_LOCAL BufferRaw *buffer_raw_tls;
+  struct BufferRawDeleter {
+    void operator()(BufferRaw *ptr) {
+      dec_ref_cnt(ptr);
+    }
+  };
+  static TD_THREAD_LOCAL std::unique_ptr<BufferRaw, BufferRawDeleter> buffer_raw_tls;
 
   static void dec_ref_cnt(BufferRaw *ptr);
 

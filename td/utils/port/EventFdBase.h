@@ -5,6 +5,7 @@
 namespace td {
 class EventFdBase {
  public:
+  virtual ~EventFdBase() = default;
   virtual operator FdRef() = 0;
   virtual void init() = 0;
   virtual bool empty() = 0;

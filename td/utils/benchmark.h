@@ -36,6 +36,7 @@ void do_not_optimize_away(T &&datum) {
 
 class Benchmark {
  public:
+  virtual ~Benchmark() = default;
   virtual std::string get_description() {
     return "";
   }

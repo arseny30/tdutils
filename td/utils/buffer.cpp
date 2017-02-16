@@ -2,11 +2,16 @@
 
 namespace td {
 
-TD_THREAD_LOCAL BufferRaw *BufferAllocator::buffer_raw_tls;
+// TD_THREAD_LOCAL BufferRaw *BufferAllocator::buffer_raw_tls;
+TD_THREAD_LOCAL std::unique_ptr<BufferRaw, BufferAllocator::BufferRawDeleter> BufferAllocator::buffer_raw_tls;
 std::atomic<size_t> BufferAllocator::buffer_mem;
 
 size_t BufferAllocator::get_buffer_mem() {
   return buffer_mem;
+}
+
+void BufferAllocator::clear_thread_local() {
+  buffer_raw_tls.reset();
 }
 
 BufferAllocator::WriterPtr BufferAllocator::create_writer(size_t size) {
@@ -39,13 +44,13 @@ BufferAllocator::ReaderPtr BufferAllocator::create_reader(size_t size) {
 BufferAllocator::ReaderPtr BufferAllocator::create_reader_fast(size_t size) {
   size = (size + 7) & -8;
 
-  auto buffer_raw = buffer_raw_tls;
+  auto buffer_raw = buffer_raw_tls.get();
   if (buffer_raw == nullptr || buffer_raw->data_size_ - buffer_raw->end_.load(std::memory_order_relaxed) < size) {
-    if (buffer_raw != nullptr) {
-      dec_ref_cnt(buffer_raw);
-    }
+    // if (buffer_raw != nullptr) {
+    // dec_ref_cnt(buffer_raw);
+    //}
     buffer_raw = create_buffer_raw(4096 * 4);
-    buffer_raw_tls = buffer_raw;
+    buffer_raw_tls = std::unique_ptr<BufferRaw, BufferAllocator::BufferRawDeleter>(buffer_raw);
   }
   buffer_raw->end_.fetch_add(size, std::memory_order_relaxed);
   buffer_raw->ref_cnt_.fetch_add(1, std::memory_order_acq_rel);

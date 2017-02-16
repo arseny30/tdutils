@@ -41,6 +41,9 @@ class StackAllocator {
   static Ptr alloc(size_t size) {
     return Ptr(impl_.alloc(size), size);
   }
+  static void clear_thread_local() {
+    impl_.clear_thread_local();
+  }
 
  private:
   static void free(void *ptr) {
@@ -50,8 +53,19 @@ class StackAllocator {
     static const size_t MEM_SIZE = 1024 * 1024;
 #if TD_MAC
     char *mem;
+    ~Impl() {
+      clear_thread_local();
+    }
+    void clear_thread_local() {
+      if (mem) {
+        delete[] mem;
+        mem = nullptr;
+      }
+    }
 #else
     char mem[MEM_SIZE];
+    void clear_thread_local() {
+    }
 #endif
 
     size_t pos;  // Impl is static, so pos == 0.

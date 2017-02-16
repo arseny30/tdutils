@@ -125,6 +125,7 @@ extern int verbosity_sqlite;
 
 class LogInterface {
  public:
+  virtual ~LogInterface() = default;
   virtual void append(const CSlice &slice, int log_level_) = 0;
   virtual void rotate() = 0;
 };

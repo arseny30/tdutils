@@ -87,7 +87,7 @@
 #if TD_MSVC
 #define TD_THREAD_LOCAL thread_local
 #elif TD_CLANG || TD_GCC
-#define TD_THREAD_LOCAL __thread
+#define TD_THREAD_LOCAL thread_local
 #endif
 
 #if TD_MSVC
