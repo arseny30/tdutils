@@ -36,7 +36,7 @@ StringBuilder &operator<<(StringBuilder &sb, const JsonRawString &val) {
         sb << '\\' << 't';
         break;
       default:
-        if (ch <= 7 || ch == 11 || (14 <= ch && ch <= 31)) {
+        if (ch <= 31) {
           sb << JsonOneChar(s[pos]);
           break;
         }
@@ -80,7 +80,7 @@ StringBuilder &operator<<(StringBuilder &sb, const JsonString &val) {
         sb << '\\' << 't';
         break;
       default:
-        if (ch <= 7 || ch == 11 || (14 <= ch && ch <= 31)) {
+        if (ch <= 31) {
           sb << JsonOneChar(s[pos]);
           break;
         }
