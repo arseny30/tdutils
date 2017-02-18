@@ -176,7 +176,7 @@ class ObjectPool {
   }
 
   ~ObjectPool() {
-    while (head_) {
+    while (head_.load()) {
       auto to_delete = head_.load();
       head_ = to_delete->next;
       delete to_delete;
