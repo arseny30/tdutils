@@ -223,7 +223,7 @@ class Fd {
 
   Fd(Type type, Mode mode, HANDLE handle);
   Fd(Type type, Mode mode, SOCKET sock, int32 socket_family = 0);
-  Fd(shared_ptr<detail::FdImpl> impl);
+  explicit Fd(shared_ptr<detail::FdImpl> impl);
 
   void acquire();
   void release();

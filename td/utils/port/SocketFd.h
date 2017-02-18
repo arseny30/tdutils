@@ -78,7 +78,7 @@ class SocketFd : public Fd {
     return sock;
   }
 
-  SocketFd(Fd fd) : Fd(std::move(fd)) {
+  explicit SocketFd(Fd fd) : Fd(std::move(fd)) {
   }
 
   SocketFd() = default;
