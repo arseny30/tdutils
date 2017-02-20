@@ -436,13 +436,35 @@ typename std::enable_if<std::is_unsigned<T>::value, T>::type hex_to_integer(Slic
 }
 
 // run-time checked narrowing cast (type conversion):
+
+namespace detail {
+template <class T, class U>
+struct is_same_signedness : public std::integral_constant<bool, std::is_signed<T>::value == std::is_signed<U>::value> {
+};
+
+template <class T, class Enable = void>
+struct safe_undeflying_type {
+  using type = T;
+};
+
+template <class T>
+struct safe_undeflying_type<T, typename std::enable_if_t<std::is_enum<T>::value>> {
+  using type = std::underlying_type_t<T>;
+};
+}
+
 template <class R, class A>
 R narrow_cast(const A &a) {
-  static_assert(std::is_integral<R>::value || std::is_enum<R>::value, "expected integral type to cast to");
-  static_assert(std::is_integral<A>::value || std::is_enum<A>::value, "expected integral type to cast from");
-  // static_assert(sizeof(R) <= sizeof(A), "invalid narrow_cast");
+  using RT = typename detail::safe_undeflying_type<R>::type;
+  using AT = typename detail::safe_undeflying_type<A>::type;
+
+  static_assert(std::is_integral<RT>::value, "expected integral type to cast to");
+  static_assert(std::is_integral<AT>::value, "expected integral type to cast from");
+
   auto r = R(a);
   CHECK(A(r) == a);
+  CHECK((detail::is_same_signedness<RT, AT>::value) || ((static_cast<RT>(r) < RT{}) == (static_cast<AT>(a) < AT{})));
+
   return r;
 }
 
