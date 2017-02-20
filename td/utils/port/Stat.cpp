@@ -102,21 +102,22 @@ Status update_atime(int native_fd) {
   }
   return Status::OK();
 #elif TD_ANDROID
-  // NOT SUPPORTED...
-  struct timespec times[2];
-  // access time
-  times[0].tv_nsec = UTIME_NOW;
-  // modify time
-  times[1].tv_nsec = UTIME_OMIT;
-  //  int err = syscall(__NR_utimensat, native_fd, nullptr, times, 0);
-  int err = futimens(native_fd, times);
-  if (err < 0) {
-    auto futimens_errno = errno;
-    auto status = Status::PosixError(futimens_errno, PSTR() << "futimens " << tag("fd", native_fd));
-    LOG(WARNING) << status;
-    return status;
-  }
-  return Status::OK();
+  return Status::Error();
+// NOT SUPPORTED...
+// struct timespec times[2];
+//// access time
+// times[0].tv_nsec = UTIME_NOW;
+//// modify time
+// times[1].tv_nsec = UTIME_OMIT;
+////  int err = syscall(__NR_utimensat, native_fd, nullptr, times, 0);
+// int err = futimens(native_fd, times);
+// if (err < 0) {
+// auto futimens_errno = errno;
+// auto status = Status::PosixError(futimens_errno, PSTR() << "futimens " << tag("fd", native_fd));
+// LOG(WARNING) << status;
+// return status;
+//}
+// return Status::OK();
 #else
 #error "Unsupported OS"
 #endif
