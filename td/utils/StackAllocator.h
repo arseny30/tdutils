@@ -51,7 +51,7 @@ class StackAllocator {
   }
   struct Impl {
     static const size_t MEM_SIZE = 1024 * 1024;
-#if TD_MAC
+#if TD_MAC && TD_HAS_CPP_THREAD_LOCAL
     char *mem;
     ~Impl() {
       clear_thread_local();
@@ -70,7 +70,7 @@ class StackAllocator {
 
     size_t pos;  // Impl is static, so pos == 0.
     void *alloc(size_t size) {
-#if TD_MAC
+#if TD_MAC && TD_HAS_CPP_THREAD_LOCAL
       if (!mem) {
         mem = new char[MEM_SIZE];
       }

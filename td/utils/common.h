@@ -84,9 +84,10 @@
 #pragma warning(disable : 4267)
 #endif
 
-#if TD_MSVC
-#define TD_THREAD_LOCAL thread_local
-#elif TD_CLANG || TD_GCC
+#if TD_ANDROID
+#define TD_THREAD_LOCAL __thread
+#else
+#define TD_HAS_CPP_THREAD_LOCAL 1
 #define TD_THREAD_LOCAL thread_local
 #endif
 
