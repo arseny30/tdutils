@@ -187,7 +187,7 @@ class ObjectPool {
       delete to_delete;
       storage_count_--;
     }
-    CHECK(storage_count_.load() == 0);
+    CHECK(storage_count_.load() == 0) << storage_count_.load();
   }
 
  private:
