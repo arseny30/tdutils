@@ -161,6 +161,11 @@ class SPSCChainQueue {
     head_ = tail_ = create_node();
   }
 
+  SPSCChainQueue() = default;
+  SPSCChainQueue(const SPSCChainQueue &) = delete;
+  SPSCChainQueue &operator=(const SPSCChainQueue &) = delete;
+  SPSCChainQueue(SPSCChainQueue &&) = delete;
+  SPSCChainQueue &operator=(SPSCChainQueue &&) = delete;
   ~SPSCChainQueue() {
     destroy();
   }
@@ -322,6 +327,11 @@ class PollQueue : public QueueT {
     writer_wait_state_ = 0;
   }
 
+  PollQueue() = default;
+  PollQueue(const PollQueue &) = delete;
+  PollQueue &operator=(const PollQueue &) = delete;
+  PollQueue(PollQueue &&) = delete;
+  PollQueue &operator=(PollQueue &&) = delete;
   ~PollQueue() {
     destroy_impl();
   }

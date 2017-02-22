@@ -437,10 +437,9 @@ template <class Facet>
 class usable_facet : public Facet {
  public:
   template <class... Args>
-  usable_facet(Args &&... args) : Facet(std::forward<Args>(args)...) {
+  explicit usable_facet(Args &&... args) : Facet(std::forward<Args>(args)...) {
   }
-  ~usable_facet() {
-  }
+  ~usable_facet() = default;
 };
 
 inline Result<wstring> to_wstring(Slice slice) {

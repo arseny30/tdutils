@@ -52,7 +52,12 @@ class StackAllocator {
   struct Impl {
     static const size_t MEM_SIZE = 1024 * 1024;
 #if TD_MAC && TD_HAS_CPP_THREAD_LOCAL
-    char *mem;
+    char *mem = nullptr;
+    Impl() = default;
+    Impl(const Impl &other) = delete;
+    Impl &operator=(const Impl &other) = delete;
+    Impl(Impl &&other) = delete;
+    Impl &operator=(Impl &&other) = delete;
     ~Impl() {
       clear_thread_local();
     }

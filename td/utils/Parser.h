@@ -29,7 +29,7 @@ class Parser {
   Parser(const Parser &) = delete;
   Parser &operator=(const Parser &) = delete;
 
-  bool empty() {
+  bool empty() const {
     return ptr_ == end_;
   }
   void clear() {
@@ -139,7 +139,7 @@ class Parser {
     skip_till_not(" \t\r\n");
   }
 
-  MutableSlice data() {
+  MutableSlice data() const {
     return MutableSlice(ptr_, end_);
   }
 

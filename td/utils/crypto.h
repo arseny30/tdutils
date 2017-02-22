@@ -69,6 +69,8 @@ struct Sha256StateImpl;
 
 struct Sha256State {
   Sha256State();
+  Sha256State(Sha256State &&from);
+  Sha256State &operator=(Sha256State &&from);
   ~Sha256State();
   std::unique_ptr<Sha256StateImpl> impl;
 };

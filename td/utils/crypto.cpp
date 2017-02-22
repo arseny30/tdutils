@@ -238,6 +238,11 @@ ssize_t aes_ige_decrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, Mut
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
 struct AesCtrStateImpl {
  public:
+  AesCtrStateImpl() = default;
+  AesCtrStateImpl(const AesCtrStateImpl &) = delete;
+  AesCtrStateImpl &operator=(const AesCtrStateImpl &) = delete;
+  AesCtrStateImpl(AesCtrStateImpl &&other) = delete;
+  AesCtrStateImpl &operator=(AesCtrStateImpl &&other) = delete;
   ~AesCtrStateImpl() {
     EVP_CIPHER_CTX_cleanup(&ctx_inner_);
   }
@@ -249,12 +254,9 @@ struct AesCtrStateImpl {
   EVP_CIPHER_CTX ctx_inner_;
 };
 #else
-static void delete_ctx(EVP_CIPHER_CTX *ctx) {
-  EVP_CIPHER_CTX_free(ctx);
-}
 struct AesCtrStateImpl {
  public:
-  AesCtrStateImpl() : ctx_(EVP_CIPHER_CTX_new(), &delete_ctx) {
+  AesCtrStateImpl() : ctx_(EVP_CIPHER_CTX_new(), &EVP_CIPHER_CTX_free) {
   }
   EVP_CIPHER_CTX *get() {
     return ctx_.get();
@@ -311,10 +313,11 @@ void sha256(Slice input, MutableSlice output) {
 struct Sha256StateImpl {
   SHA256_CTX ctx;
 };
-Sha256State::Sha256State() {
-}
-Sha256State::~Sha256State() {
-}
+
+Sha256State::Sha256State() = default;
+Sha256State::Sha256State(Sha256State &&from) = default;
+Sha256State &Sha256State::operator=(Sha256State &&from) = default;
+Sha256State::~Sha256State() = default;
 
 void sha256_init(Sha256State *state) {
   state->impl = std::make_unique<Sha256StateImpl>();

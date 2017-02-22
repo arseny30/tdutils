@@ -154,6 +154,10 @@ extern LogInterface *log_interface;
 class TsCerr {
  public:
   TsCerr();
+  TsCerr(const TsCerr &) = delete;
+  TsCerr &operator=(const TsCerr &) = delete;
+  TsCerr(TsCerr &&) = delete;
+  TsCerr &operator=(TsCerr &&) = delete;
   ~TsCerr();
   TsCerr &operator<<(Slice slice);
 
@@ -230,6 +234,10 @@ class Logger {
   MutableCSlice as_cslice() {
     return sb_.as_cslice();
   }
+  Logger(const Logger &) = delete;
+  Logger &operator=(const Logger &) = delete;
+  Logger(Logger &&) = delete;
+  Logger &operator=(Logger &&) = delete;
   ~Logger() {
     if (!simple_mode_) {
       sb_ << '\n';

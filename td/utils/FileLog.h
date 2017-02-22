@@ -16,6 +16,11 @@ class FileLog : public LogInterface {
   static constexpr int DEFAULT_ROTATE_THRESHOLD = 10 * (1 << 20);
 
  public:
+  FileLog() = default;
+  FileLog(const FileLog &other) = delete;
+  FileLog &operator=(const FileLog &other) = delete;
+  FileLog(FileLog &&other) = delete;
+  FileLog &operator=(FileLog &&other) = delete;
   ~FileLog() {
     if (!fd_.empty()) {
       fd_.close();

@@ -9,6 +9,8 @@ class RwMutex {
   RwMutex() {
     init();
   }
+  RwMutex(const RwMutex &) = delete;
+  RwMutex &operator=(const RwMutex &) = delete;
   RwMutex(RwMutex &&other) {
     init();
     other.clear();
@@ -96,6 +98,8 @@ class RwMutex {
   RwMutex() {
     init();
   }
+  RwMutex(const RwMutex &) = delete;
+  RwMutex &operator=(const RwMutex &) = delete;
   RwMutex(RwMutex &&other) {
     init();
     other.clear();

@@ -388,6 +388,11 @@ class FdImpl {
     init();
   }
 
+  FdImpl(const FdImpl &) = delete;
+  FdImpl &operator=(const FdImpl &) = delete;
+  FdImpl(FdImpl &&) = delete;
+  FdImpl &operator=(FdImpl &&) = delete;
+
   ~FdImpl() {
     close();
   }

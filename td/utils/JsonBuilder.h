@@ -423,7 +423,7 @@ class JsonValue : public Jsonable {
   JsonValue(const JsonValue &other) = delete;
   JsonValue &operator=(const JsonValue &other) = delete;
 
-  Type type() {
+  Type type() const {
     return type_;
   }
 
@@ -551,7 +551,7 @@ class JsonValue : public Jsonable {
   }
   void init_number(MutableSlice number) {
     type_ = Type::Number;
-    number_ = number;
+    new (&number_) MutableSlice(number);
   }
   void init_boolean(bool boolean) {
     type_ = Type::Boolean;
