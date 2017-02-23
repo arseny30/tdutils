@@ -2,14 +2,13 @@
 
 #include "td/utils/FileLog.h"
 #include "td/utils/misc.h"
+#include "td/utils/port/Fd.h"
+#include "td/utils/Time.h"
 
+#include <atomic>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include <atomic>
-
-#include "td/utils/port/Fd.h"
-#include "td/utils/Time.h"
 
 #if TD_ANDROID
 #include <android/log.h>

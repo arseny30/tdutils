@@ -1,3 +1,5 @@
+#pragma once
+
 /***
 * Simple logging.
 * Interface is almost the same as in Google Logging library.
@@ -21,19 +23,16 @@
 * - LOG_IF_FIRST_N(INFO, cond(), 20) << "Hello world";
 */
 
-#pragma once
-#include "td/utils/port/Clocks.h"
-
 #include "td/utils/common.h"
-
+#include "td/utils/port/Clocks.h"
 #include "td/utils/Slice-decl.h"
-#include "td/utils/StringBuilder.h"
 #include "td/utils/StackAllocator.h"
+#include "td/utils/StringBuilder.h"
 
+#include <atomic>
 #include <cstdarg>  // for va_list, va_end, va_start
 #include <cstdio>   // for snprintf, vsnprintf
 #include <cstring>  // for memcpy, strrchr
-#include <atomic>
 
 #define PSTR(...) ::td::Slicify() & ::td::Logger(::td::NullLog().ref(), 0).printf(__VA_ARGS__)
 #define LOG_PREFIX
