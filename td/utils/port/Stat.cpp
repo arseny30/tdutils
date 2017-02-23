@@ -122,7 +122,7 @@ Status update_atime(int native_fd) {
 #error "Unsupported OS"
 #endif
 }
-}  // end of namespace detail
+}  // namespace detail
 
 Status update_atime(CSlice path) {
   TRY_RESULT(file, FileFd::open(path, FileFd::Flags::Read));
@@ -218,7 +218,7 @@ Result<MemStat> mem_stat() {
   return res;
 #endif
 }
-}  // end of namespace td
+}  // namespace td
 #endif  // TD_PORT_POSIX
 
 #ifdef TD_PORT_WINDOWS

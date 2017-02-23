@@ -314,6 +314,6 @@ class TsLog : public LogInterface {
     lock_.clear(std::memory_order_release);
   }
 };
-}  // end of namespace td
+}  // namespace td
 
 #include "td/utils/Slice.h"

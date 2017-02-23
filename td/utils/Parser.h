@@ -172,4 +172,4 @@ class Parser {
   char *end_;
   Status status_;
 };
-}  // end of namespace td
+}  // namespace td

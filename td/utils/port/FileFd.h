@@ -49,7 +49,7 @@ class FileFd {
  private:
   Fd fd_;
 };
-}  // end of namespace td
+}  // namespace td
 #endif  // TD_PORT_POSIX
 
 #ifdef TD_PORT_WINDOWS

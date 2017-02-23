@@ -98,4 +98,4 @@ inline void bench(Benchmark &&b, double max_time = 1.0) {
   LOG(ERROR, "Bench [%40s]:\t%.3lf ops/sec,\t", b.get_description().c_str(), avg) << format::as_time(1 / avg)
                                                                                   << (PSTR(" [d = %.6lf]", d));
 }
-}  // end of namespace td
+}  // namespace td

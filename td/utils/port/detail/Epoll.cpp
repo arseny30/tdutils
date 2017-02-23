@@ -95,7 +95,7 @@ void Epoll::run(int timeout_ms) {
     Fd(event->data.fd, Fd::Mode::Reference).update_flags_notify(flags);
   }
 }
-}  // end of namespace detail
-}  // end of namespace td
+}  // namespace detail
+}  // namespace td
 
 #endif  // TD_POLL_EPOLL

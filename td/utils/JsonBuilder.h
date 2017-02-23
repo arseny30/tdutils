@@ -688,4 +688,4 @@ Result<double> get_json_object_double_field(JsonObject &object, Slice name, bool
 Result<string> get_json_object_string_field(JsonObject &object, Slice name, bool is_optional = true,
                                             string default_value = "") WARN_UNUSED_RESULT;
 
-}  // end of namespace td
+}  // namespace td

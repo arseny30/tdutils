@@ -8,4 +8,4 @@ enum class UnicodeSimpleCategory { Unknown, Letter, DecimalNumber, Number, Separ
 
 UnicodeSimpleCategory get_unicode_simple_category(uint32 code);
 
-}  // end of namespace td
+}  // namespace td

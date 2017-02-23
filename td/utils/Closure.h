@@ -152,4 +152,4 @@ inline auto create_delayed_closure(ResultT (ActorT::*func)(DestArgsT...), SrcArg
                                                                                    std::forward<SrcArgsT>(args)...);
 }
 
-}  // end of namespace td
+}  // namespace td

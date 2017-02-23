@@ -29,7 +29,7 @@ class Epoll final : public PollBase {
 
   void run(int timeout_ms) override;
 };
-}  // end of namespace detail
-}  // end of namespace td
+}  // namespace detail
+}  // namespace td
 
 #endif  // TD_POLL_EPOLL

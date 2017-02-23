@@ -251,5 +251,5 @@ Status FileFd::sync() {
   return Status::OK();
 }
 
-}  // end of namespace td
+}  // namespace td
 #endif  // TD_PORT_POSIX

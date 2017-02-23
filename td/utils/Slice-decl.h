@@ -197,4 +197,4 @@ class CSlice : public Slice {
 // static constexpr size_t MASK = static_cast<size_t>(1) << (sizeof(size_t) * 8 - 1);
 //};
 
-}  // end of namespace td
+}  // namespace td

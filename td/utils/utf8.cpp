@@ -51,4 +51,4 @@ bool check_utf8(CSlice str) {
   UNREACHABLE();
 }
 
-}  // end of namespace td
+}  // namespace td

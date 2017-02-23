@@ -75,4 +75,4 @@ inline DefaultStorer<T> create_default_storer(const T &from) {
   return DefaultStorer<T>(from);
 }
 
-}  // end of namespace td
+}  // namespace td

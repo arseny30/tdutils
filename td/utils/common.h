@@ -356,4 +356,4 @@ class member_function_class {
 template <class FunctionT>
 using member_function_class_t = typename member_function_class<FunctionT>::type;
 
-}  // end of namespace td
+}  // namespace td

@@ -142,4 +142,4 @@ class KHeap {
   }
 };
 
-}  // end of namespace td
+}  // namespace td

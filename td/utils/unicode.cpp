@@ -184,4 +184,4 @@ UnicodeSimpleCategory get_unicode_simple_category(uint32 code) {
   return static_cast<UnicodeSimpleCategory>(*(it - 1) & 31);
 }
 
-}  // end of namespace td
+}  // namespace td

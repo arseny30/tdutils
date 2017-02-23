@@ -161,5 +161,5 @@ Status ServerSocketFd::init_socket(int fd) {
   return Status::OK();
 }
 
-}  // end of namespace td
+}  // namespace td
 #endif  // TD_PORT_POSIX

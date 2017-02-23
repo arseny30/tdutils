@@ -19,7 +19,7 @@ namespace detail {
 Stat from_native_stat(const struct stat *buf);
 Stat fstat(int native_fd);
 Status update_atime(int native_fd) WARN_UNUSED_RESULT;
-}  // end of namespace detail
+}  // namespace detail
 
 Result<Stat> stat(CSlice path) WARN_UNUSED_RESULT;
 Status update_atime(CSlice path) WARN_UNUSED_RESULT;
@@ -33,7 +33,7 @@ struct MemStat {
 
 Result<MemStat> mem_stat() WARN_UNUSED_RESULT;
 
-}  // end of namespace td
+}  // namespace td
 #endif  // TD_PORT_POSIX
 
 #ifdef TD_PORT_WINDOWS

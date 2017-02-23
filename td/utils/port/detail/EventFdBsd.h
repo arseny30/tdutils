@@ -36,7 +36,7 @@ class EventFdBsd final : public EventFdBase {
 
   void acquire() override;
 };
-}  // end of namespace detail
-}  // end of namespace td
+}  // namespace detail
+}  // namespace td
 
 #endif  // TD_EVENTFD_BSD

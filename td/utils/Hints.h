@@ -60,4 +60,4 @@ class Hints {
   };
 };
 
-}  // end of namespace td
+}  // namespace td

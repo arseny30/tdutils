@@ -118,5 +118,5 @@ Result<size_t> SocketFd::read(const MutableSlice &slice) {
   return fd_.read(slice);
 }
 
-}  // end of namespace td
+}  // namespace td
 #endif  // TD_PORT_POSIX

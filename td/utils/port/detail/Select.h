@@ -35,6 +35,6 @@ class Select final : public PollBase {
   fd_set except_fd_;
   int max_fd_;
 };
-}  // end of namespace detail
-}  // end of namespace td
+}  // namespace detail
+}  // namespace td
 #endif  // TD_POLL_SELECT

@@ -370,7 +370,7 @@ Stat Fd::stat() const {
   return detail::fstat(get_native_fd());
 }
 
-}  // end of namespace td
+}  // namespace td
 #endif  // TD_PORT_POSIX
 
 #ifdef TD_PORT_WINDOWS

@@ -47,7 +47,7 @@ class SocketFd {
   Status init(const IPAddress &address) WARN_UNUSED_RESULT;
   Status init_socket(int fd) WARN_UNUSED_RESULT;
 };
-}  // end of namespace td
+}  // namespace td
 #endif  // TD_PORT_POSIX
 
 #ifdef TD_PORT_WINDOWS

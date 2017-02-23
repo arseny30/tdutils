@@ -52,4 +52,4 @@ class IPAddress {
 
 StringBuilder &operator<<(StringBuilder &builder, const IPAddress &address);
 
-}  // end of namespace td
+}  // namespace td

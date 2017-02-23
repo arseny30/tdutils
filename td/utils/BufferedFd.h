@@ -186,4 +186,4 @@ ChainBufferWriter &BufferedFd<FdT>::output_buffer() {
   return output_writer_;
 }
 
-}  // end of namespace td
+}  // namespace td

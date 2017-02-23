@@ -354,4 +354,4 @@ Result<std::pair<FileFd, string>> mkstemp(CSlice dir) {
 
 #endif  // TD_PORT_WINDOWS
 
-}  // end of namespace td
+}  // namespace td

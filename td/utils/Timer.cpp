@@ -12,4 +12,4 @@ StringBuilder &operator<<(StringBuilder &string_builder, const Timer &timer) {
   return string_builder << "in " << Time::now() - timer.start_time_;
 }
 
-}  // end of namespace td
+}  // namespace td

@@ -40,7 +40,7 @@ void EventFdWindows::release() {
 void EventFdWindows::acquire() {
   fd_.acquire();
 }
-}  // end of namespace detail
-}  // end of namespace td
+}  // namespace detail
+}  // namespace td
 
 #endif  // TD_EVENTFD_WINDOWS

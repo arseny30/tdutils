@@ -102,4 +102,4 @@ class StackAllocator {
 template <class Tag>
 TD_THREAD_LOCAL typename StackAllocator<Tag>::Impl StackAllocator<Tag>::impl_;
 
-}  // end of namespace td
+}  // namespace td

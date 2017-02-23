@@ -188,4 +188,4 @@ typename std::enable_if<std::is_arithmetic<T>::value, string>::type to_string(co
   return sb.as_cslice().str();
 }
 
-}  // end of namespace td;
+}  // namespace td

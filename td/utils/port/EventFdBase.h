@@ -16,4 +16,4 @@ class EventFdBase {
   virtual void release() = 0;
   virtual void acquire() = 0;
 };
-}  // end of namespace td
+}  // namespace td

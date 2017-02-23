@@ -128,4 +128,4 @@ static DefaultLog default_log;
 LogInterface *const default_log_interface = &default_log;
 LogInterface *log_interface = default_log_interface;
 
-}  // end of namespace td
+}  // namespace td

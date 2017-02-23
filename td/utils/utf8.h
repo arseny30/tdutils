@@ -39,4 +39,4 @@ inline const uint8 *next_utf8_unsafe(const uint8 *ptr, uint32 *code) {
   UNREACHABLE();
 }
 
-}  // end of namespace td
+}  // namespace td

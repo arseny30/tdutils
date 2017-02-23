@@ -21,4 +21,4 @@ using Poll = detail::KQueue;
 #ifdef TD_POLL_WINEVENT
 using Poll = detail::WineventPoll;
 #endif
-}  // end of namespace td
+}  // namespace td

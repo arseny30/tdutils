@@ -244,4 +244,4 @@ class ObjectPool {
     }
   }
 };
-}  // end of namespace td
+}  // namespace td

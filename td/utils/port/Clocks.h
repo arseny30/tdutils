@@ -24,4 +24,4 @@ class ClocksDefault {
 };
 
 using Clocks = ClocksDefault;
-}  // end of namespace td
+}  // namespace td

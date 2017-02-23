@@ -109,4 +109,4 @@ Result<string> base64url_decode(Slice base64) {
   return output;
 }
 
-}  // end of namespace td
+}  // namespace td

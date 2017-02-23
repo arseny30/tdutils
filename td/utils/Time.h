@@ -31,4 +31,4 @@ inline void relax_timeout_at(double *timeout, double new_timeout) {
   }
 }
 
-}  // end of namespace td
+}  // namespace td

@@ -98,7 +98,7 @@ void Select::run(int timeout_ms) {
   }
 }
 
-}  // end of namespace detail
-}  // end of namespace td
+}  // namespace detail
+}  // namespace td
 
 #endif  // TD_POLL_SELECT

@@ -14,4 +14,4 @@ class Timer {
   double start_time_;
 };
 
-}  // end of namespace td
+}  // namespace td

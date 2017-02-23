@@ -46,4 +46,4 @@ inline Result<size_t> BufferedReader::read(MutableSlice slice) {
   begin_pos_ += left;
   return left + available;
 }
-}  // end of namespace td
+}  // namespace td

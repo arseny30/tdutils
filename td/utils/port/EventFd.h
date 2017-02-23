@@ -17,4 +17,4 @@ using EventFd = detail::EventFdPosix;
 #ifdef TD_EVENTFD_WINDOWS
 using EventFd = detail::EventFdWindows;
 #endif  // TD_EVENTFD_WINDOWS
-}  // end of namespace td
+}  // namespace td

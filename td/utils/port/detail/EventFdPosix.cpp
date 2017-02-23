@@ -63,7 +63,7 @@ void EventFdPosix::acquire() {
   }
   fd_.clear_flags(Fd::Read);
 }
-}  // end of namespace detail
-}  // end of namespace td
+}  // namespace detail
+}  // namespace td
 
 #endif  // TD_EVENTFD_POSIX

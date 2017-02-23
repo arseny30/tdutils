@@ -145,7 +145,7 @@ Status walk_path(string &path, Func &&func) {
 
   return Status::OK();
 }
-}  // end of namespace detail
+}  // namespace detail
 
 template <class Func>
 Status walk_path(CSlice path, Func &&func) {
@@ -194,7 +194,7 @@ Status walk_path_dir(const wstring &dir_name, Func &func) {
     }
   }
 }
-}  // end of namespace detail
+}  // namespace detail
 
 template <class Func>
 Status walk_path(CSlice path, Func &func) {

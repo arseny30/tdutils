@@ -290,7 +290,7 @@ inline auto concat(const ArgsT &... args) {
   return Concat<decltype(std::tie(args...))>{std::tie(args...)};
 }
 
-}  // end of namespace format
+}  // namespace format
 using format::tag;
 
 template <class A, class B>
@@ -298,4 +298,4 @@ StringBuilder &operator<<(StringBuilder &sb, std::pair<A, B> p) {
   return sb << "[" << p.first << ";" << p.second << "]";
 }
 
-}  // end of namespace td
+}  // namespace td

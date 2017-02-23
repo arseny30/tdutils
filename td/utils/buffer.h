@@ -696,4 +696,4 @@ class ChainBufferWriter {
   BufferWriter writer_;
 };
 
-}  // end of namespace td
+}  // namespace td

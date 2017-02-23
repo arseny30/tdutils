@@ -875,4 +875,4 @@ class PathView {
   int32 last_dot_;
 };
 
-}  // end of namespace td
+}  // namespace td

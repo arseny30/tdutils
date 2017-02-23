@@ -124,7 +124,7 @@ inline bool has_pending_error(const Fd &fd) {
 }
 
 using FdRef = Fd &;
-}  // end of namespace td
+}  // namespace td
 #endif  // TD_PORT_POSIX
 #ifdef TD_PORT_WINDOWS
 #include "td/utils/port/IPAddress.h"

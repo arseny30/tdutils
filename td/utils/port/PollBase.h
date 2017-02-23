@@ -13,4 +13,4 @@ class PollBase {
   virtual void unsubscribe_before_close(const Fd &fd) = 0;
   virtual void run(int timeout_ms) = 0;
 };
-}  // end of namespace td
+}  // namespace td

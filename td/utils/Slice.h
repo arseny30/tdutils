@@ -257,4 +257,4 @@ inline CSlice::CSlice(const char *s, const char *t) : Slice(s, t) {
   CHECK(*t == 0);
 }
 
-}  // end of namespace td
+}  // namespace td

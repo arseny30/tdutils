@@ -77,6 +77,6 @@ class WineventPoll final : public PollBase {
   };
   std::vector<FdInfo> fds_;
 };
-}  // end of namespace detail
-}  // end of namespace td
+}  // namespace detail
+}  // namespace td
 #endif  // TD_POLL_WINEVENT

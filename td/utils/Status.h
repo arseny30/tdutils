@@ -488,4 +488,4 @@ inline string winerror_to_string(int code) {
 }
 #endif
 
-}  // end of namespace td
+}  // namespace td
