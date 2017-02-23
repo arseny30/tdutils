@@ -87,7 +87,7 @@ class FileLog : public LogInterface {
   void do_rotate() {
 #ifdef TD_PORT_POSIX
     auto save_verbosity = verbosity_fd;
-    verbosity_fd = 123;
+    verbosity_fd = std::numeric_limits<int32>::max(); // to ensure that nothing will be printed to the log
     CHECK(!path_.empty());
     fd_.close();
     auto r_fd = FileFd::open(path_, FileFd::Create | FileFd::Truncate | FileFd::Write);
