@@ -2,10 +2,12 @@
 
 #include "td/utils/FileLog.h"
 #include "td/utils/misc.h"
+#include "td/utils/port/Clocks.h"
 #include "td/utils/port/Fd.h"
 #include "td/utils/Time.h"
 
 #include <atomic>
+#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -30,6 +32,60 @@ int verbosity_sqlite = 10;
 
 TD_THREAD_LOCAL const char *Logger::tag_ = nullptr;
 TD_THREAD_LOCAL const char *Logger::tag2_ = nullptr;
+
+Logger::Logger(LogInterface &log, int log_level, Slice file_name, int line_num, Slice msg, bool simple_mode)
+    : Logger(log, log_level, simple_mode) {
+  if (simple_mode) {
+    return;
+  }
+
+  auto last_slash_ = static_cast<int32>(file_name.size()) - 1;
+  while (last_slash_ >= 0 && file_name[last_slash_] != '/' && file_name[last_slash_] != '\\') {
+    last_slash_--;
+  }
+  file_name = file_name.substr(last_slash_ + 1);
+
+  printf("[%2d]", log_level);
+  auto tid = get_thread_id();
+  if (tid != -1) {
+    printf("[t%2d]", tid);
+  }
+  printf("[%.9lf]", Clocks::system());
+  (*this) << "[" << file_name << ":" << line_num << "]";
+  if (tag_ != nullptr && *tag_) {
+    (*this) << "[#" << Slice(tag_) << "]";
+  }
+  if (tag2_ != nullptr && *tag2_) {
+    (*this) << "[!" << Slice(tag2_) << "]";
+  }
+  if (!msg.empty()) {
+    (*this) << "[&" << msg << "]";
+  }
+  (*this) << "\t";
+}
+
+Logger &Logger::printf(const char *fmt, ...) {
+  if (!*fmt) {
+    return *this;
+  }
+  va_list list;
+  va_start(list, fmt);
+  sb_.vprintf(fmt, list);
+  va_end(list);
+  return *this;
+}
+
+Logger::~Logger() {
+  if (!simple_mode_) {
+    sb_ << '\n';
+    auto slice = as_cslice();
+    if (slice.back() != '\n') {
+      slice.back() = '\n';
+    }
+  }
+
+  log_.append(as_cslice(), log_level_);
+}
 
 TsCerr::TsCerr() {
   enterCritical();

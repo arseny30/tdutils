@@ -24,15 +24,12 @@
 */
 
 #include "td/utils/common.h"
-#include "td/utils/port/Clocks.h"
 #include "td/utils/Slice-decl.h"
 #include "td/utils/StackAllocator.h"
 #include "td/utils/StringBuilder.h"
 
 #include <atomic>
-#include <cstdarg>  // for va_list, va_end, va_start
-#include <cstdio>   // for snprintf, vsnprintf
-#include <cstring>  // for memcpy, strrchr
+#include <cstdlib>
 
 #define PSTR(...) ::td::Slicify() & ::td::Logger(::td::NullLog().ref(), 0).printf(__VA_ARGS__)
 #define LOG_PREFIX
@@ -179,36 +176,7 @@ class Logger {
       , simple_mode_(simple_mode) {
   }
 
-  Logger(LogInterface &log, int log_level, Slice file_name, int line_num, Slice msg, bool simple_mode)
-      : Logger(log, log_level, simple_mode) {
-    if (simple_mode) {
-      return;
-    }
-
-    auto last_slash_ = static_cast<int32>(file_name.size()) - 1;
-    while (last_slash_ >= 0 && file_name[last_slash_] != '/' && file_name[last_slash_] != '\\') {
-      last_slash_--;
-    }
-    file_name = file_name.substr(last_slash_ + 1);
-
-    printf("[%2d]", log_level);
-    auto tid = get_thread_id();
-    if (tid != -1) {
-      printf("[t%2d]", tid);
-    }
-    printf("[%.9lf]", Clocks::system());
-    (*this) << "[" << file_name << ":" << line_num << "]";
-    if (tag_ != nullptr && *tag_) {
-      (*this) << "[#" << Slice(tag_) << "]";
-    }
-    if (tag2_ != nullptr && *tag2_) {
-      (*this) << "[!" << Slice(tag2_) << "]";
-    }
-    if (!msg.empty()) {
-      (*this) << "[&" << msg << "]";
-    }
-    (*this) << "\t";
-  }
+  Logger(LogInterface &log, int log_level, Slice file_name, int line_num, Slice msg, bool simple_mode);
 
   template <class T>
   Logger &operator<<(const T &other) {
@@ -220,16 +188,8 @@ class Logger {
     return *this;
   }
 
-  Logger &printf(const char *fmt, ...) IF_NO_MSVC(__attribute__((format(printf, 2 /*1 -- is this*/, 3)))) {
-    if (!*fmt) {
-      return *this;
-    }
-    va_list list;
-    va_start(list, fmt);
-    sb_.vprintf(fmt, list);
-    va_end(list);
-    return *this;
-  }
+  Logger &printf(const char *fmt, ...) IF_NO_MSVC(__attribute__((format(printf, 2 /*1 -- is this*/, 3))));
+
   MutableCSlice as_cslice() {
     return sb_.as_cslice();
   }
@@ -237,21 +197,7 @@ class Logger {
   Logger &operator=(const Logger &) = delete;
   Logger(Logger &&) = delete;
   Logger &operator=(Logger &&) = delete;
-  ~Logger() {
-    if (!simple_mode_) {
-      sb_ << '\n';
-      auto slice = as_cslice();
-      if (slice.back() != '\n') {
-        slice.back() = '\n';
-      }
-    }
-
-    log_.append(as_cslice(), log_level_);
-  }
-
-  StringBuilder &string_builder() {
-    return sb_;
-  }
+  ~Logger();
 
   static TD_THREAD_LOCAL const char *tag_;
   static TD_THREAD_LOCAL const char *tag2_;
