@@ -168,6 +168,9 @@ using std::make_unique;
 class ObserverBase {
  public:
   virtual void notify() = 0;
+  ObserverBase() = default;
+  ObserverBase(const ObserverBase &) = delete;
+  ObserverBase &operator=(const ObserverBase &) = delete;
   virtual ~ObserverBase() = default;
 };
 

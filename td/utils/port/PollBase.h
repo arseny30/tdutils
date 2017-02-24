@@ -5,6 +5,9 @@
 namespace td {
 class PollBase {
  public:
+  PollBase() = default;
+  PollBase(const PollBase &) = delete;
+  PollBase &operator=(const PollBase &) = delete;
   virtual ~PollBase() = default;
   virtual void init() = 0;
   virtual void clear() = 0;

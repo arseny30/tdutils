@@ -618,8 +618,10 @@ class JsonValue : public Jsonable {
 class VirtuallyJsonable : public Jsonable {
  public:
   virtual void store(JsonValueScope *scope) const = 0;
-  virtual ~VirtuallyJsonable() {
-  }
+  VirtuallyJsonable() = default;
+  VirtuallyJsonable(const VirtuallyJsonable &) = delete;
+  VirtuallyJsonable &operator=(const VirtuallyJsonable &) = delete;
+  virtual ~VirtuallyJsonable() = default;
 };
 
 class VirtuallyJsonableInt : public VirtuallyJsonable {

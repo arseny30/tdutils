@@ -5,6 +5,9 @@
 namespace td {
 class EventFdBase {
  public:
+  EventFdBase() = default;
+  EventFdBase(const EventFdBase &) = delete;
+  EventFdBase &operator=(const EventFdBase &) = delete;
   virtual ~EventFdBase() = default;
   virtual operator FdRef() = 0;
   virtual void init() = 0;

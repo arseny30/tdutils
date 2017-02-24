@@ -10,6 +10,11 @@ class ByteFlowInterface {
   virtual void set_parent(ByteFlowInterface &other) = 0;
   virtual void set_input(ChainBufferReader *input) = 0;
   virtual size_t get_need_size() = 0;
+  ByteFlowInterface() = default;
+  ByteFlowInterface(const ByteFlowInterface &) = delete;
+  ByteFlowInterface &operator=(const ByteFlowInterface &) = delete;
+  ByteFlowInterface(ByteFlowInterface &&) = default;
+  ByteFlowInterface &operator=(ByteFlowInterface &&) = default;
   virtual ~ByteFlowInterface() = default;
 };
 class ByteFlowBaseCommon : public ByteFlowInterface {
