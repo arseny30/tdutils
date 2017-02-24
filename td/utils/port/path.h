@@ -66,7 +66,9 @@ Status walk_path_subdir(string &path, DIR *dir, Func &&func) {
       continue;
     }
     auto size = path.size();
-    path += TD_DIR_SLASH;
+    if (path.back() != TD_DIR_SLASH) {
+      path += TD_DIR_SLASH;
+    }
     path.append(name.begin(), name.size());
     SCOPE_EXIT {
       path.resize(size);
