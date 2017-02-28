@@ -67,6 +67,8 @@ void KQueue::subscribe(const Fd &fd, Fd::Flags flags) {
   if (flags & Fd::Write) {
     add_change(fd.get_native_fd(), EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, nullptr);
   }
+  // Temptorary fix
+  flush_changes();
 }
 
 void KQueue::invalidate(const Fd &fd) {
