@@ -67,8 +67,6 @@ void KQueue::subscribe(const Fd &fd, Fd::Flags flags) {
   if (flags & Fd::Write) {
     add_change(fd.get_native_fd(), EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, nullptr);
   }
-  // Temptorary fix
-  flush_changes();
 }
 
 void KQueue::invalidate(const Fd &fd) {
@@ -82,7 +80,7 @@ void KQueue::invalidate(const Fd &fd) {
 }
 
 void KQueue::unsubscribe(const Fd &fd) {
-  invalidate(fd);
+  // invalidate(fd);
   add_change(fd.get_native_fd(), EVFILT_READ, EV_DELETE, 0, 0, nullptr);
   add_change(fd.get_native_fd(), EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
   flush_changes();
