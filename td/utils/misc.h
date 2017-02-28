@@ -280,6 +280,26 @@ inline string implode(vector<string> v, char delimiter = ' ') {
   return result;
 }
 
+template <class T, class Func>
+auto transform(const vector<T> &v, Func &f) {
+  vector<decltype(f(v[0]))> result;
+  result.reserve(v.size());
+  for (auto &x : v) {
+    result.push_back(f(x));
+  }
+  return result;
+}
+
+template <class T, class Func>
+auto transform(vector<T> &&v, Func &f) {
+  vector<decltype(f(std::move(v[0])))> result;
+  result.reserve(v.size());
+  for (auto &x : v) {
+    result.push_back(f(std::move(x)));
+  }
+  return result;
+}
+
 inline bool begins_with(Slice str, Slice prefix) {
   return prefix.size() <= str.size() && prefix == Slice(str.data(), prefix.size());
 }
