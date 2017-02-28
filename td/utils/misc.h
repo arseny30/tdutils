@@ -375,7 +375,7 @@ inline string oneline(Slice str) {
 }
 
 template <class T>
-typename std::enable_if<std::is_signed<T>::value, T>::type to_integer(Slice str) {
+std::enable_if_t<std::is_signed<T>::value, T> to_integer(Slice str) {
   using unsigned_T = typename std::make_unsigned<T>::type;
   unsigned_T integer_value = 0;
   auto begin = str.begin();
@@ -403,7 +403,7 @@ typename std::enable_if<std::is_signed<T>::value, T>::type to_integer(Slice str)
 }
 
 template <class T>
-typename std::enable_if<std::is_unsigned<T>::value, T>::type to_integer(Slice str) {
+std::enable_if_t<std::is_unsigned<T>::value, T> to_integer(Slice str) {
   T integer_value = 0;
   auto begin = str.begin();
   auto end = str.end();
@@ -448,7 +448,7 @@ struct safe_undeflying_type {
 };
 
 template <class T>
-struct safe_undeflying_type<T, typename std::enable_if_t<std::is_enum<T>::value>> {
+struct safe_undeflying_type<T, std::enable_if_t<std::is_enum<T>::value>> {
   using type = std::underlying_type_t<T>;
 };
 }

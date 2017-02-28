@@ -180,7 +180,7 @@ class StringBuilder {
 };
 
 template <class T>
-typename std::enable_if<std::is_arithmetic<T>::value, string>::type to_string(const T &x) {
+std::enable_if_t<std::is_arithmetic<T>::value, string> to_string(const T &x) {
   const size_t buf_size = 1000;
   auto buf = StackAllocator<>::alloc(buf_size);
   StringBuilder sb(buf.as_slice());
