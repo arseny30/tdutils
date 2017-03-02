@@ -68,6 +68,7 @@ set (TDUTILS_SOURCE
 
   td/utils/AesCtrByteFlow.h
   td/utils/base64.h
+  td/utils/benchmark.h
   td/utils/buffer.h
   td/utils/BufferedFd.h
   td/utils/BufferedReader.h
@@ -89,6 +90,7 @@ set (TDUTILS_SOURCE
   td/utils/MimeType.h
   td/utils/misc.h
   td/utils/ObjectPool.h
+  td/utils/optional.h
   td/utils/OptionsParser.h
   td/utils/Parser.h
   td/utils/queue.h
@@ -100,6 +102,7 @@ set (TDUTILS_SOURCE
   td/utils/Storer.h
   td/utils/StorerBase.h
   td/utils/StringBuilder.h
+  td/utils/tests.h
   td/utils/Time.h
   td/utils/Timer.h
   td/utils/tl_helpers.h
