@@ -359,4 +359,11 @@ class member_function_class {
 template <class FunctionT>
 using member_function_class_t = typename member_function_class<FunctionT>::type;
 
+template <class T>
+void reset(T &value) {
+  using std::swap;
+  std::decay_t<T> tmp;
+  swap(tmp, value);
+}
+
 }  // namespace td
