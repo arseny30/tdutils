@@ -170,7 +170,6 @@ class ObjectPool {
 
   void release(OwnerPtr &&owner_ptr) {
     Storage *storage = owner_ptr.release();
-    CHECK(!check_empty_flag_ || storage->data.empty()) << this << " " << check_empty_flag_;
     storage->destroy_data();
     release_storage(storage);
   }

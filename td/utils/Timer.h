@@ -14,4 +14,16 @@ class Timer {
   double start_time_;
 };
 
+class PerfWarningTimer {
+ public:
+  PerfWarningTimer() = default;
+  PerfWarningTimer(string name, double max_duration = 0.1);
+  ~PerfWarningTimer();
+
+ private:
+  string name_;
+  double start_at_{0};
+  double max_duration_{0};
+};
+
 }  // namespace td
