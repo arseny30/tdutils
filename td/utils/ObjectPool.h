@@ -146,7 +146,7 @@ class ObjectPool {
 
    private:
     friend class ObjectPool;
-    explicit OwnerPtr(Storage *storage, ObjectPool<DataT> *parent) : storage_(storage), parent_(parent) {
+    OwnerPtr(Storage *storage, ObjectPool<DataT> *parent) : storage_(storage), parent_(parent) {
     }
     Storage *storage_ = nullptr;
     ObjectPool<DataT> *parent_ = nullptr;

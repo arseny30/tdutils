@@ -219,7 +219,7 @@ class BufferWriter {
   BufferWriter() = default;
   explicit BufferWriter(size_t size) : BufferWriter(BufferAllocator::create_writer(size)) {
   }
-  explicit BufferWriter(size_t size, size_t prepend, size_t append)
+  BufferWriter(size_t size, size_t prepend, size_t append)
       : BufferWriter(BufferAllocator::create_writer(size, prepend, append)) {
   }
   explicit BufferWriter(BufferWriterPtr buffer_ptr) : buffer_(std::move(buffer_ptr)) {

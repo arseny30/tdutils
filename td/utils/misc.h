@@ -491,7 +491,7 @@ R narrow_cast(const A &a) {
 template <class StatT>
 class TimedStat {
  public:
-  explicit TimedStat(double duration, double now)
+  TimedStat(double duration, double now)
       : duration_(duration), current_(), current_timestamp_(now), next_(), next_timestamp_(now) {
   }
   TimedStat() : TimedStat(0, 0) {

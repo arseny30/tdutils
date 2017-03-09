@@ -133,7 +133,7 @@ class MutableCSlice : public MutableSlice {
   template <class T>
   explicit MutableCSlice(T s, std::enable_if_t<std::is_same<char *, T>::value, private_tag> = {}) : MutableSlice(s) {
   }
-  explicit MutableCSlice(void *s, void *t);
+  MutableCSlice(void *s, void *t);
 
   template <size_t N>
   constexpr MutableCSlice(char (&a)[N]) = delete;
