@@ -163,7 +163,7 @@ Status walk_path(CSlice path, Func &&func) {
 
 namespace detail {
 template <class Func>
-Status walk_path_dir(const wstring &dir_name, Func &func) {
+Status walk_path_dir(const wstring &dir_name, Func &&func) {
   wstring name = dir_name + L"\\*";
 
   WIN32_FIND_DATA file_data;
@@ -199,7 +199,7 @@ Status walk_path_dir(const wstring &dir_name, Func &func) {
 }  // namespace detail
 
 template <class Func>
-Status walk_path(CSlice path, Func &func) {
+Status walk_path(CSlice path, Func &&func) {
   TRY_RESULT(wpath, to_wstring(path));
   return detail::walk_path_dir(wpath.c_str(), func);
 }
