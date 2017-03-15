@@ -87,7 +87,7 @@ class FileLog : public LogInterface {
   void do_rotate() {
 #ifdef TD_PORT_POSIX
     auto save_verbosity = GET_VERBOSITY_LEVEL();
-    SET_VERBOSITY_LEVEL(verbosity_FATAL); // to ensure that nothing will be printed to the closed log
+    SET_VERBOSITY_LEVEL(verbosity_FATAL - 1); // to ensure that nothing will be printed to the closed log
     CHECK(!path_.empty());
     fd_.close();
     auto r_fd = FileFd::open(path_, FileFd::Create | FileFd::Truncate | FileFd::Write);
