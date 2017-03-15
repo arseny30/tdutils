@@ -71,8 +71,8 @@ class Test : private ListNode {
   test_name TD_CONCAT(test_instance_, TD_CONCAT(test_name, __LINE__))(#test_name); \
   void test_name::run()
 
-#define EXPECT_EQ(a, b) CHECK(a == b)
-#define ASSERT_EQ(a, b) CHECK(a == b)
+#define EXPECT_EQ(a, b) CHECK(a == b) << tag("expected", a) << tag("got", b)
+#define ASSERT_EQ(a, b) CHECK(a == b) << tag("expected", a) << tag("got", b)
 #define EXPECT_TRUE(a) CHECK(a)
 #define ASSERT_TRUE(a) CHECK(a)
 #define EXPECT_STREQ(a, b) EXPECT_EQ(Slice(a), Slice(b))
