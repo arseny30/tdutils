@@ -6,10 +6,11 @@
 #include "td/utils/format.h"
 
 #include <algorithm>
+#include <initializer_list>
+#include <iterator>
+#include <random>
 #include <tuple>
 #include <type_traits>
-#include <initializer_list>
-#include <random>
 
 namespace td {
 
@@ -281,7 +282,7 @@ inline string implode(vector<string> v, char delimiter = ' ') {
 }
 
 template <class T, class Func>
-auto transform(const vector<T> &v, Func &f) {
+auto transform(const vector<T> &v, const Func &f) {
   vector<decltype(f(v[0]))> result;
   result.reserve(v.size());
   for (auto &x : v) {
@@ -291,13 +292,29 @@ auto transform(const vector<T> &v, Func &f) {
 }
 
 template <class T, class Func>
-auto transform(vector<T> &&v, Func &f) {
+auto transform(vector<T> &&v, const Func &f) {
   vector<decltype(f(std::move(v[0])))> result;
   result.reserve(v.size());
   for (auto &x : v) {
     result.push_back(f(std::move(x)));
   }
   return result;
+}
+
+template <class T>
+auto append(vector<T> &destination, const vector<T> &source) {
+  destination.insert(destination.end(), source.begin(), source.end());
+}
+
+template <class T>
+auto append(vector<T> &destination, vector<T> &&source) {
+  if (destination.empty()) {
+    destination.swap(source);
+    return;
+  }
+  destination.reserve(destination.size() + source.size());
+  std::move(source.begin(), source.end(), std::back_inserter(destination));
+  reset(source);
 }
 
 inline bool begins_with(Slice str, Slice prefix) {
