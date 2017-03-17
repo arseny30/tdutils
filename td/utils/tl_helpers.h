@@ -4,34 +4,33 @@
 #include "td/utils/common.h"
 #include "td/utils/misc.h"  // narrow_cast
 #include "td/utils/Slice.h"
-#include "td/utils/Status.h"
 #include "td/utils/StackAllocator.h"
+#include "td/utils/Status.h"
 #include "td/utils/tl_parser.h"
 #include "td/utils/tl_storer.h"
 
-// TODO split to many cpp/h files
 #define BEGIN_STORE_FLAGS() \
-  uint32 flags = 0;         \
-  uint32 bit_offset = 0;
+  uint32 flags_store = 0;   \
+  uint32 bit_offset_store = 0
 
-#define STORE_FLAG(flag)         \
-  flags |= (flag) << bit_offset; \
-  bit_offset++;
+#define STORE_FLAG(flag)                     \
+  flags_store |= (flag) << bit_offset_store; \
+  bit_offset_store++
 
-#define END_STORE_FLAGS() \
-  CHECK(bit_offset < 32); \
-  td::store(flags, storer);
+#define END_STORE_FLAGS()       \
+  CHECK(bit_offset_store < 32); \
+  td::store(flags_store, storer)
 
-#define BEGIN_PARSE_FLAGS() \
-  uint32 flags;             \
-  uint32 bit_offset = 0;    \
-  td::parse(flags, parser);
+#define BEGIN_PARSE_FLAGS()    \
+  uint32 flags_parse;          \
+  uint32 bit_offset_parse = 0; \
+  td::parse(flags_parse, parser)
 
-#define PARSE_FLAG(flag)                   \
-  flag = ((flags >> bit_offset) & 1) != 0; \
-  bit_offset++;
+#define PARSE_FLAG(flag)                               \
+  flag = ((flags_parse >> bit_offset_parse) & 1) != 0; \
+  bit_offset_parse++
 
-#define END_PARSE_FLAGS() CHECK(bit_offset < 32);
+#define END_PARSE_FLAGS() CHECK(bit_offset_parse < 32)
 
 namespace td {
 template <class Storer>
