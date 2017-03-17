@@ -1,9 +1,9 @@
 #pragma once
 
 #include "td/utils/common.h"
-#include "td/utils/Slice.h"
-#include "td/utils/logging.h"
 #include "td/utils/format.h"
+#include "td/utils/logging.h"
+#include "td/utils/Slice.h"
 
 #include <algorithm>
 #include <initializer_list>
@@ -687,7 +687,7 @@ class FloodControlStrict {
   std::vector<Limit> limits_;
 };
 
-inline auto rand_device_helper() {
+inline unsigned int rand_device_helper() {
   static std::random_device rd;
   return rd();
 }
@@ -697,7 +697,7 @@ inline uint32 rand_fast_uint32() {
   return static_cast<uint32>(gen());
 }
 inline uint64 rand_fast_uint64() {
-  static std::mt19937_64 gen(rand_device_helper());
+  static std::mt19937_64 gen(static_cast<std::uint_fast64_t>(rand_device_helper()) + rand_device_helper());
   return static_cast<uint64>(gen());
 }
 
