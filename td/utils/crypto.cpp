@@ -14,8 +14,10 @@
 
 #include <zlib.h>
 
-#include <utility>  // for swap, move
+#include <algorithm>
+#include <cstring>
 #include <random>
+#include <utility>
 
 namespace td {
 static string BN_to_string(const BIGNUM *bn, int size = 0) {
@@ -27,6 +29,24 @@ static string BN_to_string(const BIGNUM *bn, int size = 0) {
   }
   string res(size, 0);
   BN_bn2bin(bn, reinterpret_cast<unsigned char *>(&res[size - num_size]));
+  return res;
+}
+
+template <class FromT>
+static string as_big_endian_string(const FromT &from) {
+  size_t size = sizeof(from);
+  string res(size, '\0');
+
+  auto ptr = reinterpret_cast<const int8 *>(&from);
+  memcpy(&res[0], ptr, size);
+
+  size_t i = size;
+  while (i && res[i - 1] == 0) {
+    i--;
+  }
+
+  res.resize(i);
+  std::reverse(res.begin(), res.end());
   return res;
 }
 
@@ -204,8 +224,8 @@ int pq_factorize(const Slice &pq_str, string *p_str, string *q_str) {
   if (p == 0 || pq % p != 0) {
     return -1;
   }
-  *p_str = as_string(p);
-  *q_str = as_string(pq / p);
+  *p_str = as_big_endian_string(p);
+  *q_str = as_big_endian_string(pq / p);
 
   // std::string p2, q2;
   // pq_factorize_big(pq_str, &p2, &q2);

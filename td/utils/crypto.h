@@ -3,11 +3,6 @@
 #include "td/utils/common.h"
 #include "td/utils/Slice.h"
 
-#include <cstring>  // for memcpy
-
-#include <algorithm>
-#include <string>
-
 namespace td {
 struct UInt128;
 }
@@ -16,27 +11,10 @@ struct UInt256;
 }
 
 namespace td {
+
 uint64 pq_factorize(uint64 pq);
 
 int pq_factorize(const Slice &pq_str, string *p_str, string *q_str);
-
-template <class FromT>
-string as_string(const FromT &from) {
-  size_t size = sizeof(from);
-  string res(size, '\0');
-
-  auto ptr = reinterpret_cast<const int8 *>(&from);
-  memcpy(&res[0], ptr, size);
-
-  size_t i = size;
-  while (i && res[i - 1] == 0) {
-    i--;
-  }
-
-  res.resize(i);
-  std::reverse(res.begin(), res.end());
-  return res;
-}
 
 /*** AES ***/
 ssize_t aes_ige_xcrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag);
