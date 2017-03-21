@@ -86,7 +86,7 @@ inline bool no_return_func() {
 
 const int verbosity_CUSTOM = -6;
 const int verbosity_PLAIN = -5;
-const int verbosity_FATAL = -4;
+constexpr int verbosity_FATAL = -4;
 const int verbosity_ERROR = -3;
 const int verbosity_WARNING = -2;
 const int verbosity_INFO = -1;
