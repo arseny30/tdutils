@@ -84,30 +84,30 @@ inline bool no_return_func() {
   LOG(FATAL, __VA_ARGS__); \
   abort()
 
-const int verbosity_CUSTOM = -6;
-const int verbosity_PLAIN = -5;
+constexpr int verbosity_CUSTOM = -6;
+constexpr int verbosity_PLAIN = -5;
 constexpr int verbosity_FATAL = -4;
-const int verbosity_ERROR = -3;
-const int verbosity_WARNING = -2;
-const int verbosity_INFO = -1;
-const int verbosity_DEBUG = 0;
-const int verbosity_NEVER = 1024;
-const int verbosity_0 = 0;
-const int verbosity_1 = 1;
-const int verbosity_2 = 2;
-const int verbosity_3 = 3;
-const int verbosity_4 = 4;
-const int verbosity_5 = 5;
-const int verbosity_6 = 6;
-const int verbosity_7 = 7;
-const int verbosity_8 = 8;
-const int verbosity_9 = 9;
-const int verbosity_10 = 10;
-const int verbosity_11 = 11;
+constexpr int verbosity_ERROR = -3;
+constexpr int verbosity_WARNING = -2;
+constexpr int verbosity_INFO = -1;
+constexpr int verbosity_DEBUG = 0;
+constexpr int verbosity_NEVER = 1024;
+constexpr int verbosity_0 = 0;
+constexpr int verbosity_1 = 1;
+constexpr int verbosity_2 = 2;
+constexpr int verbosity_3 = 3;
+constexpr int verbosity_4 = 4;
+constexpr int verbosity_5 = 5;
+constexpr int verbosity_6 = 6;
+constexpr int verbosity_7 = 7;
+constexpr int verbosity_8 = 8;
+constexpr int verbosity_9 = 9;
+constexpr int verbosity_10 = 10;
+constexpr int verbosity_11 = 11;
 
 namespace td {
 extern int verbosity_level;
-// Not part of utils. Should be in some separate file
+// TODO Not part of utils. Should be in some separate file
 extern int verbosity_mtproto;
 extern int verbosity_raw_mtproto;
 extern int verbosity_dc;
@@ -217,7 +217,6 @@ class Voidify {
  public:
   template <class T>
   void operator&(const T &) {
-    return;
   }
 };
 
