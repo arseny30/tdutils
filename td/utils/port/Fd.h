@@ -142,7 +142,7 @@ namespace td {
 namespace detail {
 class EventFdWindows;
 class FdImpl;
-}  // detail
+}  // namespace detail
 // like linux fd.
 // also it handles fd destruction
 // descriptor(handler) itself should be create by some external function

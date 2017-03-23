@@ -119,22 +119,21 @@ class DelayedClosure {
   }
 
   template <class FromActorT, class FromFunctionT, class... FromArgsT>
-  DelayedClosure(
-      const DelayedClosure<FromActorT, FromFunctionT, FromArgsT...> &other,
-      std::enable_if_t<!LogicAnd<std::is_copy_constructible<FromArgsT>::value...>::value, int> = 0) {
+  DelayedClosure(const DelayedClosure<FromActorT, FromFunctionT, FromArgsT...> &other,
+                 std::enable_if_t<!LogicAnd<std::is_copy_constructible<FromArgsT>::value...>::value, int> = 0) {
     UNREACHABLE("deleted constructor");
   }
 
   template <class FromActorT, class FromFunctionT, class... FromArgsT>
   std::enable_if_t<!LogicAnd<std::is_copy_constructible<FromArgsT>::value...>::value,
-                            DelayedClosure<FromActorT, FromFunctionT, FromArgsT...>>
+                   DelayedClosure<FromActorT, FromFunctionT, FromArgsT...>>
   do_clone(const DelayedClosure<FromActorT, FromFunctionT, FromArgsT...> &value) const {
     UNREACHABLE("Trying to clone DelayedClosure that contains noncopyable elements");
   }
 
   template <class FromActorT, class FromFunctionT, class... FromArgsT>
   std::enable_if_t<LogicAnd<std::is_copy_constructible<FromArgsT>::value...>::value,
-                            DelayedClosure<FromActorT, FromFunctionT, FromArgsT...>>
+                   DelayedClosure<FromActorT, FromFunctionT, FromArgsT...>>
   do_clone(const DelayedClosure<FromActorT, FromFunctionT, FromArgsT...> &value) const {
     return DelayedClosure<FromActorT, FromFunctionT, FromArgsT...>(value);
   }

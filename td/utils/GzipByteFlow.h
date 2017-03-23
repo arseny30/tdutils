@@ -21,4 +21,4 @@ class GzipByteFlow final : public ByteFlowBase {
   size_t uncommited_size_ = 0;
   static constexpr size_t MIN_UPDATE_SIZE = 1 << 14;
 };
-}
+}  // namespace td

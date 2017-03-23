@@ -70,8 +70,8 @@ Result<FileFd> FileFd::open(const CSlice &filepath, int32 flags, int32 mode) {
   int native_fd = ::open(filepath.c_str(), native_flags, static_cast<mode_t>(mode));
   auto open_errno = errno;
   if (native_fd == -1) {
-    return Status::PosixError(open_errno, PSTR() << "Failed to open file: " << tag("path", filepath)
-                                                 << tag("flags", initial_flags));
+    return Status::PosixError(
+        open_errno, PSTR() << "Failed to open file: " << tag("path", filepath) << tag("flags", initial_flags));
   }
 
   FileFd result;
@@ -141,8 +141,8 @@ Result<size_t> FileFd::pwrite(const Slice &slice, off_t offset) {
         continue;
       }
 
-      auto error = Status::PosixError(pwrite_errno, PSTR() << "Pwrite to [fd = " << native_fd
-                                                           << "] at [offset = " << offset << "] has failed");
+      auto error = Status::PosixError(
+          pwrite_errno, PSTR() << "Pwrite to [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
       if (pwrite_errno != EAGAIN && pwrite_errno != EWOULDBLOCK && pwrite_errno != EIO) {
         LOG(ERROR) << error;
       }
@@ -165,8 +165,8 @@ Result<size_t> FileFd::pread(const MutableSlice &slice, off_t offset) {
         continue;
       }
 
-      auto error = Status::PosixError(pread_errno, PSTR() << "Pread from [fd = " << native_fd
-                                                          << "] at [offset = " << offset << "] has failed");
+      auto error = Status::PosixError(
+          pread_errno, PSTR() << "Pread from [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
       if (pread_errno != EAGAIN && pread_errno != EWOULDBLOCK && pread_errno != EIO) {
         LOG(ERROR) << error;
       }

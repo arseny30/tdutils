@@ -8,7 +8,7 @@
 #include "td/utils/Status.h"
 #include "collection.h"
 #define REF_NEW ref new
-#define CLRCALL 
+#define CLRCALL
 #define CXCONST
 
 namespace CxCli {

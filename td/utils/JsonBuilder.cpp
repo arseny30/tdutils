@@ -572,8 +572,8 @@ Result<JsonValue> get_json_object_field(JsonObject &object, Slice name, JsonValu
   for (auto &field_value : object) {
     if (field_value.first == name) {
       if (type != JsonValue::Type::Null && field_value.second.type() != type) {
-        return Status::Error(400, PSTR() << "Field \"" << name << "\" must be of type "
-                                         << JsonValue::get_type_name(type));
+        return Status::Error(400,
+                             PSTR() << "Field \"" << name << "\" must be of type " << JsonValue::get_type_name(type));
       }
 
       return std::move(field_value.second);

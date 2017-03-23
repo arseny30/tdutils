@@ -277,14 +277,14 @@ class JsonValueScope : public JsonScope {
  public:
   using JsonScope::JsonScope;
   template <class T>
-  std::enable_if_t<std::is_base_of<Jsonable, typename std::decay<T>::type>::value, JsonValueScope &>
-  operator<<(const T &x) {
+  std::enable_if_t<std::is_base_of<Jsonable, typename std::decay<T>::type>::value, JsonValueScope &> operator<<(
+      const T &x) {
     x.store(this);
     return *this;
   }
   template <class T>
-  std::enable_if_t<!std::is_base_of<Jsonable, typename std::decay<T>::type>::value, JsonValueScope &>
-  operator<<(const T &x) {
+  std::enable_if_t<!std::is_base_of<Jsonable, typename std::decay<T>::type>::value, JsonValueScope &> operator<<(
+      const T &x) {
     CHECK(!was_);
     was_ = true;
     JsonScope::operator<<(x);

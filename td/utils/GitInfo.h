@@ -6,4 +6,4 @@ class GitInfo {
   static CSlice commit();
   static bool is_dirty();
 };
-}
+}  // namespace td

@@ -209,8 +209,7 @@ class tl_parser {
 class tl_buffer_parser : public tl_parser {
  public:
   explicit tl_buffer_parser(const BufferSlice *buffer_slice)
-      : tl_parser(buffer_slice->as_slice().begin(), buffer_slice->as_slice().size())
-      , parent_(buffer_slice) {
+      : tl_parser(buffer_slice->as_slice().begin(), buffer_slice->as_slice().size()), parent_(buffer_slice) {
   }
   template <class T>
   inline T fetch_string() {

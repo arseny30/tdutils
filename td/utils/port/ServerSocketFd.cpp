@@ -44,8 +44,8 @@ Status ServerSocketFd::get_pending_error() {
   }
   auto getsockopt_errno = errno;
   LOG(INFO) << "Can't load errno = " << getsockopt_errno;
-  return Status::PosixError(getsockopt_errno, PSTR() << "Can't load error on socket [fd_ = " << fd_.get_native_fd()
-                                                     << "]");
+  return Status::PosixError(getsockopt_errno,
+                            PSTR() << "Can't load error on socket [fd_ = " << fd_.get_native_fd() << "]");
 }
 
 Result<SocketFd> ServerSocketFd::accept() {

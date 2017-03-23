@@ -37,4 +37,4 @@ Status write_file(CSlice to, Slice data) {
   to_file.close();
   return Status::OK();
 }
-}
+}  // namespace td

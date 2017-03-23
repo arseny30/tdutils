@@ -488,7 +488,7 @@ template <class T>
 struct safe_undeflying_type<T, std::enable_if_t<std::is_enum<T>::value>> {
   using type = std::underlying_type_t<T>;
 };
-}
+}  // namespace detail
 
 template <class R, class A>
 R narrow_cast(const A &a) {

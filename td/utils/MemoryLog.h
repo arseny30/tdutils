@@ -54,4 +54,4 @@ class MemoryLog : public LogInterface {
   char buffer_[buffer_size];
   std::atomic<uint32> pos_;
 };
-}
+}  // namespace td

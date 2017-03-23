@@ -132,4 +132,4 @@ BufferSlice gzencode(Slice s, double k) {
   message.confirm_append(gzip.flush_output());
   return message.as_buffer_slice();
 }
-}
+}  // namespace td

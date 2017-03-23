@@ -41,4 +41,4 @@ class AesCtrByteFlow : public ByteFlowInplaceBase {
   UInt256 key_;
   AesCtrState state_;
 };
-}
+}  // namespace td
