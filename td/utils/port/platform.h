@@ -61,29 +61,6 @@
 #error "Unsupported compiler.."
 #endif
 
-#if TD_WINDOWS
-#define NOMINMAX
-#ifndef UNICODE
-#define UNICODE
-#endif
-#ifndef _UNICODE
-#define _UNICODE
-#endif
-#define _CRT_SECURE_NO_WARNINGS
-#include <Winsock2.h>
-#include <ws2tcpip.h>
-#include <Mswsock.h>
-#include <Windows.h>
-#undef ERROR
-#undef small
-#endif
-
-#if TD_MSVC
-#pragma warning(disable : 4200)
-#pragma warning(disable : 4996)
-#pragma warning(disable : 4267)
-#endif
-
 #if TD_MSVC
 #define IF_NO_MSVC(...)
 #define IF_MSVC(...) __VA_ARGS__
@@ -91,8 +68,6 @@
 #define IF_NO_MSVC(...) __VA_ARGS__
 #define IF_MSVC(...)
 #endif
-
-#define ASSERT_CHECK assert
 
 #if TD_GCC || TD_CLANG
 #define WARN_UNUSED_RESULT __attribute__((warn_unused_result))
@@ -115,4 +90,3 @@
 #else
 #define TD_UNUSED
 #endif
-

@@ -4,6 +4,23 @@
 #include "td/utils/int_types.h"
 #include "td/utils/port/thread_local.h"
 
+#if TD_WINDOWS
+#define NOMINMAX
+#ifndef UNICODE
+#define UNICODE
+#endif
+#ifndef _UNICODE
+#define _UNICODE
+#endif
+#define _CRT_SECURE_NO_WARNINGS
+#include <Winsock2.h>
+#include <ws2tcpip.h>
+#include <Mswsock.h>
+#include <Windows.h>
+#undef ERROR
+#undef small
+#endif
+
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -11,6 +28,14 @@
 #include <functional>
 
 #include <cassert>  // TODO remove this header
+
+#define ASSERT_CHECK assert
+
+#if TD_MSVC
+#pragma warning(disable : 4200)
+#pragma warning(disable : 4996)
+#pragma warning(disable : 4267)
+#endif
 
 #define TD_DEBUG
 

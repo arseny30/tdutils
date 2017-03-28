@@ -7,9 +7,9 @@
 #include <poll.h>  // for pollfd, poll, POLLIN
 #include <sched.h>
 #endif
-#include <atomic>   // for atomic_thread_fence, atomic, etc
-#include <utility>  // for aligned_storage
-#include <thread>
+#include <atomic>
+#include <type_traits>
+#include <utility>
 
 using std::atomic_thread_fence;
 using std::atomic;

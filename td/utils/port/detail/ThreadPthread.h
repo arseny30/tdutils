@@ -11,6 +11,8 @@ namespace detail {
 class ThreadPthread {
  public:
   ThreadPthread() = default;
+  ThreadPthread(const ThreadPthread &other) = delete;
+  ThreadPthread &operator=(const ThreadPthread &other) = delete;
   ThreadPthread(ThreadPthread &&) = default;
   ThreadPthread &operator=(ThreadPthread &&) = default;
   template <class Function, class... Args>
