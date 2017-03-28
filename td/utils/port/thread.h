@@ -7,9 +7,11 @@
 namespace td {
 #ifdef TD_THREAD_PTHREAD
 using thread = detail::ThreadPthread;
+namespace this_thread = detail::this_thread_pthread;
 #endif
 
 #ifdef TD_THREAD_STL
 using thread = detail::ThreadStl;
+namespace this_thread = detail::this_thread_stl;
 #endif
 }  // namespace td

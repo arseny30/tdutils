@@ -4,6 +4,7 @@
 #ifdef TD_THREAD_PTHREAD
 
 #include <pthread.h>
+#include <sched.h>
 
 namespace td {
 namespace detail {
@@ -31,6 +32,7 @@ class ThreadPthread {
   ~ThreadPthread() {
     join();
   }
+  using id = pthread_t;
 
  private:
   MovableValue<bool> is_inited_;
@@ -48,6 +50,15 @@ class ThreadPthread {
     return nullptr;
   }
 };
+
+namespace this_thread_pthread {
+inline void yield() {
+  sched_yield();
+}
+inline ThreadPthread::id get_id() {
+  return pthread_self();
+}
+}  // namespace this_thread_pthread
 }  // namespace detail
 }  // namespace td
 

@@ -24,6 +24,8 @@ class ThreadStl {
     thread_.join();
   }
 
+  using id = std::thread::id;
+
  private:
   std::thread thread_;
 
@@ -32,6 +34,7 @@ class ThreadStl {
     return std::forward<T>(v);
   }
 };
+namespace this_thread_stl = std::this_thread;
 }  // namespace detail
 }  // namespace td
 

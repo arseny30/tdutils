@@ -1,6 +1,7 @@
 #pragma once
 
 #include "td/utils/port/EventFd.h"  // for EventFd
+#include "td/utils/port/thread.h"   // for EventFd
 
 #if !TD_WINDOWS
 #include <poll.h>  // for pollfd, poll, POLLIN
@@ -36,7 +37,7 @@ class Backoff {
     if (cnt < 1) {  // 50
       return true;
     } else {
-      std::this_thread::yield();
+      td::this_thread::yield();
       return cnt < 3;  // 500
     }
   }
@@ -55,7 +56,7 @@ class InfBackoff {
     if (cnt < 50) {
       return true;
     } else {
-      std::this_thread::yield();
+      td::this_thread::yield();
       return true;
     }
   }
