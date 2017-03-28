@@ -1,138 +1,18 @@
 #pragma once
 
-/*** Platform macros ***/
-#if defined(_WIN32)
-// define something for Windows (32-bit and 64-bit, this part is common)
-#if defined(_WIN64)
-// define something for Windows (64-bit only)
-#endif
-#if defined(__cplusplus_winrt)
-#define TD_WINRT 1
-#endif
-#if defined(__cplusplus_cli)
-#define TD_CLI 1
-#endif
-#define TD_WINDOWS 1
-
-#elif defined(__APPLE__)
-#include "TargetConditionals.h"
-#if TARGET_IPHONE_SIMULATOR
-// iOS Simulator
-#error "iOS Simulator is not supported"
-#elif TARGET_OS_IPHONE
-// iOS device
-#error "iOS device is not supported"
-#elif TARGET_OS_MAC
-// Other kinds of Mac OS
-#define TD_MAC 1
-#else
-// Unsupported platform
-#error "Unknown Apple platform device is not supported"
-#endif
-
-#elif defined(__ANDROID__)
-#define TD_ANDROID 1
-
-#elif defined(__linux__)
-// linux
-#define TD_LINUX 1
-
-#elif defined(__unix__)  // all unices not caught above
-// Unix
-#error "Unix is unsupported"
-
-#else
-#error "Unknown unsupported platform"
-#endif
-
-#if defined(__clang__)
-// Clang
-#define TD_CLANG 1
-#elif defined(__ICC) || defined(__INTEL_COMPILER)
-// Intel compiler
-#define TD_INTEL 1
-#elif defined(__GNUC__) || defined(__GNUG__)
-// GNU GCC/G++.
-#define TD_GCC 1
-#elif defined(_MSC_VER)
-// Microsoft Visual Studio
-#define TD_MSVC 1
-#else
-#error "Unsupported compiler.."
-#endif
-
-#if TD_WINDOWS
-#define NOMINMAX
-#ifndef UNICODE
-#define UNICODE
-#endif
-#ifndef _UNICODE
-#define _UNICODE
-#endif
-#define _CRT_SECURE_NO_WARNINGS
-#include <Winsock2.h>
-#include <ws2tcpip.h>
-#include <Mswsock.h>
-#include <Windows.h>
-#undef ERROR
-#undef small
-#endif
-
-#if TD_MSVC
-#pragma warning(disable : 4200)
-#pragma warning(disable : 4996)
-#pragma warning(disable : 4267)
-#endif
-
-#if TD_ANDROID
-#define TD_THREAD_LOCAL __thread
-#else
-#define TD_HAS_CPP_THREAD_LOCAL 1
-#define TD_THREAD_LOCAL thread_local
-#endif
-
-#if TD_MSVC
-#define IF_NO_MSVC(...)
-#define IF_MSVC(...) __VA_ARGS__
-#else
-#define IF_NO_MSVC(...) __VA_ARGS__
-#define IF_MSVC(...)
-#endif
-
+#include "td/utils/port/platform.h"
 #include "td/utils/int_types.h"
+#include "td/utils/port/thread_local.h"
 
 #include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
+#include <functional>
 
 #include <cassert>  // TODO remove this header
 
 #define TD_DEBUG
-
-#define ASSERT_CHECK assert
-
-#if TD_GCC || TD_CLANG
-#define WARN_UNUSED_RESULT __attribute__((warn_unused_result))
-#else
-#define WARN_UNUSED_RESULT
-#endif
-
-#if TD_CLANG || TD_GCC
-#define likely(x) __builtin_expect(x, 1)
-#define unlikely(x) __builtin_expect(x, 0)
-#else
-#define likely(x) x
-#define unlikely(x) x
-#endif
-
-#if TD_MSVC
-#define TD_UNUSED __pragma(warning(suppress : 4100))
-#elif TD_CLANG || TD_GCC
-#define TD_UNUSED __attribute__((unused))
-#else
-#define TD_UNUSED
-#endif
 
 #define TD_CONCAT_IMPL(x, y) x##y
 #define TD_CONCAT(x, y) TD_CONCAT_IMPL(x, y)
@@ -195,14 +75,6 @@ class Observer : ObserverBase {
  private:
   unique_ptr<ObserverBase> observer_ptr_;
 };
-
-extern TD_THREAD_LOCAL int32 thread_id_;
-inline void set_thread_id(int32 id) {
-  thread_id_ = id;
-}
-inline int32 get_thread_id() {
-  return thread_id_;
-}
 
 template <class T, T empty_val = T()>
 class MovableValue {
@@ -288,6 +160,89 @@ void call_tuple_impl(F &func, std::tuple<Args...> &&tuple, IntSeq<S...>) {
 template <class F, class... Args>
 void call_tuple(F &func, std::tuple<Args...> &&tuple) {
   call_tuple_impl(func, std::move(tuple), IntRange<sizeof...(Args)>());
+}
+
+namespace detail {
+template <class T>
+struct is_reference_wrapper : std::false_type {};
+template <class U>
+struct is_reference_wrapper<std::reference_wrapper<U>> : std::true_type {};
+template <class T>
+constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value;
+
+template <class Base, class T, class Derived, class... Args>
+auto INVOKE(T Base::*pmf, Derived &&ref,
+            Args &&... args) noexcept(noexcept((std::forward<Derived>(ref).*pmf)(std::forward<Args>(args)...)))
+    -> std::enable_if_t<std::is_function<T>::value && std::is_base_of<Base, std::decay<Derived>>::value,
+                        decltype((std::forward<Derived>(ref).*pmf)(std::forward<Args>(args)...))> {
+  return (std::forward<Derived>(ref).*pmf)(std::forward<Args>(args)...);
+}
+
+template <class Base, class T, class RefWrap, class... Args>
+auto INVOKE(T Base::*pmf, RefWrap &&ref,
+            Args &&... args) noexcept(noexcept((ref.get().*pmf)(std::forward<Args>(args)...)))
+    -> std::enable_if_t<std::is_function<T>::value && is_reference_wrapper_v<std::decay_t<RefWrap>>,
+                        decltype((ref.get().*pmf)(std::forward<Args>(args)...))>
+
+{
+  return (ref.get().*pmf)(std::forward<Args>(args)...);
+}
+
+template <class Base, class T, class Pointer, class... Args>
+auto INVOKE(T Base::*pmf, Pointer &&ptr,
+            Args &&... args) noexcept(noexcept(((*std::forward<Pointer>(ptr)).*pmf)(std::forward<Args>(args)...)))
+    -> std::enable_if_t<std::is_function<T>::value && !is_reference_wrapper<std::decay_t<Pointer>>::value &&
+                            !std::is_base_of<Base, std::decay_t<Pointer>>::value,
+                        decltype(((*std::forward<Pointer>(ptr)).*pmf)(std::forward<Args>(args)...))> {
+  return ((*std::forward<Pointer>(ptr)).*pmf)(std::forward<Args>(args)...);
+}
+
+template <class Base, class T, class Derived>
+auto INVOKE(T Base::*pmd, Derived &&ref) noexcept(noexcept(std::forward<Derived>(ref).*pmd))
+    -> std::enable_if_t<!std::is_function<T>::value && std::is_base_of<Base, std::decay_t<Derived>>::value,
+                        decltype(std::forward<Derived>(ref).*pmd)> {
+  return std::forward<Derived>(ref).*pmd;
+}
+
+template <class Base, class T, class RefWrap>
+auto INVOKE(T Base::*pmd, RefWrap &&ref) noexcept(noexcept(ref.get().*pmd))
+    -> std::enable_if_t<!std::is_function<T>::value && is_reference_wrapper<std::decay_t<RefWrap>>::value,
+                        decltype(ref.get().*pmd)> {
+  return ref.get().*pmd;
+}
+
+template <class Base, class T, class Pointer>
+auto INVOKE(T Base::*pmd, Pointer &&ptr) noexcept(noexcept((*std::forward<Pointer>(ptr)).*pmd))
+    -> std::enable_if_t<!std::is_function<T>::value && !is_reference_wrapper<std::decay_t<Pointer>>::value &&
+                            !std::is_base_of<Base, std::decay_t<Pointer>>::value,
+                        decltype((*std::forward<Pointer>(ptr)).*pmd)> {
+  return (*std::forward<Pointer>(ptr)).*pmd;
+}
+
+template <class F, class... Args>
+auto INVOKE(F &&f, Args &&... args) noexcept(noexcept(std::forward<F>(f)(std::forward<Args>(args)...)))
+    -> std::enable_if_t<!std::is_member_pointer<std::decay_t<F>>::value,
+                        decltype(std::forward<F>(f)(std::forward<Args>(args)...))> {
+  return std::forward<F>(f)(std::forward<Args>(args)...);
+}
+}  // namespace detail
+
+template <class F, class... ArgTypes>
+auto invoke(F &&f, ArgTypes &&... args)
+    // exception specification for QoI
+    noexcept(noexcept(detail::INVOKE(std::forward<F>(f), std::forward<ArgTypes>(args)...)))
+        -> decltype(detail::INVOKE(std::forward<F>(f), std::forward<ArgTypes>(args)...)) {
+  return detail::INVOKE(std::forward<F>(f), std::forward<ArgTypes>(args)...);
+}
+
+template <class... Args, int... S>
+void invoke_tuple_impl(std::tuple<Args...> &&tuple, IntSeq<S...>) {
+  invoke(std::forward<Args>(std::get<S>(tuple))...);
+}
+
+template <class... Args>
+void invoke_tuple(std::tuple<Args...> &&tuple) {
+  invoke_tuple_impl(std::move(tuple), IntRange<sizeof...(Args)>());
 }
 
 template <class Actor, class F, class... Args, int... S>

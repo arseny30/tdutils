@@ -418,7 +418,10 @@ inline StringBuilder &operator<<(StringBuilder &string_builder, const Status &st
 
 inline CSlice strerror_safe(int code) {
   const size_t size = 1000;
-  static TD_THREAD_LOCAL char buf[size];
+
+  TD_THREAD_LOCAL static char *buf;  // static zero initialized
+  init_thread_local<char[]>(buf, size);
+
 #if TD_WINDOWS
   strerror_s(buf, size, code);
   return CSlice(buf, buf + strlen(buf));

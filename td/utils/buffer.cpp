@@ -2,17 +2,7 @@
 
 namespace td {
 
-// TD_THREAD_LOCAL BufferRaw *BufferAllocator::buffer_raw_tls;
-#if TD_HAS_CPP_THREAD_LOCAL
-TD_THREAD_LOCAL std::unique_ptr<BufferRaw, BufferAllocator::BufferRawDeleter> BufferAllocator::buffer_raw_tls;
-void BufferAllocator::clear_thread_local() {
-  buffer_raw_tls.reset();
-}
-#else
-TD_THREAD_LOCAL BufferRaw *BufferAllocator::buffer_raw_tls;
-void BufferAllocator::clear_thread_local() {
-}
-#endif
+TD_THREAD_LOCAL BufferAllocator::BufferRawTls *BufferAllocator::buffer_raw_tls;  // static zero initialized
 
 std::atomic<size_t> BufferAllocator::buffer_mem;
 
@@ -50,22 +40,12 @@ BufferAllocator::ReaderPtr BufferAllocator::create_reader(size_t size) {
 BufferAllocator::ReaderPtr BufferAllocator::create_reader_fast(size_t size) {
   size = (size + 7) & -8;
 
-#if TD_HAS_CPP_THREAD_LOCAL
-  auto buffer_raw = buffer_raw_tls.get();
-#else
-  auto buffer_raw = buffer_raw_tls;
-#endif
+  init_thread_local<BufferRawTls>(buffer_raw_tls);
+
+  auto buffer_raw = buffer_raw_tls->buffer_raw.get();
   if (buffer_raw == nullptr || buffer_raw->data_size_ - buffer_raw->end_.load(std::memory_order_relaxed) < size) {
-#if TD_HAS_CPP_THREAD_LOCAL
     buffer_raw = create_buffer_raw(4096 * 4);
-    buffer_raw_tls = std::unique_ptr<BufferRaw, BufferAllocator::BufferRawDeleter>(buffer_raw);
-#else
-    if (buffer_raw != nullptr) {
-      dec_ref_cnt(buffer_raw);
-    }
-    buffer_raw = create_buffer_raw(4096 * 4);
-    buffer_raw_tls = buffer_raw;
-#endif
+    buffer_raw_tls->buffer_raw = std::unique_ptr<BufferRaw, BufferAllocator::BufferRawDeleter>(buffer_raw);
   }
   buffer_raw->end_.fetch_add(size, std::memory_order_relaxed);
   buffer_raw->ref_cnt_.fetch_add(1, std::memory_order_acq_rel);
@@ -110,4 +90,4 @@ BufferRaw *BufferAllocator::create_buffer_raw(size_t size) {
   buffer_raw->was_reader_ = false;
   return buffer_raw;
 }
-}
+}  // namespace td

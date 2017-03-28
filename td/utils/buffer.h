@@ -69,11 +69,11 @@ class BufferAllocator {
       dec_ref_cnt(ptr);
     }
   };
-#if TD_HAS_CPP_THREAD_LOCAL
-  static TD_THREAD_LOCAL std::unique_ptr<BufferRaw, BufferRawDeleter> buffer_raw_tls;
-#else
-  static TD_THREAD_LOCAL BufferRaw *buffer_raw_tls;
-#endif
+  struct BufferRawTls {
+    std::unique_ptr<BufferRaw, BufferRawDeleter> buffer_raw;
+  };
+
+  static TD_THREAD_LOCAL BufferRawTls *buffer_raw_tls;
 
   static void dec_ref_cnt(BufferRaw *ptr);
 

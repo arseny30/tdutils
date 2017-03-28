@@ -17,6 +17,7 @@ set (TDUTILS_SOURCE
   td/utils/port/ServerSocketFd.cpp
   td/utils/port/SocketFd.cpp
   td/utils/port/Stat.cpp
+  td/utils/port/thread_local.cpp
   td/utils/port/detail/Epoll.cpp
   td/utils/port/detail/EventFdBsd.cpp
   td/utils/port/detail/EventFdPosix.cpp
@@ -36,6 +37,7 @@ set (TDUTILS_SOURCE
   td/utils/JsonBuilder.cpp
   td/utils/logging.cpp
   td/utils/MimeType.cpp
+  td/utils/Status.cpp
   td/utils/Time.cpp
   td/utils/Timer.cpp
   td/utils/tl_parser.cpp
@@ -52,18 +54,23 @@ set (TDUTILS_SOURCE
   td/utils/port/FileFd.h
   td/utils/port/IPAddress.h
   td/utils/port/path.h
+  td/utils/port/platform.h
   td/utils/port/Poll.h
   td/utils/port/PollBase.h
   td/utils/port/RwMutex.h
   td/utils/port/ServerSocketFd.h
   td/utils/port/SocketFd.h
   td/utils/port/Stat.h
+  td/utils/port/thread.h
+  td/utils/port/thread_local.h
   td/utils/port/detail/Epoll.h
   td/utils/port/detail/EventFdBsd.h
   td/utils/port/detail/EventFdPosix.h
   td/utils/port/detail/EventFdWindows.h
   td/utils/port/detail/KQueue.h
   td/utils/port/detail/Select.h
+  td/utils/port/detail/ThreadPthread.h
+  td/utils/port/detail/ThreadStl.h
   td/utils/port/detail/WineventPoll.h
 
   td/utils/AesCtrByteFlow.h

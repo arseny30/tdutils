@@ -366,8 +366,11 @@ void Random::secure_bytes(MutableSlice dest) {
 }
 void Random::secure_bytes(uint8 *ptr, size_t size) {
   constexpr size_t buf_size = 512;
-  static TD_THREAD_LOCAL uint8 buf[buf_size];
-  static TD_THREAD_LOCAL size_t buf_pos = buf_size;
+  static TD_THREAD_LOCAL uint8 *buf;  // static zero initialized
+  static TD_THREAD_LOCAL size_t buf_pos;
+  if (init_thread_local<uint8[]>(buf, buf_size)) {
+    buf_pos = buf_size;
+  }
 
   auto ready = std::min(size, buf_size - buf_pos);
   if (ready != 0) {

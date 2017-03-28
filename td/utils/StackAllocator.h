@@ -2,6 +2,8 @@
 #include "td/utils/common.h"
 #include "td/utils/Slice-decl.h"
 
+#include <array>
+
 namespace td {
 
 struct DefaultStackAllocatorTag {};
@@ -12,7 +14,7 @@ class StackAllocator {
   class Deleter {
    public:
     void operator()(void *ptr) {
-      impl_.free(ptr);
+      free(ptr);
     }
   };
   // memory still can be corrupted, but it is better than explicit free function.
@@ -39,67 +41,43 @@ class StackAllocator {
     MovableValue<size_t> size_;
   };
   static Ptr alloc(size_t size) {
-    return Ptr(impl_.alloc(size), size);
-  }
-  static void clear_thread_local() {
-    impl_.clear_thread_local();
+    return Ptr(impl().alloc(size), size);
   }
 
  private:
   static void free(void *ptr) {
-    impl_.free(ptr);
+    impl().free(ptr);
   }
   struct Impl {
     static const size_t MEM_SIZE = 1024 * 1024;
-#if TD_MAC && TD_HAS_CPP_THREAD_LOCAL
-    char *mem = nullptr;
-    Impl() = default;
-    Impl(const Impl &other) = delete;
-    Impl &operator=(const Impl &other) = delete;
-    Impl(Impl &&other) = delete;
-    Impl &operator=(Impl &&other) = delete;
-    ~Impl() {
-      clear_thread_local();
-    }
-    void clear_thread_local() {
-      if (mem) {
-        delete[] mem;
-        mem = nullptr;
-      }
-    }
-#else
-    char mem[MEM_SIZE];
-    void clear_thread_local() {
-    }
-#endif
+    std::array<char, MEM_SIZE> mem;
 
-    size_t pos;  // Impl is static, so pos == 0.
+    size_t pos{0};
     void *alloc(size_t size) {
-#if TD_MAC && TD_HAS_CPP_THREAD_LOCAL
-      if (!mem) {
-        mem = new char[MEM_SIZE];
-      }
-#endif
       if (size == 0) {
         size = 1;
       }
-      void *res = mem + pos;
+      void *res = mem.data() + pos;
       size = (size + 7) & -8;
       pos += size;
       ASSERT_CHECK(pos < MEM_SIZE);
       return res;
     }
     void free(void *ptr) {
-      size_t new_pos = static_cast<char *>(ptr) - mem;
+      size_t new_pos = static_cast<char *>(ptr) - mem.data();
       ASSERT_CHECK(new_pos < MEM_SIZE);
       ASSERT_CHECK(new_pos < pos);
       pos = new_pos;
     }
   };
-  static TD_THREAD_LOCAL Impl impl_;
+  static Impl &impl() {
+    init_thread_local<Impl>(impl_);
+    return *impl_;
+  }
+  static TD_THREAD_LOCAL Impl *impl_;
 };
 
 template <class Tag>
-TD_THREAD_LOCAL typename StackAllocator<Tag>::Impl StackAllocator<Tag>::impl_;
+TD_THREAD_LOCAL typename StackAllocator<Tag>::Impl *StackAllocator<Tag>::impl_;  // static zero initialized
 
 }  // namespace td
