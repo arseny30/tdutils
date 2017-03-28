@@ -30,11 +30,13 @@
 #error "Unknown Apple platform device is not supported"
 #endif
 
-#elif defined(__ANDROID__)
+#elif defined(ANDROID) || defined(__ANDROID__)
 #define TD_ANDROID 1
 
+#elif defined(TIZEN_DEPRECATION)
+#define TD_TIZEN 1
+
 #elif defined(__linux__)
-// linux
 #define TD_LINUX 1
 
 #elif defined(__unix__)  // all unices not caught above

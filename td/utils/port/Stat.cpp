@@ -25,7 +25,7 @@
 #pragma GCC diagnostic pop
 #endif
 
-#if TD_ANDROID
+#if TD_ANDROID || TD_TIZEN
 #include <sys/syscall.h>
 #include <sys/stat.h>
 #endif
@@ -34,7 +34,7 @@ namespace td {
 namespace detail {
 Stat from_native_stat(const struct ::stat &buf) {
   Stat res;
-#if TD_ANDROID || TD_LINUX
+#if TD_ANDROID || TD_LINUX || TD_TIZEN
 #if defined(_BSD_SOURCE) || defined(_SVID_SOURCE) || _POSIX_C_SOURCE >= 200809L || _XOPEN_SOURCE >= 700
   res.mtime_nsec_ = buf.st_mtime * 1000000000ll + buf.st_mtim.tv_nsec;
   res.atime_nsec_ = buf.st_atime * 1000000000ll + buf.st_atim.tv_nsec;
@@ -101,7 +101,7 @@ Status update_atime(int native_fd) {
     return status;
   }
   return Status::OK();
-#elif TD_ANDROID
+#elif TD_ANDROID || TD_TIZEN
   return Status::Error();
 // NOT SUPPORTED...
 // struct timespec times[2];
@@ -157,7 +157,7 @@ Result<MemStat> mem_stat() {
   return res;
 #endif  // TD_MAC
 
-#if TD_LINUX || TD_ANDROID
+#if TD_LINUX || TD_ANDROID || TD_TIZEN
   TRY_RESULT(fd, FileFd::open("/proc/self/status", FileFd::Read));
   SCOPE_EXIT {
     fd.close();

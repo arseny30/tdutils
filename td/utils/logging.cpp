@@ -15,6 +15,9 @@
 #if TD_ANDROID
 #include <android/log.h>
 #define ALOG_TAG "DLTD"
+#elif TD_TIZEN
+#include <dlog.h>
+#define DLOG_TAG "DLTD"
 #endif
 
 namespace td {
@@ -142,14 +145,33 @@ class DefaultLog : public LogInterface {
       case VERBOSITY_NAME(INFO):
         __android_log_write(ANDROID_LOG_INFO, ALOG_TAG, slice.c_str());
         break;
-      case VERBOSITY_NAME(CUSTOM):
       case VERBOSITY_NAME(DEBUG):
+      case VERBOSITY_NAME(CUSTOM):
+      default:
         __android_log_write(ANDROID_LOG_DEBUG, ALOG_TAG, slice.c_str());
         break;
     }
-#endif
-
-#ifdef TD_PORT_POSIX
+#elif TD_TIZEN
+    switch (log_level) {
+      case VERBOSITY_NAME(FATAL):
+        dlog_print(DLOG_ERROR, DLOG_TAG, slice.c_str());
+        break;
+      case VERBOSITY_NAME(ERROR):
+        dlog_print(DLOG_ERROR, DLOG_TAG, slice.c_str());
+        break;
+      case VERBOSITY_NAME(WARNING):
+        dlog_print(DLOG_WARN, DLOG_TAG, slice.c_str());
+        break;
+      case VERBOSITY_NAME(INFO):
+        dlog_print(DLOG_INFO, DLOG_TAG, slice.c_str());
+        break;
+      case VERBOSITY_NAME(DEBUG):
+      case VERBOSITY_NAME(CUSTOM):
+      default:
+        dlog_print(DLOG_DEBUG, DLOG_TAG, slice.c_str());
+        break;
+    }
+#elif TD_PORT_POSIX
     Slice color;
     switch (log_level) {
       case VERBOSITY_NAME(FATAL):
