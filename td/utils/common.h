@@ -192,8 +192,6 @@ template <class T>
 struct is_reference_wrapper : std::false_type {};
 template <class U>
 struct is_reference_wrapper<std::reference_wrapper<U>> : std::true_type {};
-template <class T>
-constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value;
 
 template <class Base, class T, class Derived, class... Args>
 auto INVOKE(T Base::*pmf, Derived &&ref,
@@ -206,7 +204,7 @@ auto INVOKE(T Base::*pmf, Derived &&ref,
 template <class Base, class T, class RefWrap, class... Args>
 auto INVOKE(T Base::*pmf, RefWrap &&ref,
             Args &&... args) noexcept(noexcept((ref.get().*pmf)(std::forward<Args>(args)...)))
-    -> std::enable_if_t<std::is_function<T>::value && is_reference_wrapper_v<std::decay_t<RefWrap>>,
+    -> std::enable_if_t<std::is_function<T>::value && is_reference_wrapper<std::decay_t<RefWrap>>::value,
                         decltype((ref.get().*pmf)(std::forward<Args>(args)...))>
 
 {

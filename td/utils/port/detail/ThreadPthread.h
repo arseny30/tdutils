@@ -28,6 +28,7 @@ class ThreadPthread {
   }
   void join() {
     if (is_inited_.get()) {
+      is_inited_ = false;
       pthread_join(thread_, nullptr);
     }
   }
