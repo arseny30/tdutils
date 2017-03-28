@@ -11,16 +11,10 @@ namespace td {
 
 #ifdef TD_THREAD_STL
 #define TD_THREAD_LOCAL thread_local
-#define TD_HAS_CPP_THREAD_LOCAL 1
 #endif
 
-extern TD_THREAD_LOCAL int32 thread_id_;
-inline void set_thread_id(int32 id) {
-  thread_id_ = id;
-}
-inline int32 get_thread_id() {
-  return thread_id_;
-}
+void set_thread_id(int32 id);
+int32 get_thread_id();
 
 // If raw_ptr is not nullptr, allocate T as in std::make_unique<T>(args...) and store pointer into raw_ptr
 template <class T, class P, class... ArgsT>
@@ -29,6 +23,8 @@ bool init_thread_local(P& raw_ptr, ArgsT&&... args);
 void clear_thread_locals();
 
 namespace detail {
+extern TD_THREAD_LOCAL int32 thread_id_;
+
 class Destructor {
  public:
   virtual ~Destructor() = default;
@@ -72,5 +68,12 @@ inline bool init_thread_local(P& raw_ptr, ArgsT&&... args) {
   }
   detail::do_init_thread_local<T>(raw_ptr, std::forward<ArgsT>(args)...);
   return true;
+}
+
+inline void set_thread_id(int32 id) {
+  detail::thread_id_ = id;
+}
+inline int32 get_thread_id() {
+  return detail::thread_id_;
 }
 }  // namespace td

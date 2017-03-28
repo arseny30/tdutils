@@ -175,7 +175,8 @@ Slice IPAddress::get_ip_str() const {
   }
 
   const int buf_size = INET6_ADDRSTRLEN;  //, INET_ADDRSTRLEN;
-  static TD_THREAD_LOCAL char buf[buf_size];
+  static TD_THREAD_LOCAL char *buf;
+  init_thread_local<char[]>(buf, buf_size);
   const void *addr;
   switch (get_address_family()) {
     case AF_INET6:
