@@ -104,7 +104,7 @@ TsCerr &TsCerr::operator<<(Slice slice) {
       if (res.error().code() == EPIPE) {
         break;
       }
-      // Resource temporary unavalible.
+      // Resource temporary unavailable
       if (end_time == 0) {
         end_time = Time::now() + 0.01;
       } else if (Time::now() > end_time) {
