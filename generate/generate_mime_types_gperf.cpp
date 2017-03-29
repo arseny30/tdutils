@@ -53,8 +53,7 @@ bool generate(const char *file_name, const char *from_name, const char *to_name,
   out << "%%\n";
   out << "const char *" << from_name << "_to_" << to_name << "(const char *" << from_name << ", size_t " << from_name
       << "_len) {\n";
-  out << "  const auto &result = search_" << from_name << "(" << from_name << ", (unsigned int)" << from_name
-      << "_len);\n";
+  out << "  const auto &result = search_" << from_name << "(" << from_name << ", " << from_name << "_len);\n";
   out << "  if (result == nullptr) {\n";
   out << "    return nullptr;\n";
   out << "  }\n";

@@ -9,6 +9,10 @@ add_subdirectory(generate)
 
 # TDUTILS
 set_source_files_properties(${TDMIME_AUTO} PROPERTIES GENERATED TRUE)
+if (NOT MSVC)
+  set_source_files_properties(${TDMIME_AUTO} PROPERTIES COMPILE_FLAGS -Wno-conversion)
+endif()
+
 set (TDUTILS_SOURCE
   td/utils/port/Fd.cpp
   td/utils/port/FileFd.cpp
