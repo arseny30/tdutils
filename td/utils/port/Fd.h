@@ -1,9 +1,10 @@
 #pragma once
+
 #include "td/utils/port/config.h"
+
 #ifdef TD_PORT_POSIX
 
 #include "td/utils/port/Stat.h"
-
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
 

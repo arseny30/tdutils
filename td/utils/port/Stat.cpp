@@ -1,15 +1,14 @@
 #include "td/utils/port/config.h"
+
+#include "td/utils/port/FileFd.h"
+#include "td/utils/port/Stat.h"
+
 #ifdef TD_PORT_POSIX
 
-#include <inttypes.h>
-#include <cstdio>
-
-#include "td/utils/port/Stat.h"
 #include "td/utils/format.h"
 #include "td/utils/misc.h"
-#include "td/utils/ScopeGuard.h"
-#include "td/utils/port/FileFd.h"
 #include "td/utils/port/Clocks.h"
+#include "td/utils/ScopeGuard.h"
 
 #if TD_MAC
 #include <mach/mach.h>
@@ -29,6 +28,9 @@
 #include <sys/syscall.h>
 #include <sys/stat.h>
 #endif
+
+#include <cinttypes>
+#include <cstdio>
 
 namespace td {
 namespace detail {
@@ -131,6 +133,7 @@ Status update_atime(CSlice path) {
   };
   return detail::update_atime(file.get_native_fd());
 }
+
 Result<Stat> stat(CSlice path) {
   struct ::stat buf;
   int err = stat(path.c_str(), &buf);
@@ -222,12 +225,12 @@ Result<MemStat> mem_stat() {
 #endif  // TD_PORT_POSIX
 
 #ifdef TD_PORT_WINDOWS
-#include "td/utils/port/Stat.h"
-#include "td/utils/port/FileFd.h"
 namespace td {
+
 Result<Stat> stat(CSlice path) {
   TRY_RESULT(fd, FileFd::open(path, FileFd::Flags::Read));
   return fd.stat();
 }
+
 }  // namespace td
 #endif  // TD_PORT_WINDOWS
