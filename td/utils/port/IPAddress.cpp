@@ -82,7 +82,7 @@ void IPAddress::init_ipv6_any() {
   ipv6_addr_.sin6_port = 0;
 }
 
-Status IPAddress::init_ipv6_port(const CSlice &ipv6, int port) {
+Status IPAddress::init_ipv6_port(CSlice ipv6, int port) {
   is_valid_ = false;
   if (port <= 0 || port >= (1 << 16)) {
     return Status::Error(PSTR() << "Invalid [port=" << port << "]");
@@ -101,11 +101,11 @@ Status IPAddress::init_ipv6_port(const CSlice &ipv6, int port) {
   return Status::OK();
 }
 
-Status IPAddress::init_ipv6_as_ipv4_port(const CSlice &ipv4, int port) {
+Status IPAddress::init_ipv6_as_ipv4_port(CSlice ipv4, int port) {
   return init_ipv6_port(string("::FFFF:").append(ipv4.begin(), ipv4.size()), port);
 }
 
-Status IPAddress::init_ipv4_port(const CSlice &ipv4, int port) {
+Status IPAddress::init_ipv4_port(CSlice ipv4, int port) {
   is_valid_ = false;
   if (port <= 0 || port >= (1 << 16)) {
     return Status::Error(PSTR() << "Invalid [port=" << port << "[");
@@ -124,15 +124,18 @@ Status IPAddress::init_ipv4_port(const CSlice &ipv4, int port) {
   return Status::OK();
 }
 
-Status IPAddress::init_host_port(const CSlice &host, int port) {
+Status IPAddress::init_host_port(CSlice host, int port) {
   auto str_port = to_string(port);
+  return init_host_port(host, str_port);
+}
+Status IPAddress::init_host_port(CSlice host, CSlice port) {
   struct addrinfo hints;
   struct addrinfo *info = nullptr;
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_INET;  // TODO AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
-  LOG(INFO) << "Try to init ipv4 address with port " << str_port;
-  auto s = getaddrinfo(host.c_str(), str_port.c_str(), &hints, &info);
+  LOG(INFO) << "Try to init ipv4 address with port " << port;
+  auto s = getaddrinfo(host.c_str(), port.c_str(), &hints, &info);
   if (s != 0) {
     return Status::Error(PSTR() << "getaddrinfo: " << gai_strerror(s));
   }
@@ -151,6 +154,14 @@ Status IPAddress::init_host_port(const CSlice &host, int port) {
   // just use first address
   CHECK(best_info != nullptr);
   return init_sockaddr(best_info->ai_addr, narrow_cast<socklen_t>(best_info->ai_addrlen));
+}
+
+Status IPAddress::init_host_port(CSlice host_port) {
+  auto pos = host_port.rfind(':');
+  if (pos == static_cast<size_t>(-1)) {
+    return Status::Error("Can't split string into host and port");
+  }
+  return init_host_port(host_port.substr(0, pos).str(), host_port.substr(pos + 1).str());
 }
 
 Status IPAddress::init_sockaddr(struct sockaddr *addr, socklen_t len) {
