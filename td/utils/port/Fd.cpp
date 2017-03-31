@@ -563,11 +563,11 @@ class FdImpl {
     DWORD bytes_read;
     memset(&read_overlapped_, 0, sizeof(read_overlapped_));
     read_overlapped_.hEvent = read_event_;
-    LPFN_CONNECTEX ConnectExPtr = NULL;
+    LPFN_CONNECTEX ConnectExPtr = nullptr;
     GUID guid = WSAID_CONNECTEX;
     DWORD numBytes;
     int success = ::WSAIoctl(socket_, SIO_GET_EXTENSION_FUNCTION_POINTER, (void *)&guid, sizeof(guid),
-                             (void *)&ConnectExPtr, sizeof(ConnectExPtr), &numBytes, NULL, NULL);
+                             (void *)&ConnectExPtr, sizeof(ConnectExPtr), &numBytes, nullptr, nullptr);
     auto status = ConnectExPtr(socket_, addr.get_sockaddr(), narrow_cast<int>(addr.get_sockaddr_len()), nullptr, 0,
                                &bytes_read, &read_overlapped_);
     if (status != 0) {

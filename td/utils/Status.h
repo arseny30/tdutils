@@ -475,12 +475,12 @@ inline string winerror_to_string(int code) {
   const size_t size = 1000;
   wchar_t wbuf[size];
   auto res_size = ::FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,                 // It's a system error
-                                  NULL,                                       // No string to be formatted needed
+                                  nullptr,                                    // No string to be formatted needed
                                   code,                                       // Hey Windows: Please explain this error!
                                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),  // Do it in the standard language
                                   wbuf,                                       // Put the message here
                                   size - 1,                                   // Number of bytes to store the message
-                                  NULL);
+                                  nullptr);
   if (res_size == 0) {
     return string("Unknown windows error");
   }

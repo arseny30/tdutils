@@ -47,7 +47,7 @@ void Epoll::subscribe(const Fd &fd, Fd::Flags flags) {
 }
 
 void Epoll::unsubscribe(const Fd &fd) {
-  int err = epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd.get_native_fd(), NULL);
+  int err = epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd.get_native_fd(), nullptr);
   auto epoll_ctl_errno = errno;
   LOG_IF(FATAL, err == -1) << Status::PosixError(epoll_ctl_errno, "epoll_ctl DEL failed");
 }

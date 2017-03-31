@@ -167,7 +167,7 @@ Status walk_path_dir(const wstring &dir_name, Func &&func) {
   wstring name = dir_name + L"\\*";
 
   WIN32_FIND_DATA file_data;
-  auto handle = FindFirstFileExW(name.c_str(), FindExInfoStandard, &file_data, FindExSearchNameMatch, NULL, 0);
+  auto handle = FindFirstFileExW(name.c_str(), FindExInfoStandard, &file_data, FindExSearchNameMatch, nullptr, 0);
   if (handle == INVALID_HANDLE_VALUE) {
     return Status::OsError(PSTR() << "FindFirstFileEx" << tag("name", to_string(name).ok()));
   }
