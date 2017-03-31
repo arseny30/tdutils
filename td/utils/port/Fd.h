@@ -67,9 +67,9 @@ class Fd {
   bool has_pending_error() const;
   Status get_pending_error() WARN_UNUSED_RESULT;
 
-  Result<size_t> write(const Slice &slice) WARN_UNUSED_RESULT;
-  Result<size_t> write_unsafe(const Slice &slice) WARN_UNUSED_RESULT;
-  Result<size_t> read(const MutableSlice &slice) WARN_UNUSED_RESULT;
+  Result<size_t> write(Slice slice) WARN_UNUSED_RESULT;
+  Result<size_t> write_unsafe(Slice slice) WARN_UNUSED_RESULT;
+  Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT;
 
   Stat stat() const;
 
@@ -164,12 +164,12 @@ class Fd {
 
   operator FdRef();
 
-  Result<size_t> write(const Slice &slice) WARN_UNUSED_RESULT;
+  Result<size_t> write(Slice slice) WARN_UNUSED_RESULT;
   bool empty() const;
   void close();
-  Result<size_t> read(const MutableSlice &slice) WARN_UNUSED_RESULT;
-  Result<size_t> pwrite(const Slice &slice, off_t pos) WARN_UNUSED_RESULT;
-  Result<size_t> pread(const MutableSlice &slice, off_t pos) WARN_UNUSED_RESULT;
+  Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT;
+  Result<size_t> pwrite(Slice slice, off_t pos) WARN_UNUSED_RESULT;
+  Result<size_t> pread(MutableSlice slice, off_t pos) WARN_UNUSED_RESULT;
 
   Result<Fd> accept() WARN_UNUSED_RESULT;
   void connect(const IPAddress &addr);

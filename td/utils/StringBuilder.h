@@ -12,7 +12,7 @@ namespace td {
 
 class StringBuilder {
  public:
-  explicit StringBuilder(const MutableSlice &slice)
+  explicit StringBuilder(MutableSlice slice)
       : begin_ptr_(slice.begin()), current_ptr_(begin_ptr_), end_ptr_(slice.end() - reserved_size) {
     ASSERT_CHECK(slice.size() > reserved_size);
   }
@@ -35,7 +35,7 @@ class StringBuilder {
     return *this << Slice(str);
   }
 
-  StringBuilder &operator<<(const Slice &slice) {
+  StringBuilder &operator<<(Slice slice) {
     if (unlikely(end_ptr_ < current_ptr_)) {
       return on_error();
     }

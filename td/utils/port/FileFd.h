@@ -20,13 +20,13 @@ class FileFd {
 
   enum Flags : int32 { Write = 1, Read = 2, Truncate = 4, Create = 8, Append = 16, CreateNew = 32 };
 
-  static Result<FileFd> open(const CSlice &filepath, int32 flags, int32 mode = 0600) WARN_UNUSED_RESULT;
+  static Result<FileFd> open(CSlice filepath, int32 flags, int32 mode = 0600) WARN_UNUSED_RESULT;
 
-  Result<size_t> write(const Slice &slice) WARN_UNUSED_RESULT;
-  Result<size_t> read(const MutableSlice &slice) WARN_UNUSED_RESULT;
+  Result<size_t> write(Slice slice) WARN_UNUSED_RESULT;
+  Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT;
 
-  Result<size_t> pwrite(const Slice &slice, off_t offset) WARN_UNUSED_RESULT;
-  Result<size_t> pread(const MutableSlice &slice, off_t offset) WARN_UNUSED_RESULT;
+  Result<size_t> pwrite(Slice slice, off_t offset) WARN_UNUSED_RESULT;
+  Result<size_t> pread(MutableSlice slice, off_t offset) WARN_UNUSED_RESULT;
 
   enum class LockFlags { Write, Read, Unlock };
   Status lock(LockFlags flags) WARN_UNUSED_RESULT;
@@ -71,7 +71,7 @@ class FileFd : public Fd {
   enum Flags : int32 { Write = 1, Read = 2, Truncate = 4, Create = 8, Append = 16, CreateNew = 32 };
 
   // TODO: support modes
-  static Result<FileFd> open(const CSlice &filepath, int32 flags, int32 todo = 0) WARN_UNUSED_RESULT {
+  static Result<FileFd> open(CSlice filepath, int32 flags, int32 todo = 0) WARN_UNUSED_RESULT {
     auto r_filepath = to_wstring(filepath);
     if (r_filepath.is_error()) {
       return Status::Error(PSTR() << "Failed to convert file path \" << filepath << \" to utf16");

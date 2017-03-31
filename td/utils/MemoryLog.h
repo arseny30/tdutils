@@ -13,7 +13,7 @@ class MemoryLog : public LogInterface {
     memset(buffer_, ' ', sizeof(buffer_));
   }
 
-  void append(const CSlice &new_slice, int log_level) override {
+  void append(CSlice new_slice, int log_level) override {
     auto slice = new_slice;
     if (!slice.empty() && slice.back() == '\n') {
       slice.remove_suffix(1);

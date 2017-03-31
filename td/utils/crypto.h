@@ -14,7 +14,7 @@ namespace td {
 
 uint64 pq_factorize(uint64 pq);
 
-int pq_factorize(const Slice &pq_str, string *p_str, string *q_str);
+int pq_factorize(Slice pq_str, string *p_str, string *q_str);
 
 /*** AES ***/
 ssize_t aes_ige_xcrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag);

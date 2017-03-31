@@ -126,13 +126,13 @@ class LogInterface {
   LogInterface(const LogInterface &) = delete;
   LogInterface &operator=(const LogInterface &) = delete;
   virtual ~LogInterface() = default;
-  virtual void append(const CSlice &slice, int log_level_) = 0;
+  virtual void append(CSlice slice, int log_level_) = 0;
   virtual void rotate() = 0;
 };
 
 class NullLog : public LogInterface {
  public:
-  void append(const CSlice &slice, int log_level_) override {
+  void append(CSlice slice, int log_level_) override {
   }
   void rotate() override {
   }
@@ -239,7 +239,7 @@ class TsLog : public LogInterface {
     log_ = log;
     exit_critical();
   }
-  void append(const CSlice &slice, int level) override {
+  void append(CSlice slice, int level) override {
     enter_critical();
     log_->append(slice, level);
     exit_critical();

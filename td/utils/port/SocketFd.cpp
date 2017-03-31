@@ -110,11 +110,11 @@ Status SocketFd::get_pending_error() {
                             PSTR() << "Can't load error on socket [fd_ = " << fd_.get_native_fd() << "]");
 }
 
-Result<size_t> SocketFd::write(const Slice &slice) {
+Result<size_t> SocketFd::write(Slice slice) {
   return fd_.write(slice);
 }
 
-Result<size_t> SocketFd::read(const MutableSlice &slice) {
+Result<size_t> SocketFd::read(MutableSlice slice) {
   return fd_.read(slice);
 }
 

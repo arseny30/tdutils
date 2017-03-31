@@ -81,24 +81,24 @@ class Status {
     return Status();
   }
 
-  static Status Error(int err, const Slice &msg = Slice()) WARN_UNUSED_RESULT {
+  static Status Error(int err, Slice msg = Slice()) WARN_UNUSED_RESULT {
     return Status(false, ErrorType::general, err, msg);
   }
 
-  static Status Error(const Slice &msg) WARN_UNUSED_RESULT {
+  static Status Error(Slice msg) WARN_UNUSED_RESULT {
     return Error(0, msg);
   }
 
-  static Status PosixError(int32 code, const Slice &msg = Slice()) WARN_UNUSED_RESULT {
+  static Status PosixError(int32 code, Slice msg = Slice()) WARN_UNUSED_RESULT {
     return Status(false, ErrorType::posix, code, msg);
   }
 
 #if TD_WINDOWS
-  static Status OsError(const Slice &msg = Slice()) WARN_UNUSED_RESULT {
+  static Status OsError(Slice msg = Slice()) WARN_UNUSED_RESULT {
     return Status(false, ErrorType::os, GetLastError(), msg);
   }
 #else
-  static Status OsError(const Slice &msg = Slice()) WARN_UNUSED_RESULT {
+  static Status OsError(Slice msg = Slice()) WARN_UNUSED_RESULT {
     return Status(false, ErrorType::os, errno, msg);
   }
 #endif
@@ -254,7 +254,7 @@ class Status {
   };
   std::unique_ptr<char[], Deleter> ptr_;
 
-  Status(Info info, const Slice &msg) {
+  Status(Info info, Slice msg) {
     size_t size = sizeof(Info) + msg.size() + 1;
     ptr_ = std::unique_ptr<char[], Deleter>(new char[size]);
     char *ptr = ptr_.get();
@@ -265,7 +265,7 @@ class Status {
     *ptr = 0;
   }
 
-  Status(bool static_flag, ErrorType error_type, int error_code, const Slice &msg)
+  Status(bool static_flag, ErrorType error_type, int error_code, Slice msg)
       : Status(to_info(static_flag, error_type, error_code), msg) {
   }
 

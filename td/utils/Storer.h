@@ -10,7 +10,7 @@ class SliceStorer : public Storer {
   Slice slice;
 
  public:
-  explicit SliceStorer(const Slice &slice) : slice(slice) {
+  explicit SliceStorer(Slice slice) : slice(slice) {
   }
   size_t size() const override {
     return slice.size();
@@ -21,7 +21,7 @@ class SliceStorer : public Storer {
   }
 };
 
-inline SliceStorer create_storer(const Slice &slice) {
+inline SliceStorer create_storer(Slice slice) {
   return SliceStorer(slice);
 }
 

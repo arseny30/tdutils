@@ -248,7 +248,7 @@ Status Fd::get_pending_error() {
   return Status::Error(PSTR() << "Can't load error on generic fd [fd_=" << get_native_fd() << "]");
 }
 
-Result<size_t> Fd::write_unsafe(const Slice &slice) {
+Result<size_t> Fd::write_unsafe(Slice slice) {
   ssize_t ssize;
   int native_fd = get_native_fd();
   while (true) {
@@ -265,7 +265,7 @@ Result<size_t> Fd::write_unsafe(const Slice &slice) {
   return static_cast<size_t>(ssize);
 }
 
-Result<size_t> Fd::write(const Slice &slice) {
+Result<size_t> Fd::write(Slice slice) {
   ssize_t ssize;
   int native_fd = get_native_fd();
   while (true) {
@@ -312,7 +312,7 @@ Result<size_t> Fd::write(const Slice &slice) {
   return static_cast<size_t>(ssize);
 }
 
-Result<size_t> Fd::read(const MutableSlice &slice) {
+Result<size_t> Fd::read(MutableSlice slice) {
   ssize_t ssize;
   int native_fd = get_native_fd();
   while (true) {
@@ -493,7 +493,7 @@ class FdImpl {
     loop();
   }
 
-  Result<size_t> write(const Slice &slice) WARN_UNUSED_RESULT {
+  Result<size_t> write(Slice slice) WARN_UNUSED_RESULT {
     if (async_mode_) {
       return write_async(slice);
     } else {
@@ -501,7 +501,7 @@ class FdImpl {
     }
   }
 
-  Result<size_t> read(const MutableSlice &slice) WARN_UNUSED_RESULT {
+  Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT {
     if (async_mode_) {
       return read_async(slice);
     } else {
@@ -509,14 +509,14 @@ class FdImpl {
     }
   }
 
-  Result<size_t> write_async(const Slice &slice) WARN_UNUSED_RESULT {
+  Result<size_t> write_async(Slice slice) WARN_UNUSED_RESULT {
     CHECK(async_mode_);
     output_writer_.append(slice);
     output_reader_.sync_with_writer();
     loop();
     return slice.size();
   }
-  Result<size_t> write_sync(const Slice &slice) WARN_UNUSED_RESULT {
+  Result<size_t> write_sync(Slice slice) WARN_UNUSED_RESULT {
     CHECK(!async_mode_);
     DWORD bytes_written = 0;
     auto res = WriteFile(get_io_handle(), slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_written, nullptr);
@@ -525,7 +525,7 @@ class FdImpl {
     }
     return bytes_written;
   }
-  Result<size_t> read_async(const MutableSlice &slice) WARN_UNUSED_RESULT {
+  Result<size_t> read_async(MutableSlice slice) WARN_UNUSED_RESULT {
     CHECK(async_mode_);
     auto res = input_reader_.advance(std::min(slice.size(), input_reader_.size()), slice);
     if (res == 0) {
@@ -533,7 +533,7 @@ class FdImpl {
     }
     return res;
   }
-  Result<size_t> read_sync(const MutableSlice &slice) WARN_UNUSED_RESULT {
+  Result<size_t> read_sync(MutableSlice slice) WARN_UNUSED_RESULT {
     CHECK(!async_mode_);
     DWORD bytes_read = 0;
     auto res = ReadFile(get_io_handle(), slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_read, nullptr);
@@ -596,7 +596,7 @@ class FdImpl {
     clear_flags(Fd::Flag::Read);
   }
 
-  Result<size_t> pwrite(const Slice &slice, off_t pos) WARN_UNUSED_RESULT {
+  Result<size_t> pwrite(Slice slice, off_t pos) WARN_UNUSED_RESULT {
     DWORD bytes_written = 0;
     OVERLAPPED overlapped;
     memset(&overlapped, 0, sizeof(overlapped));
@@ -610,7 +610,7 @@ class FdImpl {
     return bytes_written;
   }
 
-  Result<size_t> pread(const MutableSlice &slice, off_t pos) WARN_UNUSED_RESULT {
+  Result<size_t> pread(MutableSlice slice, off_t pos) WARN_UNUSED_RESULT {
     DWORD bytes_read = 0;
     OVERLAPPED overlapped;
     memset(&overlapped, 0, sizeof(overlapped));
@@ -936,7 +936,7 @@ Fd::operator FdRef() {
   return *this;
 }
 
-Result<size_t> Fd::write(const Slice &slice) {
+Result<size_t> Fd::write(Slice slice) {
   CHECK(!empty());
   return impl_->write(slice);
 }
@@ -947,13 +947,13 @@ void Fd::close() {
   impl_.reset();
 }
 
-Result<size_t> Fd::read(const MutableSlice &slice) {
+Result<size_t> Fd::read(MutableSlice slice) {
   return impl_->read(slice);
 }
-Result<size_t> Fd::pwrite(const Slice &slice, off_t pos) {
+Result<size_t> Fd::pwrite(Slice slice, off_t pos) {
   return impl_->pwrite(slice, pos);
 }
-Result<size_t> Fd::pread(const MutableSlice &slice, off_t pos) {
+Result<size_t> Fd::pread(MutableSlice slice, off_t pos) {
   return impl_->pread(slice, pos);
 }
 

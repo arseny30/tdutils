@@ -143,7 +143,7 @@ uint64 pq_factorize(uint64 what) {
   return g;
 }
 
-int pq_factorize_big(const Slice &pq_str, string *p_str, string *q_str) {
+int pq_factorize_big(Slice pq_str, string *p_str, string *q_str) {
   // TODO: qsieve?
   // do not work for pq == 1
   BN_CTX *ctx = BN_CTX_new();
@@ -207,7 +207,7 @@ int pq_factorize_big(const Slice &pq_str, string *p_str, string *q_str) {
   return result;
 }
 
-int pq_factorize(const Slice &pq_str, string *p_str, string *q_str) {
+int pq_factorize(Slice pq_str, string *p_str, string *q_str) {
   size_t size = pq_str.size();
   if (static_cast<int>(size) > 8 || (static_cast<int>(size) == 8 && (pq_str.begin()[0] & 128) != 0)) {
     int res = pq_factorize_big(pq_str, p_str, q_str);

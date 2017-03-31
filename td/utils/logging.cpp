@@ -131,7 +131,7 @@ TsCerr::Lock TsCerr::lock_ = ATOMIC_FLAG_INIT;
 
 class DefaultLog : public LogInterface {
  public:
-  void append(const CSlice &slice, int log_level) override {
+  void append(CSlice slice, int log_level) override {
 #if TD_ANDROID
     switch (log_level) {
       case VERBOSITY_NAME(FATAL):

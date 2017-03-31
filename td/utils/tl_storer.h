@@ -37,7 +37,7 @@ class tl_storer_unsafe {
     store_binary<int64>(x);
   }
 
-  inline void store_slice(const Slice &slice) {
+  inline void store_slice(Slice slice) {
     memcpy(buf, slice.begin(), slice.size());
     buf += slice.size();
   }
@@ -101,7 +101,7 @@ class tl_storer_calc_length {
     store_binary<int64>(x);
   }
 
-  inline void store_slice(const Slice &slice) {
+  inline void store_slice(Slice slice) {
     length += slice.size();
   }
 

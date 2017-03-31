@@ -26,7 +26,7 @@ class FileLog : public LogInterface {
       fd_.close();
     }
   }
-  void append(const CSlice &xslice, int log_level) override {
+  void append(CSlice xslice, int log_level) override {
     Slice slice = xslice;
     while (!slice.empty()) {
       auto r_size = fd_.write(slice);

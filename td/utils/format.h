@@ -77,12 +77,12 @@ inline StringBuilder &operator<<(StringBuilder &builder, const HexDumpSlice<alig
 }
 
 template <int align>
-inline HexDumpSlice<align> as_hex_dump(const Slice &slice) {
+inline HexDumpSlice<align> as_hex_dump(Slice slice) {
   return HexDumpSlice<align>{slice};
 }
 
 template <int align>
-inline HexDumpSlice<align> as_hex_dump(const MutableSlice &slice) {
+inline HexDumpSlice<align> as_hex_dump(MutableSlice slice) {
   return HexDumpSlice<align>{slice};
 }
 

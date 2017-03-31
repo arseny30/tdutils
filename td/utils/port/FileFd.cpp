@@ -27,7 +27,7 @@ FileFd::operator FdRef() {
 }
 
 /*** FileFd ***/
-Result<FileFd> FileFd::open(const CSlice &filepath, int32 flags, int32 mode) {
+Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
   int32 initial_flags = flags;
   int native_flags = 0;
 
@@ -80,7 +80,7 @@ Result<FileFd> FileFd::open(const CSlice &filepath, int32 flags, int32 mode) {
   return std::move(result);
 }
 
-Result<size_t> FileFd::write(const Slice &slice) {
+Result<size_t> FileFd::write(Slice slice) {
   CHECK(!fd_.empty());
   ssize_t ssize;
   int native_fd = get_native_fd();
@@ -103,7 +103,7 @@ Result<size_t> FileFd::write(const Slice &slice) {
   return static_cast<size_t>(ssize);
 }
 
-Result<size_t> FileFd::read(const MutableSlice &slice) {
+Result<size_t> FileFd::read(MutableSlice slice) {
   CHECK(!fd_.empty());
   ssize_t ssize;
   int native_fd = get_native_fd();
@@ -129,7 +129,7 @@ Result<size_t> FileFd::read(const MutableSlice &slice) {
   return static_cast<size_t>(ssize);
 }
 
-Result<size_t> FileFd::pwrite(const Slice &slice, off_t offset) {
+Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
   CHECK(!fd_.empty());
   ssize_t ssize;
   int native_fd = get_native_fd();
@@ -153,7 +153,7 @@ Result<size_t> FileFd::pwrite(const Slice &slice, off_t offset) {
   return static_cast<size_t>(ssize);
 }
 
-Result<size_t> FileFd::pread(const MutableSlice &slice, off_t offset) {
+Result<size_t> FileFd::pread(MutableSlice slice, off_t offset) {
   CHECK(!fd_.empty());
   ssize_t ssize;
   int native_fd = get_native_fd();

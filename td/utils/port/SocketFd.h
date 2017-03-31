@@ -34,8 +34,8 @@ class SocketFd {
   int32 get_flags() const;
   Status get_pending_error() WARN_UNUSED_RESULT;
 
-  Result<size_t> write(const Slice &slice) WARN_UNUSED_RESULT;
-  Result<size_t> read(const MutableSlice &slice) WARN_UNUSED_RESULT;
+  Result<size_t> write(Slice slice) WARN_UNUSED_RESULT;
+  Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT;
 
   void close();
   bool empty() const;
