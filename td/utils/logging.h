@@ -110,6 +110,7 @@ extern int verbosity_level;
 // TODO Not part of utils. Should be in some separate file
 extern int verbosity_mtproto;
 extern int verbosity_raw_mtproto;
+extern int verbosity_connections;
 extern int verbosity_dc;
 extern int verbosity_fd;
 extern int verbosity_net_query;
