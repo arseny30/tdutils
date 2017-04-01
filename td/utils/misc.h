@@ -688,17 +688,25 @@ class FloodControlStrict {
 };
 
 inline unsigned int rand_device_helper() {
-  static std::random_device rd;
-  return rd();
+  static TD_THREAD_LOCAL std::random_device *rd;
+  init_thread_local<std::random_device>(rd);
+  return (*rd)();
 }
 
 inline uint32 rand_fast_uint32() {
-  static std::mt19937 gen(rand_device_helper());
-  return static_cast<uint32>(gen());
+  static TD_THREAD_LOCAL std::mt19937 *gen;
+  if (!gen) {
+    init_thread_local<std::mt19937>(gen, rand_device_helper());
+  }
+  return static_cast<uint32>((*gen)());
 }
 inline uint64 rand_fast_uint64() {
-  static std::mt19937_64 gen(static_cast<std::uint_fast64_t>(rand_device_helper()) + rand_device_helper());
-  return static_cast<uint64>(gen());
+  static TD_THREAD_LOCAL std::mt19937_64 *gen;
+  if (!gen) {
+    init_thread_local<std::mt19937_64>(gen,
+                                       static_cast<std::uint_fast64_t>(rand_device_helper()) + rand_device_helper());
+  }
+  return static_cast<uint64>((*gen)());
 }
 
 // Process changes after they are finished in order of addition
