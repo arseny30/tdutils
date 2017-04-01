@@ -4,6 +4,9 @@
 #include "td/utils/logging.h"
 #include "td/utils/misc.h"
 
+#include "td/utils/port/RwMutex.h"
+#include "td/utils/port/thread.h"
+
 #include <openssl/aes.h>
 #include <openssl/bn.h>
 #include <openssl/crypto.h>
@@ -485,6 +488,40 @@ uint64 crc64(Slice data) {
 uint32 crc32(Slice data) {
   auto res = static_cast<uint32>(::crc32(0, data.ubegin(), static_cast<uint32>(data.size())));
   return res;
+}
+
+namespace {
+std::vector<RwMutex> &openssl_mutexes() {
+  static std::vector<RwMutex> mutexes(CRYPTO_num_locks());
+  return mutexes;
+}
+
+void openssl_threadid_callback(CRYPTO_THREADID *thread_id) {
+  TD_THREAD_LOCAL static int id;
+  CRYPTO_THREADID_set_pointer(thread_id, &id);
+}
+
+void openssl_locking_function(int mode, int n, const char *file, int line) {
+  auto &mutexes = openssl_mutexes();
+  if (mode & CRYPTO_LOCK) {
+    if (mode & CRYPTO_READ) {
+      mutexes[n].lock_read_unsafe();
+    } else {
+      mutexes[n].lock_write_unsafe();
+    }
+  } else {
+    if (mode & CRYPTO_READ) {
+      mutexes[n].unlock_read_unsafe();
+    } else {
+      mutexes[n].unlock_write_unsafe();
+    }
+  }
+}
+}  // namespace
+
+void init_openssl_threads() {
+  CRYPTO_THREADID_set_callback(openssl_threadid_callback);
+  CRYPTO_set_locking_callback(openssl_locking_function);
 }
 
 }  // end namespace td

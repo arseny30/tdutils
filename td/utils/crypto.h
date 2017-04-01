@@ -70,4 +70,6 @@ class Random {
   static uint64 fast_uint64();
 };
 
+void init_openssl_threads();
+
 }  // end namespace td
