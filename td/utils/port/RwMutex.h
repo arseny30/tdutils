@@ -70,11 +70,11 @@ class RwMutex {
     CHECK(!empty());
     AcquireSRWLockExclusive(mutex_.get());
   }
-  void unlock_read() {
+  void unlock_read_unsafe() {
     CHECK(!empty());
     ReleaseSRWLockShared(mutex_.get());
   }
-  void unlock_write() {
+  void unlock_write_unsafe() {
     CHECK(!empty());
     ReleaseSRWLockExclusive(mutex_.get());
   }
