@@ -294,7 +294,6 @@ class BackoffQueue : public QueueT {
 
   template <class PutValueType>
   void writer_put(PutValueType &&value) {
-    // fprintf (stderr, "%d\n", this->writer_size());
     if (this->writer_empty()) {
       int sz = this->writer_update();
       CHECK(sz != 0);
@@ -352,7 +351,6 @@ class PollQueue : public QueueT {
 
     int wait_state = get_wait_state();
     if ((wait_state & 1) && wait_state != writer_wait_state_) {
-      // fprintf(stderr, "%p: release\n", this);
       event_fd_.release();
       writer_wait_state_ = old_wait_state;
     }
@@ -398,16 +396,13 @@ class PollQueue : public QueueT {
   int reader_wait() {
     int res;
 
-    // fprintf(stderr, "%p: wait\n", this);
     while ((res = reader_wait_nonblock()) == 0) {
       // TODO: reader_flush?
       pollfd fd;
       fd.fd = reader_get_event_fd().get_fd().get_native_fd();
       fd.events = POLLIN;
-      // fprintf(stderr, "%p: poll\n", this);
       poll(&fd, 1, -1);
     }
-    // fprintf(stderr, "%p: wait %d\n", this, res);
     return res;
   }
 #endif

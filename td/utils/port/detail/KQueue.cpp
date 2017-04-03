@@ -35,7 +35,6 @@ void KQueue::clear() {
 }
 
 int KQueue::update(int nevents, const struct timespec *timeout) {
-  //  fprintf (stderr, "kq = %d, changes_n = %d, events_n = %d\n", kq, changes_n, nevents);
   int err = kevent(kq, &events[0], changes_n, &events[0], nevents, timeout);
   auto kevent_errno = errno;
   LOG_IF(FATAL, err == -1 && kevent_errno != EINTR) << Status::PosixError(kevent_errno, "kevent failed");

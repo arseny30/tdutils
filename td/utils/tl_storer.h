@@ -1,9 +1,7 @@
 #pragma once
 
-#include <cassert>
 #include <cstdio>
 #include <cstring>
-#include <cstdint>
 
 #include "td/utils/int_types.h"
 #include "td/utils/logging.h"
@@ -58,7 +56,7 @@ class tl_storer_unsafe {
       *buf++ = (char)((len >> 8) & 255);
       *buf++ = (char)(len >> 16);
     } else {
-      assert(0);
+      LOG(FATAL) << "String size " << len << " is too big to be stored";
     }
     memcpy(buf, str.data(), str.size());
     buf += str.size();
@@ -254,7 +252,7 @@ class tl_storer_to_string {
       result += ' ';
     }
     result += "}\n";
-    assert(shift >= 0);
+    CHECK(shift >= 0);
   }
 
   std::string str() const {
