@@ -21,18 +21,18 @@
 #endif
 
 namespace td {
-int verbosity_level = 1;
-int verbosity_net_query = 1;
-int verbosity_td_requests = 1;
-int verbosity_dc = 2;
-int verbosity_files = 2;
-int verbosity_mtproto = 7;
-int verbosity_connections = 8;
-int verbosity_raw_mtproto = 10;
-int verbosity_fd = 9;
-int verbosity_actor = 10;
-int verbosity_buffer = 10;
-int verbosity_sqlite = 10;
+int VERBOSITY_NAME(level) = 1;
+int VERBOSITY_NAME(net_query) = 1;
+int VERBOSITY_NAME(td_requests) = 1;
+int VERBOSITY_NAME(dc) = 2;
+int VERBOSITY_NAME(files) = 2;
+int VERBOSITY_NAME(mtproto) = 7;
+int VERBOSITY_NAME(connections) = 8;
+int VERBOSITY_NAME(raw_mtproto) = 10;
+int VERBOSITY_NAME(fd) = 9;
+int VERBOSITY_NAME(actor) = 10;
+int VERBOSITY_NAME(buffer) = 10;
+int VERBOSITY_NAME(sqlite) = 10;
 
 TD_THREAD_LOCAL const char *Logger::tag_ = nullptr;
 TD_THREAD_LOCAL const char *Logger::tag2_ = nullptr;

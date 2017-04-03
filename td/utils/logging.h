@@ -10,7 +10,7 @@
 * LOG(INFO, "Hello %d", 1234) << "world";
 * LOG_IF(INFO, condition) << "Hello world if condition";
 *
-* VLOG(x) <===> LOG_IF(DEBUG, verbosity_##x <= verbosity);
+* VLOG(x) <===> LOG_IF(DEBUG, VERBOSITY_NAME(x) <= verbosity);
 *
 * LOG(FATAL, "power is off");
 * CHECK(condition) <===> LOG_IF(FATAL, !(condition)
@@ -38,12 +38,12 @@
 #define VERBOSITY_NAME(x) verbosity_##x
 #define STRIP_LOG VERBOSITY_NAME(DEBUG)
 #define LOG_IS_NOT_STRIPPED(level) (VERBOSITY_NAME(level) <= STRIP_LOG)
-#define LOG_IS_ON(level) (LOG_IS_NOT_STRIPPED(DEBUG) && VERBOSITY_NAME(level) <= ::td::verbosity_level)
+#define LOG_IS_ON(level) (LOG_IS_NOT_STRIPPED(DEBUG) && VERBOSITY_NAME(level) <= GET_VERBOSITY_LEVEL())
 #define LOG_IF_INTERNAL(level, condition, msg, ...) \
   LOG_IF_IMPL(level, LOG_IS_ON(level) && (condition), msg, __VA_ARGS__)
 #define LOG_IF_IMPL(level, condition, msg, ...) \
   !(condition) ? (void)0 : ::td::Voidify() & LOGGER(level, msg).printf(__VA_ARGS__) LOG_PREFIX
-#define VLOG_IS_ON_INNER(verbosity) (VERBOSITY_NAME(verbosity) <= ::td::verbosity_level)
+#define VLOG_IS_ON_INNER(verbosity) (VERBOSITY_NAME(verbosity) <= GET_VERBOSITY_LEVEL())
 #define VLOG_IS_ON(verbosity) LOG_IS_NOT_STRIPPED(DEBUG) && VLOG_IS_ON_INNER(verbosity)
 #define VLOG(verbosity, ...) LOG_IF_INTERNAL(CUSTOM, VLOG_IS_ON_INNER(verbosity), #verbosity, __VA_ARGS__)
 #define VLOG_IF(verbosity, cond, ...) \
@@ -55,8 +55,8 @@
 #define LOG_TAG ::td::Logger::tag_
 #define LOG_TAG2 ::td::Logger::tag2_
 
-#define GET_VERBOSITY_LEVEL() (::td::verbosity_level)
-#define SET_VERBOSITY_LEVEL(level) (::td::verbosity_level = level)
+#define GET_VERBOSITY_LEVEL() (::td::VERBOSITY_NAME(level))
+#define SET_VERBOSITY_LEVEL(new_level) (::td::VERBOSITY_NAME(level) = new_level)
 
 #ifdef __clang__
 bool no_return_func() __attribute__((analyzer_noreturn));
@@ -84,41 +84,29 @@ inline bool no_return_func() {
   LOG(FATAL, __VA_ARGS__); \
   abort()
 
-constexpr int verbosity_CUSTOM = -6;
-constexpr int verbosity_PLAIN = -5;
-constexpr int verbosity_FATAL = -4;
-constexpr int verbosity_ERROR = -3;
-constexpr int verbosity_WARNING = -2;
-constexpr int verbosity_INFO = -1;
-constexpr int verbosity_DEBUG = 0;
-constexpr int verbosity_NEVER = 1024;
-constexpr int verbosity_0 = 0;
-constexpr int verbosity_1 = 1;
-constexpr int verbosity_2 = 2;
-constexpr int verbosity_3 = 3;
-constexpr int verbosity_4 = 4;
-constexpr int verbosity_5 = 5;
-constexpr int verbosity_6 = 6;
-constexpr int verbosity_7 = 7;
-constexpr int verbosity_8 = 8;
-constexpr int verbosity_9 = 9;
-constexpr int verbosity_10 = 10;
-constexpr int verbosity_11 = 11;
+constexpr int VERBOSITY_NAME(CUSTOM) = -6;
+constexpr int VERBOSITY_NAME(PLAIN) = -5;
+constexpr int VERBOSITY_NAME(FATAL) = -4;
+constexpr int VERBOSITY_NAME(ERROR) = -3;
+constexpr int VERBOSITY_NAME(WARNING) = -2;
+constexpr int VERBOSITY_NAME(INFO) = -1;
+constexpr int VERBOSITY_NAME(DEBUG) = 0;
+constexpr int VERBOSITY_NAME(NEVER) = 1024;
 
 namespace td {
-extern int verbosity_level;
+extern int VERBOSITY_NAME(level);
 // TODO Not part of utils. Should be in some separate file
-extern int verbosity_mtproto;
-extern int verbosity_raw_mtproto;
-extern int verbosity_connections;
-extern int verbosity_dc;
-extern int verbosity_fd;
-extern int verbosity_net_query;
-extern int verbosity_td_requests;
-extern int verbosity_actor;
-extern int verbosity_buffer;
-extern int verbosity_files;
-extern int verbosity_sqlite;
+extern int VERBOSITY_NAME(mtproto);
+extern int VERBOSITY_NAME(raw_mtproto);
+extern int VERBOSITY_NAME(connections);
+extern int VERBOSITY_NAME(dc);
+extern int VERBOSITY_NAME(fd);
+extern int VERBOSITY_NAME(net_query);
+extern int VERBOSITY_NAME(td_requests);
+extern int VERBOSITY_NAME(actor);
+extern int VERBOSITY_NAME(buffer);
+extern int VERBOSITY_NAME(files);
+extern int VERBOSITY_NAME(sqlite);
 
 class LogInterface {
  public:
