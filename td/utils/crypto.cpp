@@ -490,6 +490,7 @@ uint32 crc32(Slice data) {
   return res;
 }
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 namespace {
 std::vector<RwMutex> &openssl_mutexes() {
   static std::vector<RwMutex> mutexes(CRYPTO_num_locks());
@@ -518,10 +519,13 @@ void openssl_locking_function(int mode, int n, const char *file, int line) {
   }
 }
 }  // namespace
+#endif
 
 void init_openssl_threads() {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
   CRYPTO_THREADID_set_callback(openssl_threadid_callback);
   CRYPTO_set_locking_callback(openssl_locking_function);
+#endif
 }
 
 }  // end namespace td
