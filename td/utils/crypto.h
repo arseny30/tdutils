@@ -59,6 +59,8 @@ void sha256_final(Sha256State *state, MutableSlice output);
 
 void md5(Slice input, MutableSlice output);
 
+void pbkdf2_sha256(Slice password, Slice salt, int iteration_count, MutableSlice dest);
+
 /*** Random ***/
 class Random {
  public:

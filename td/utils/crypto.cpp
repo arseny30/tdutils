@@ -487,6 +487,11 @@ uint32 crc32(Slice data) {
   return res;
 }
 
+void pbkdf2_sha256(Slice password, Slice salt, int iteration_count, MutableSlice dest) {
+  PKCS5_PBKDF2_HMAC(password.data(), narrow_cast<int>(password.size()), salt.ubegin(), narrow_cast<int>(salt.size()),
+                    iteration_count, EVP_sha256(), narrow_cast<int>(dest.size()), dest.ubegin());
+}
+
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
 namespace {
 std::vector<RwMutex> &openssl_mutexes() {
@@ -520,8 +525,10 @@ void openssl_locking_function(int mode, int n, const char *file, int line) {
 
 void init_openssl_threads() {
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
-  CRYPTO_THREADID_set_callback(openssl_threadid_callback);
-  CRYPTO_set_locking_callback(openssl_locking_function);
+  if (CRYPTO_get_locking_callback() == nullptr) {
+    CRYPTO_THREADID_set_callback(openssl_threadid_callback);
+    CRYPTO_set_locking_callback(openssl_locking_function);
+  }
 #endif
 }
 
