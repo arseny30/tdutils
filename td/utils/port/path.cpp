@@ -35,17 +35,6 @@ Status set_temporary_dir(CSlice dir) {
   return Status::OK();
 }
 
-#ifdef TD_PORT_POSIX
-
-Status mkdir(CSlice dir, int32 mode) {
-  int err = ::mkdir(dir.c_str(), static_cast<mode_t>(mode));
-  auto mkdir_errno = errno;
-  if (err < 0 && mkdir_errno != EEXIST) {
-    return Status::PosixError(mkdir_errno, PSTR() << "Can't create directory \"" << dir << '"');
-  }
-  return Status::OK();
-}
-
 Status mkpath(CSlice path, int32 mode) {
   for (size_t i = 1; i < path.size(); i++) {
     if (path[i] == TD_DIR_SLASH) {
@@ -53,6 +42,24 @@ Status mkpath(CSlice path, int32 mode) {
     }
   }
   return Status::OK();
+}
+
+#ifdef TD_PORT_POSIX
+
+Status mkdir(CSlice dir, int32 mode) {
+  while (true) {
+    if (::mkdir(dir.c_str(), static_cast<mode_t>(mode)) == 0) {
+      return Status::OK();
+    }
+    if (errno == EEXIST) {
+      // TODO check that it is a directory
+      return Status::OK();
+    }
+    if (errno != EAGAIN && errno != EWOULDBLOCK) {
+      auto mkdir_errno = errno;
+      return Status::PosixError(mkdir_errno, PSTR() << "Can't create directory \"" << dir << '"');
+    }
+  }
 }
 
 Status rename(CSlice from, CSlice to) {
@@ -198,16 +205,6 @@ Status mkdir(CSlice dir, int32 mode) {
   auto status = CreateDirectoryW(wdir.c_str(), nullptr);
   if (status == 0 && GetLastError() != ERROR_ALREADY_EXISTS) {
     return Status::OsError(PSTR() << "Can't create directory \"" << dir << '"');
-  }
-  return Status::OK();
-}
-
-Status mkpath(CSlice path, int32 mode) {
-  // TODO(perf): convert to wstring first
-  for (size_t i = 1; i < path.size(); i++) {
-    if (path[i] == TD_DIR_SLASH) {
-      TRY_STATUS(mkdir(path.substr(0, i).str(), mode));
-    }
   }
   return Status::OK();
 }
