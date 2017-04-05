@@ -13,6 +13,7 @@
 #include <openssl/md5.h>
 #include <openssl/rand.h>
 #include <openssl/sha.h>
+#include <openssl/hmac.h>
 
 #include <zlib.h>  // for crc32
 
@@ -490,6 +491,13 @@ uint32 crc32(Slice data) {
 void pbkdf2_sha256(Slice password, Slice salt, int iteration_count, MutableSlice dest) {
   PKCS5_PBKDF2_HMAC(password.data(), narrow_cast<int>(password.size()), salt.ubegin(), narrow_cast<int>(salt.size()),
                     iteration_count, EVP_sha256(), narrow_cast<int>(dest.size()), dest.ubegin());
+}
+void hmac_sha256(Slice key, Slice message, MutableSlice dest) {
+  CHECK(dest.size() == 256 / 8);
+  unsigned int len = 0;
+  HMAC(EVP_sha256(), key.ubegin(), narrow_cast<int>(key.size()), message.ubegin(), narrow_cast<int>(message.size()),
+       dest.ubegin(), &len);
+  CHECK(len == dest.size());
 }
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
