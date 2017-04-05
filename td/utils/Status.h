@@ -182,6 +182,11 @@ class Status {
       LOG(FATAL) << "FAILED: " << to_string();
     }
   }
+  void ensure_error() const {
+    if (is_ok()) {
+      LOG(FATAL) << "Expected Status::Error";
+    }
+  }
   Status &log_ensure() {
     if (!is_ok()) {
       LOG(ERROR) << "FAILED: " << to_string();
@@ -363,6 +368,9 @@ class Result {
 
   void ensure() const {
     status_.ensure();
+  }
+  void ensure_error() const {
+    status_.ensure_error();
   }
   Result &log_ensure() {
     status_.log_ensure();
