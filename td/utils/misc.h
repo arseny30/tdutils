@@ -388,12 +388,14 @@ T trim(T str) {
 
 template <class T>
 T utf8_truncate(T str, size_t length) {
-  for (size_t i = 0; i < str.size(); i++) {
-    if (is_utf8_symbol_begin_char(static_cast<unsigned char>(str[i]))) {
-      if (length == 0) {
-        return str.substr(0, i);
-      } else {
-        length--;
+  if (str.size() > length) {
+    for (size_t i = 0; i < str.size(); i++) {
+      if (is_utf8_symbol_begin_char(static_cast<unsigned char>(str[i]))) {
+        if (length == 0) {
+          return str.substr(0, i);
+        } else {
+          length--;
+        }
       }
     }
   }
