@@ -41,13 +41,6 @@ StringBuilder &operator<<(StringBuilder &builder, const HexDumpSlice<align> &dum
 
   builder << '\n';
 
-  if (align == 0) {
-    for (std::size_t i = 0; i < size; i++) {
-      builder << HexDumpSize<1>{ptr};
-    }
-    return builder;
-  }
-
   const std::size_t part = size % align;
   if (part) {
     builder << HexDumpSlice<1>{Slice(ptr, part)} << '\n';
@@ -66,6 +59,15 @@ StringBuilder &operator<<(StringBuilder &builder, const HexDumpSlice<align> &dum
     }
   }
 
+  return builder;
+}
+
+inline StringBuilder &operator<<(StringBuilder &builder, const HexDumpSlice<0> &dump) {
+  auto size = dump.slice.size();
+  const uint8 *ptr = dump.slice.ubegin();
+  for (size_t i = 0; i < size; i++) {
+    builder << HexDumpSize<1>{ptr + i};
+  }
   return builder;
 }
 
