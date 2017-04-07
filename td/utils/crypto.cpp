@@ -492,6 +492,7 @@ void pbkdf2_sha256(Slice password, Slice salt, int iteration_count, MutableSlice
   PKCS5_PBKDF2_HMAC(password.data(), narrow_cast<int>(password.size()), salt.ubegin(), narrow_cast<int>(salt.size()),
                     iteration_count, EVP_sha256(), narrow_cast<int>(dest.size()), dest.ubegin());
 }
+
 void hmac_sha256(Slice key, Slice message, MutableSlice dest) {
   CHECK(dest.size() == 256 / 8);
   unsigned int len = 0;
