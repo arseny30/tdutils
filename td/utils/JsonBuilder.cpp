@@ -425,9 +425,9 @@ Result<JsonValue> do_json_decode(Parser &parser) {
     default: {
       char next = parser.peek_char();
       if (0 < next && next < 127) {
-        return Status::Error(PSTR() << "Unexpected symbol '" << parser.peek_char() << "'");
+        return Status::Error(PSLICE() << "Unexpected symbol '" << parser.peek_char() << "'");
       } else {
-        return Status::Error(PSTR() << "Unexpected symbol");
+        return Status::Error(PSLICE() << "Unexpected symbol");
       }
     }
   }
@@ -530,9 +530,9 @@ Status do_json_skip(Parser &parser) {
     default: {
       char next = parser.peek_char();
       if (0 < next && next < 127) {
-        return Status::Error(PSTR() << "Unexpected symbol '" << parser.peek_char() << "'");
+        return Status::Error(PSLICE() << "Unexpected symbol '" << parser.peek_char() << "'");
       } else {
-        return Status::Error(PSTR() << "Unexpected symbol");
+        return Status::Error(PSLICE() << "Unexpected symbol");
       }
     }
   }
@@ -572,15 +572,15 @@ Result<JsonValue> get_json_object_field(JsonObject &object, Slice name, JsonValu
   for (auto &field_value : object) {
     if (field_value.first == name) {
       if (type != JsonValue::Type::Null && field_value.second.type() != type) {
-        return Status::Error(400,
-                             PSTR() << "Field \"" << name << "\" must be of type " << JsonValue::get_type_name(type));
+        return Status::Error(400, PSLICE()
+                                      << "Field \"" << name << "\" must be of type " << JsonValue::get_type_name(type));
       }
 
       return std::move(field_value.second);
     }
   }
   if (!is_optional) {
-    return Status::Error(400, PSTR() << "Can't find field \"" << name << "\"");
+    return Status::Error(400, PSLICE() << "Can't find field \"" << name << "\"");
   }
   return JsonValue();
 }

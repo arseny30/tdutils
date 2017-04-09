@@ -38,8 +38,8 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
   } else if (flags & Read) {
     native_flags |= O_RDONLY;
   } else {
-    return Status::Error(PSTR() << "Failed to open file: invalid flags. [path=" << filepath
-                                << "] [flags=" << initial_flags << "]");
+    return Status::Error(PSLICE() << "Failed to open file: invalid flags. [path=" << filepath
+                                  << "] [flags=" << initial_flags << "]");
   }
   flags &= ~(Write | Read);
 
@@ -63,15 +63,15 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
   }
 
   if (flags) {
-    return Status::Error(PSTR() << "Failed to open file: unknown flags. " << tag("path", filepath)
-                                << tag("flags", initial_flags));
+    return Status::Error(PSLICE() << "Failed to open file: unknown flags. " << tag("path", filepath)
+                                  << tag("flags", initial_flags));
   }
 
   int native_fd = ::open(filepath.c_str(), native_flags, static_cast<mode_t>(mode));
   auto open_errno = errno;
   if (native_fd == -1) {
     return Status::PosixError(
-        open_errno, PSTR() << "Failed to open file: " << tag("path", filepath) << tag("flags", initial_flags));
+        open_errno, PSLICE() << "Failed to open file: " << tag("path", filepath) << tag("flags", initial_flags));
   }
 
   FileFd result;
@@ -92,7 +92,7 @@ Result<size_t> FileFd::write(Slice slice) {
         continue;
       }
 
-      auto error = Status::PosixError(write_errno, PSTR() << "Write to [fd = " << native_fd << "] has failed");
+      auto error = Status::PosixError(write_errno, PSLICE() << "Write to [fd = " << native_fd << "] has failed");
       if (write_errno != EAGAIN && write_errno != EWOULDBLOCK && write_errno != EIO) {
         LOG(ERROR) << error;
       }
@@ -115,7 +115,7 @@ Result<size_t> FileFd::read(MutableSlice slice) {
         continue;
       }
 
-      auto error = Status::PosixError(read_errno, PSTR() << "Read from [fd = " << native_fd << "] has failed");
+      auto error = Status::PosixError(read_errno, PSLICE() << "Read from [fd = " << native_fd << "] has failed");
       if (read_errno != EAGAIN && read_errno != EWOULDBLOCK && read_errno != EIO) {
         LOG(ERROR) << error;
       }
@@ -142,7 +142,7 @@ Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
       }
 
       auto error = Status::PosixError(
-          pwrite_errno, PSTR() << "Pwrite to [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
+          pwrite_errno, PSLICE() << "Pwrite to [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
       if (pwrite_errno != EAGAIN && pwrite_errno != EWOULDBLOCK && pwrite_errno != EIO) {
         LOG(ERROR) << error;
       }
@@ -166,7 +166,7 @@ Result<size_t> FileFd::pread(MutableSlice slice, off_t offset) {
       }
 
       auto error = Status::PosixError(
-          pread_errno, PSTR() << "Pread from [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
+          pread_errno, PSLICE() << "Pread from [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
       if (pread_errno != EAGAIN && pread_errno != EWOULDBLOCK && pread_errno != EIO) {
         LOG(ERROR) << error;
       }

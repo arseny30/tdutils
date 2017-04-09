@@ -63,7 +63,7 @@ Status SocketFd::init(const IPAddress &address) {
   if (err == -1) {
     auto connect_errno = errno;
     if (connect_errno != EINPROGRESS) {
-      auto error = Status::PosixError(connect_errno, PSTR("Failed to connect: ") << address);
+      auto error = Status::PosixError(connect_errno, PSLICE("Failed to connect: ") << address);
       ::close(fd);
       return error;
     }
@@ -102,12 +102,12 @@ Status SocketFd::get_pending_error() {
     if (error == 0) {
       return Status::OK();
     }
-    return Status::PosixError(error, PSTR() << "Error on socket [fd_ = " << fd_.get_native_fd() << "]");
+    return Status::PosixError(error, PSLICE() << "Error on socket [fd_ = " << fd_.get_native_fd() << "]");
   }
   auto getsockopt_errno = errno;
   LOG(INFO) << "can't load errno = " << getsockopt_errno;
   return Status::PosixError(getsockopt_errno,
-                            PSTR() << "Can't load error on socket [fd_ = " << fd_.get_native_fd() << "]");
+                            PSLICE() << "Can't load error on socket [fd_ = " << fd_.get_native_fd() << "]");
 }
 
 Result<size_t> SocketFd::write(Slice slice) {

@@ -45,7 +45,7 @@ Fd::Fd(int fd, Mode mode, ObserverBase *observer) : fd_(fd), mode_(mode) {
 
     auto fcntl_res = fcntl(fd_, F_GETFD);
     auto fcntl_errno = errno;
-    LOG_IF(FATAL, fcntl_res < 0) << Status::PosixError(fcntl_errno, PSTR() << "fcntl F_GET_FD failed");
+    LOG_IF(FATAL, fcntl_res < 0) << Status::PosixError(fcntl_errno, PSLICE() << "fcntl F_GET_FD failed");
 
     info->refcnt.store(1, std::memory_order_relaxed);
     CHECK(!is_ref());
@@ -56,7 +56,7 @@ Fd::Fd(int fd, Mode mode, ObserverBase *observer) : fd_(fd), mode_(mode) {
     CHECK(mode_ == Mode::Reference) << tag("fd", fd_);
     auto fcntl_res = fcntl(fd_, F_GETFD);
     auto fcntl_errno = errno;
-    LOG_IF(FATAL, fcntl_res < 0) << Status::PosixError(fcntl_errno, PSTR() << "fcntl F_GET_FD failed");
+    LOG_IF(FATAL, fcntl_res < 0) << Status::PosixError(fcntl_errno, PSLICE() << "fcntl F_GET_FD failed");
 
     CHECK(is_ref());
     CHECK(observer == nullptr);
@@ -245,7 +245,7 @@ Status Fd::get_pending_error() {
     return Status::OK();
   }
   clear_flags(Fd::Error);
-  return Status::Error(PSTR() << "Can't load error on generic fd [fd_=" << get_native_fd() << "]");
+  return Status::Error(PSLICE() << "Can't load error on generic fd [fd_=" << get_native_fd() << "]");
 }
 
 Result<size_t> Fd::write_unsafe(Slice slice) {
@@ -258,7 +258,7 @@ Result<size_t> Fd::write_unsafe(Slice slice) {
       if (write_errno == EINTR) {
         continue;
       }
-      return Status::PosixError(write_errno, PSTR("Write to [fd=%d] has failed", native_fd));
+      return Status::PosixError(write_errno, PSLICE("Write to [fd=%d] has failed", native_fd));
     }
     break;
   }
@@ -284,7 +284,7 @@ Result<size_t> Fd::write(Slice slice) {
         return 0;
       }
 
-      auto error = Status::PosixError(write_errno, PSTR("Write to [fd=%d] has failed", native_fd));
+      auto error = Status::PosixError(write_errno, PSLICE("Write to [fd=%d] has failed", native_fd));
       switch (write_errno) {
         case EBADF:
         case ENXIO:
@@ -332,7 +332,7 @@ Result<size_t> Fd::read(MutableSlice slice) {
         clear_flags(Read);
         return 0;
       }
-      auto error = Status::PosixError(read_errno, PSTR("Read from [fd=%d] has failed", native_fd));
+      auto error = Status::PosixError(read_errno, PSLICE("Read from [fd=%d] has failed", native_fd));
       switch (read_errno) {
         case EISDIR:
         case EBADF:

@@ -40,12 +40,12 @@ Status ServerSocketFd::get_pending_error() {
     if (error == 0) {
       return Status::OK();
     }
-    return Status::PosixError(error, PSTR() << "Error on socket [fd_ = " << fd_.get_native_fd() << "]");
+    return Status::PosixError(error, PSLICE() << "Error on socket [fd_ = " << fd_.get_native_fd() << "]");
   }
   auto getsockopt_errno = errno;
   LOG(INFO) << "Can't load errno = " << getsockopt_errno;
   return Status::PosixError(getsockopt_errno,
-                            PSTR() << "Can't load error on socket [fd_ = " << fd_.get_native_fd() << "]");
+                            PSLICE() << "Can't load error on socket [fd_ = " << fd_.get_native_fd() << "]");
 }
 
 Result<SocketFd> ServerSocketFd::accept() {
@@ -73,7 +73,7 @@ Result<SocketFd> ServerSocketFd::accept() {
     }
 #endif
 
-    auto error = Status::PosixError(accept_errno, PSTR() << "Accept from [fd = " << native_fd << "] has failed");
+    auto error = Status::PosixError(accept_errno, PSLICE() << "Accept from [fd = " << native_fd << "] has failed");
     switch (accept_errno) {
       case EBADF:
       case EFAULT:

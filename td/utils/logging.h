@@ -31,7 +31,11 @@
 #include <atomic>
 #include <cstdlib>
 
-#define PSTR(...) ::td::Slicify() & ::td::Logger(::td::NullLog().ref(), 0).printf(__VA_ARGS__)
+#define PSTR_IMPL(...) ::td::Logger(::td::NullLog().ref(), 0).printf(__VA_ARGS__)
+#define PSLICE(...) ::td::detail::Slicify() & PSTR_IMPL(__VA_ARGS__)
+#define PSTRING(...) ::td::detail::Stringify() & PSTR_IMPL(__VA_ARGS__)
+#define PSLICE_SAFE(...) ::td::detail::SlicifySafe() & PSTR_IMPL(__VA_ARGS__)
+#define PSTRING_SAFE(...) ::td::detail::StringifySafe() & PSTR_IMPL(__VA_ARGS__)
 #define LOG_PREFIX
 #define LOG(level, ...) LOG_IF_INTERNAL(level, true, ::td::Slice(), __VA_ARGS__)
 #define LOG_IF(level, condition, ...) LOG_IF_INTERNAL(level, condition, #condition, __VA_ARGS__)
@@ -185,6 +189,9 @@ class Logger {
   MutableCSlice as_cslice() {
     return sb_.as_cslice();
   }
+  bool is_error() {
+    return sb_.is_error();
+  }
   Logger(const Logger &) = delete;
   Logger &operator=(const Logger &) = delete;
   Logger(Logger &&) = delete;
@@ -209,12 +216,20 @@ class Voidify {
   }
 };
 
+namespace detail {
 class Slicify {
  public:
   CSlice operator&(Logger &logger) {
     return logger.as_cslice();
   }
 };
+class Stringify {
+ public:
+  string operator&(Logger &logger) {
+    return logger.as_cslice().str();
+  }
+};
+}  // namespace detail
 
 class TsLog : public LogInterface {
  public:

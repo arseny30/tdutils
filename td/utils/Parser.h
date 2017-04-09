@@ -87,7 +87,7 @@ class Parser {
     }
     MutableSlice res = read_till_nofail(c);
     if (ptr_ == end_ || ptr_[0] != c) {
-      status_ = Status::Error(PSTR() << "Read till " << tag("char", c) << " failed");
+      status_ = Status::Error(PSLICE() << "Read till " << tag("char", c) << " failed");
       return MutableSlice();
     }
     return res;
@@ -114,7 +114,7 @@ class Parser {
       return;
     }
     if (ptr_ == end_ || ptr_[0] != c) {
-      status_ = Status::Error(PSTR() << "Skip " << tag("char", c) << " failed");
+      status_ = Status::Error(PSLICE() << "Skip " << tag("char", c) << " failed");
       return;
     }
     ptr_++;

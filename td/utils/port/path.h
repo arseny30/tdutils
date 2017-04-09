@@ -119,7 +119,7 @@ Status walk_path_dir(string &path, Func &&func) {
   auto *subdir = opendir(path.c_str());
   if (subdir == nullptr) {
     auto opendir_errno = errno;
-    return Status::PosixError(opendir_errno, PSTR() << tag("opendir", path));
+    return Status::PosixError(opendir_errno, PSLICE() << tag("opendir", path));
   }
   return walk_path_dir(path, subdir, std::forward<Func>(func));
 }
@@ -169,7 +169,7 @@ Status walk_path_dir(const wstring &dir_name, Func &&func) {
   WIN32_FIND_DATA file_data;
   auto handle = FindFirstFileExW(name.c_str(), FindExInfoStandard, &file_data, FindExSearchNameMatch, nullptr, 0);
   if (handle == INVALID_HANDLE_VALUE) {
-    return Status::OsError(PSTR() << "FindFirstFileEx" << tag("name", to_string(name).ok()));
+    return Status::OsError(PSLICE() << "FindFirstFileEx" << tag("name", to_string(name).ok()));
   }
 
   SCOPE_EXIT {

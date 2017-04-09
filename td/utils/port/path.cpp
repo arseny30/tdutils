@@ -57,7 +57,7 @@ Status mkdir(CSlice dir, int32 mode) {
     }
     if (errno != EAGAIN && errno != EWOULDBLOCK) {
       auto mkdir_errno = errno;
-      return Status::PosixError(mkdir_errno, PSTR() << "Can't create directory \"" << dir << '"');
+      return Status::PosixError(mkdir_errno, PSLICE() << "Can't create directory \"" << dir << '"');
     }
   }
 }
@@ -66,7 +66,7 @@ Status rename(CSlice from, CSlice to) {
   int err = ::rename(from.c_str(), to.c_str());
   if (err < 0) {
     auto rename_errno = errno;
-    return Status::PosixError(rename_errno, PSTR() << "Can't rename \"" << from << "\" to \"" << to << '\"');
+    return Status::PosixError(rename_errno, PSLICE() << "Can't rename \"" << from << "\" to \"" << to << '\"');
   }
   return Status::OK();
 }
@@ -76,7 +76,7 @@ Result<string> realpath(CSlice slice) {
   char *err = ::realpath(slice.c_str(), full_path);
   if (err != full_path) {
     auto realpath_errno = errno;
-    return Status::PosixError(realpath_errno, PSTR() << "Realpath failed for \"" << slice << '"');
+    return Status::PosixError(realpath_errno, PSLICE() << "Realpath failed for \"" << slice << '"');
   }
   string res = full_path;
   if (res.empty()) {
@@ -93,7 +93,7 @@ Result<string> realpath(CSlice slice) {
 Status chdir(CSlice dir) {
   if (::chdir(dir.c_str())) {
     auto chdir_errno = errno;
-    return Status::PosixError(chdir_errno, PSTR() << "Can't change directory to \"" << dir << '"');
+    return Status::PosixError(chdir_errno, PSLICE() << "Can't change directory to \"" << dir << '"');
   }
   return Status::OK();
 }
@@ -101,7 +101,7 @@ Status chdir(CSlice dir) {
 Status rmdir(CSlice dir) {
   if (::rmdir(dir.c_str())) {
     auto rmdir_errno = errno;
-    return Status::PosixError(rmdir_errno, PSTR() << "Can't delete directory \"" << dir << '"');
+    return Status::PosixError(rmdir_errno, PSLICE() << "Can't delete directory \"" << dir << '"');
   }
   return Status::OK();
 }
@@ -109,7 +109,7 @@ Status rmdir(CSlice dir) {
 Status unlink(CSlice path) {
   if (::unlink(path.c_str())) {
     auto unlink_errno = errno;
-    return Status::PosixError(unlink_errno, PSTR() << "Can't unlink \"" << path << '"');
+    return Status::PosixError(unlink_errno, PSLICE() << "Can't unlink \"" << path << '"');
   }
   return Status::OK();
 }
@@ -157,11 +157,11 @@ Result<std::pair<FileFd, string>> mkstemp(CSlice dir) {
   int fd = ::mkstemp(&file_pattern[0]);
   if (fd == -1) {
     auto mkstemp_errno = errno;
-    return Status::PosixError(mkstemp_errno, PSTR() << "Can't create temporary file \"" << file_pattern << '"');
+    return Status::PosixError(mkstemp_errno, PSLICE() << "Can't create temporary file \"" << file_pattern << '"');
   }
   if (close(fd)) {
     auto close_errno = errno;
-    return Status::PosixError(close_errno, PSTR() << "Can't close temporary file \"" << file_pattern << '"');
+    return Status::PosixError(close_errno, PSLICE() << "Can't close temporary file \"" << file_pattern << '"');
   }
   // TODO create file from fd
   TRY_RESULT(file, FileFd::open(file_pattern, FileFd::Write | FileFd::Truncate | FileFd::Append));
@@ -191,7 +191,7 @@ Result<string> mkdtemp(CSlice dir, Slice prefix) {
   char *result = ::mkdtemp(&dir_pattern[0]);
   if (result == nullptr) {
     auto mkdtemp_errno = errno;
-    return Status::PosixError(mkdtemp_errno, PSTR() << "Can't create temporary directory \"" << dir_pattern << '"');
+    return Status::PosixError(mkdtemp_errno, PSLICE() << "Can't create temporary directory \"" << dir_pattern << '"');
   }
   return result;
 }
@@ -204,7 +204,7 @@ Status mkdir(CSlice dir, int32 mode) {
   TRY_RESULT(wdir, to_wstring(dir));
   auto status = CreateDirectoryW(wdir.c_str(), nullptr);
   if (status == 0 && GetLastError() != ERROR_ALREADY_EXISTS) {
-    return Status::OsError(PSTR() << "Can't create directory \"" << dir << '"');
+    return Status::OsError(PSLICE() << "Can't create directory \"" << dir << '"');
   }
   return Status::OK();
 }
@@ -214,7 +214,7 @@ Status rename(CSlice from, CSlice to) {
   TRY_RESULT(wto, to_wstring(to));
   auto status = MoveFileExW(wfrom.c_str(), wto.c_str(), MOVEFILE_REPLACE_EXISTING);
   if (status == 0) {
-    return Status::OsError(PSTR() << "Can't rename \"" << from << "\" to \"" << to << '\"');
+    return Status::OsError(PSLICE() << "Can't rename \"" << from << "\" to \"" << to << '\"');
   }
   return Status::OK();
 }
@@ -224,7 +224,7 @@ Result<string> realpath(CSlice slice) {
   TRY_RESULT(wslice, to_wstring(slice));
   auto status = GetFullPathNameW(wslice.c_str(), MAX_PATH, buf, nullptr);
   if (status == 0) {
-    return Status::OsError(PSTR() << "GetFullPathNameW failed for \"" << slice << '"');
+    return Status::OsError(PSLICE() << "GetFullPathNameW failed for \"" << slice << '"');
   }
   TRY_RESULT(res, to_string(buf));
   if (res.empty()) {
@@ -242,7 +242,7 @@ Status chdir(CSlice dir) WARN_UNUSED_RESULT {
   TRY_RESULT(wdir, to_wstring(dir));
   auto res = SetCurrentDirectoryW(wdir.c_str());
   if (res == 0) {
-    return Status::OsError(PSTR() << "Can't change directory to \"" << dir << '"');
+    return Status::OsError(PSLICE() << "Can't change directory to \"" << dir << '"');
   }
   return Status::OK();
 }
@@ -251,7 +251,7 @@ Status rmdir(CSlice dir) {
   TRY_RESULT(wdir, to_wstring(dir));
   int status = RemoveDirectoryW(wdir.c_str());
   if (!status) {
-    return Status::OsError(PSTR() << "Can't delete directory \"" << dir << '"');
+    return Status::OsError(PSLICE() << "Can't delete directory \"" << dir << '"');
   }
   return Status::OK();
 }
@@ -260,7 +260,7 @@ Status unlink(CSlice path) {
   TRY_RESULT(wpath, to_wstring(path));
   int status = DeleteFileW(wpath.c_str());
   if (!status) {
-    return Status::OsError(PSTR() << "Can't unlink \"" << path << '"');
+    return Status::OsError(PSLICE() << "Can't unlink \"" << path << '"');
   }
   return Status::OK();
 }
@@ -313,7 +313,7 @@ Result<string> mkdtemp(CSlice dir, Slice prefix) {
       return path;
     }
   }
-  return Status::Error(PSTR() << "Can't create temporary directory \"" << dir_pattern << '"');
+  return Status::Error(PSLICE() << "Can't create temporary directory \"" << dir_pattern << '"');
 }
 
 Result<std::pair<FileFd, string>> mkstemp(CSlice dir) {
@@ -346,7 +346,7 @@ Result<std::pair<FileFd, string>> mkstemp(CSlice dir) {
     }
   }
 
-  return Status::Error(PSTR() << "Can't create temporary file \"" << file_pattern << '"');
+  return Status::Error(PSLICE() << "Can't create temporary file \"" << file_pattern << '"');
 }
 
 #endif  // TD_PORT_WINDOWS

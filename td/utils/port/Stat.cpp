@@ -80,7 +80,7 @@ Status update_atime(int native_fd) {
   int err = futimens(native_fd, times);
   if (err < 0) {
     auto futimens_errno = errno;
-    auto status = Status::PosixError(futimens_errno, PSTR() << "futimens " << tag("fd", native_fd));
+    auto status = Status::PosixError(futimens_errno, PSLICE() << "futimens " << tag("fd", native_fd));
     LOG(WARNING) << status;
     return status;
   }
@@ -98,7 +98,7 @@ Status update_atime(int native_fd) {
   int err = futimes(native_fd, upd);
   if (err < 0) {
     auto futimes_errno = errno;
-    auto status = Status::PosixError(futimes_errno, PSTR() << "futimes " << tag("fd", native_fd));
+    auto status = Status::PosixError(futimes_errno, PSLICE() << "futimes " << tag("fd", native_fd));
     LOG(WARNING) << status;
     return status;
   }
@@ -115,7 +115,7 @@ Status update_atime(int native_fd) {
 // int err = futimens(native_fd, times);
 // if (err < 0) {
 // auto futimens_errno = errno;
-// auto status = Status::PosixError(futimens_errno, PSTR() << "futimens " << tag("fd", native_fd));
+// auto status = Status::PosixError(futimens_errno, PSLICE() << "futimens " << tag("fd", native_fd));
 // LOG(WARNING) << status;
 // return status;
 //}
@@ -139,7 +139,7 @@ Result<Stat> stat(CSlice path) {
   int err = stat(path.c_str(), &buf);
   if (err < 0) {
     auto stat_errno = errno;
-    return Status::PosixError(stat_errno, PSTR() << "stat " << tag("file", path) << " failed: ");
+    return Status::PosixError(stat_errno, PSLICE() << "stat " << tag("file", path) << " failed: ");
   }
   return detail::from_native_stat(buf);
 }

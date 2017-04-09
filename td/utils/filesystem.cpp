@@ -32,7 +32,7 @@ Status write_file(CSlice to, Slice data) {
   TRY_RESULT(to_file, FileFd::open(to, FileFd::Truncate | FileFd::Create | FileFd::Write));
   TRY_RESULT(written, to_file.write(data));
   if (written != static_cast<size_t>(size)) {
-    return Status::Error(PSTR() << "Failed to write file" << tag("size", size) << tag("written", written));
+    return Status::Error(PSLICE() << "Failed to write file" << tag("size", size) << tag("written", written));
   }
   to_file.close();
   return Status::OK();

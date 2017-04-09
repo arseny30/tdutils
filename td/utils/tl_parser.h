@@ -88,7 +88,7 @@ class tl_parser {
     if (error.empty()) {
       return Status::OK();
     }
-    return Status::Error(PSTR() << error << " at: " << error_pos);
+    return Status::Error(PSLICE() << error << " at: " << error_pos);
   }
 
   inline int get_error_pos() const {

@@ -85,7 +85,7 @@ void IPAddress::init_ipv6_any() {
 Status IPAddress::init_ipv6_port(CSlice ipv6, int port) {
   is_valid_ = false;
   if (port <= 0 || port >= (1 << 16)) {
-    return Status::Error(PSTR() << "Invalid [port=" << port << "]");
+    return Status::Error(PSLICE() << "Invalid [port=" << port << "]");
   }
   memset(&ipv6_addr_, 0, sizeof(ipv6_addr_));
   ipv6_addr_.sin6_family = AF_INET6;
@@ -93,9 +93,9 @@ Status IPAddress::init_ipv6_port(CSlice ipv6, int port) {
   // NB: ipv6 must be zero terminated...
   int err = inet_pton(AF_INET6, ipv6.begin(), &ipv6_addr_.sin6_addr);
   if (err == 0) {
-    return Status::Error(PSTR() << "Failed inet_pton(AF_INET6, " << ipv6 << ")");
+    return Status::Error(PSLICE() << "Failed inet_pton(AF_INET6, " << ipv6 << ")");
   } else if (err == -1) {
-    return Status::OsError(PSTR() << "Failed inet_pton(AF_INET6, " << ipv6 << ")");
+    return Status::OsError(PSLICE() << "Failed inet_pton(AF_INET6, " << ipv6 << ")");
   }
   is_valid_ = true;
   return Status::OK();
@@ -108,7 +108,7 @@ Status IPAddress::init_ipv6_as_ipv4_port(CSlice ipv4, int port) {
 Status IPAddress::init_ipv4_port(CSlice ipv4, int port) {
   is_valid_ = false;
   if (port <= 0 || port >= (1 << 16)) {
-    return Status::Error(PSTR() << "Invalid [port=" << port << "[");
+    return Status::Error(PSLICE() << "Invalid [port=" << port << "[");
   }
   memset(&ipv4_addr_, 0, sizeof(ipv4_addr_));
   ipv4_addr_.sin_family = AF_INET;
@@ -116,9 +116,9 @@ Status IPAddress::init_ipv4_port(CSlice ipv4, int port) {
   // NB: ipv4 must be zero terminated...
   int err = inet_pton(AF_INET, ipv4.begin(), &ipv4_addr_.sin_addr);
   if (err == 0) {
-    return Status::Error(PSTR() << "Failed inet_pton(AF_INET, " << ipv4 << ")");
+    return Status::Error(PSLICE() << "Failed inet_pton(AF_INET, " << ipv4 << ")");
   } else if (err == -1) {
-    return Status::OsError(PSTR() << "Failed inet_pton(AF_INET, " << ipv4 << ")");
+    return Status::OsError(PSLICE() << "Failed inet_pton(AF_INET, " << ipv4 << ")");
   }
   is_valid_ = true;
   return Status::OK();
@@ -137,7 +137,7 @@ Status IPAddress::init_host_port(CSlice host, CSlice port) {
   LOG(INFO) << "Try to init ipv4 address with port " << port;
   auto s = getaddrinfo(host.c_str(), port.c_str(), &hints, &info);
   if (s != 0) {
-    return Status::Error(PSTR() << "getaddrinfo: " << gai_strerror(s));
+    return Status::Error(PSLICE() << "getaddrinfo: " << gai_strerror(s));
   }
   SCOPE_EXIT {
     freeaddrinfo(info);
@@ -173,7 +173,7 @@ Status IPAddress::init_sockaddr(struct sockaddr *addr, socklen_t len) {
     memcpy(&ipv4_addr_, reinterpret_cast<struct sockaddr_in *>(addr), sizeof(ipv4_addr_));
     LOG(INFO) << "Have ipv4 address with port " << ntohs(ipv4_addr_.sin_port);
   } else {
-    return Status::Error(PSTR() << "Unknown " << tag("sa_family", addr->sa_family));
+    return Status::Error(PSLICE() << "Unknown " << tag("sa_family", addr->sa_family));
   }
 
   is_valid_ = true;

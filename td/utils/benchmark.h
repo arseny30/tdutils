@@ -96,6 +96,6 @@ inline void bench(Benchmark &&b, double max_time = 1.0) {
   double d = sqrt(square_sum / pass_cnt - avg * avg);
 
   LOG(ERROR, "Bench [%40s]:\t%.3lf ops/sec,\t", b.get_description().c_str(), avg)
-      << format::as_time(1 / avg) << (PSTR(" [d = %.6lf]", d));
+      << format::as_time(1 / avg) << (PSLICE(" [d = %.6lf]", d));
 }
 }  // namespace td
