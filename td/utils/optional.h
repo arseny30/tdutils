@@ -7,7 +7,7 @@ class optional {
   optional() = default;
   optional(T &&t) : impl_(std::forward<T>(t)) {
   }
-  operator bool() {
+  explicit operator bool() {
     return impl_.is_ok();
   }
   T &value() {

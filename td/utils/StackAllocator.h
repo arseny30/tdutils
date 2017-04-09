@@ -32,8 +32,8 @@ class StackAllocator {
     MutableSlice as_slice() const {
       return MutableSlice(ptr_.get(), size_.get());
     }
-    operator bool() const {
-      return bool(ptr_);
+    explicit operator bool() const {
+      return static_cast<bool>(ptr_);
     }
 
    private:
