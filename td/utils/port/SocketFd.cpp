@@ -63,7 +63,7 @@ Status SocketFd::init(const IPAddress &address) {
   if (err == -1) {
     auto connect_errno = errno;
     if (connect_errno != EINPROGRESS) {
-      auto error = Status::PosixError(connect_errno, PSLICE("Failed to connect: ") << address);
+      auto error = Status::PosixError(connect_errno, PSLICE() << "Failed to connect to " << address);
       ::close(fd);
       return error;
     }

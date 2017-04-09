@@ -189,7 +189,7 @@ class Logger {
   MutableCSlice as_cslice() {
     return sb_.as_cslice();
   }
-  bool is_error() {
+  bool is_error() const {
     return sb_.is_error();
   }
   Logger(const Logger &) = delete;

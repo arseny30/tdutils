@@ -45,7 +45,7 @@ Fd::Fd(int fd, Mode mode, ObserverBase *observer) : fd_(fd), mode_(mode) {
 
     auto fcntl_res = fcntl(fd_, F_GETFD);
     auto fcntl_errno = errno;
-    LOG_IF(FATAL, fcntl_res < 0) << Status::PosixError(fcntl_errno, PSLICE() << "fcntl F_GET_FD failed");
+    LOG_IF(FATAL, fcntl_res < 0) << Status::PosixError(fcntl_errno, "fcntl F_GET_FD failed");
 
     info->refcnt.store(1, std::memory_order_relaxed);
     CHECK(!is_ref());
@@ -56,7 +56,7 @@ Fd::Fd(int fd, Mode mode, ObserverBase *observer) : fd_(fd), mode_(mode) {
     CHECK(mode_ == Mode::Reference) << tag("fd", fd_);
     auto fcntl_res = fcntl(fd_, F_GETFD);
     auto fcntl_errno = errno;
-    LOG_IF(FATAL, fcntl_res < 0) << Status::PosixError(fcntl_errno, PSLICE() << "fcntl F_GET_FD failed");
+    LOG_IF(FATAL, fcntl_res < 0) << Status::PosixError(fcntl_errno, "fcntl F_GET_FD failed");
 
     CHECK(is_ref());
     CHECK(observer == nullptr);

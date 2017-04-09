@@ -427,7 +427,7 @@ Result<JsonValue> do_json_decode(Parser &parser) {
       if (0 < next && next < 127) {
         return Status::Error(PSLICE() << "Unexpected symbol '" << parser.peek_char() << "'");
       } else {
-        return Status::Error(PSLICE() << "Unexpected symbol");
+        return Status::Error("Unexpected symbol");
       }
     }
   }
@@ -532,7 +532,7 @@ Status do_json_skip(Parser &parser) {
       if (0 < next && next < 127) {
         return Status::Error(PSLICE() << "Unexpected symbol '" << parser.peek_char() << "'");
       } else {
-        return Status::Error(PSLICE() << "Unexpected symbol");
+        return Status::Error("Unexpected symbol");
       }
     }
   }
