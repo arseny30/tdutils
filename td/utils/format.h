@@ -15,7 +15,7 @@ inline char hex_digit(int x) {
 }
 
 template <int size, bool reversed>
-inline StringBuilder &operator<<(StringBuilder &builder, const HexDumpSize<size, reversed> &dump) {
+StringBuilder &operator<<(StringBuilder &builder, const HexDumpSize<size, reversed> &dump) {
   const uint8 *ptr = dump.data;
   // TODO: append unsafe
   if (!reversed) {
@@ -42,7 +42,7 @@ struct HexDumpSlice {
 };
 
 template <int align>
-inline StringBuilder &operator<<(StringBuilder &builder, const HexDumpSlice<align> &dump) {
+StringBuilder &operator<<(StringBuilder &builder, const HexDumpSlice<align> &dump) {
   int size = static_cast<int>(dump.slice.size());
   const uint8 *ptr = dump.slice.ubegin();
 
@@ -77,21 +77,21 @@ inline StringBuilder &operator<<(StringBuilder &builder, const HexDumpSlice<alig
 }
 
 template <int align>
-inline HexDumpSlice<align> as_hex_dump(Slice slice) {
+HexDumpSlice<align> as_hex_dump(Slice slice) {
   return HexDumpSlice<align>{slice};
 }
 
 template <int align>
-inline HexDumpSlice<align> as_hex_dump(MutableSlice slice) {
+HexDumpSlice<align> as_hex_dump(MutableSlice slice) {
   return HexDumpSlice<align>{slice};
 }
 
 template <int align, class T>
-inline HexDumpSlice<align> as_hex_dump(const T &value) {
+HexDumpSlice<align> as_hex_dump(const T &value) {
   return HexDumpSlice<align>{Slice(&value, sizeof(value))};
 }
 template <class T>
-inline HexDumpSize<sizeof(T), true> as_hex_dump(const T &value) {
+HexDumpSize<sizeof(T), true> as_hex_dump(const T &value) {
   return HexDumpSize<sizeof(T), true>{reinterpret_cast<const uint8 *>(&value)};
 }
 
@@ -260,7 +260,7 @@ struct Cond {
 };
 
 template <class TrueT, class FalseT>
-inline StringBuilder &operator<<(StringBuilder &sb, const Cond<TrueT, FalseT> &cond) {
+StringBuilder &operator<<(StringBuilder &sb, const Cond<TrueT, FalseT> &cond) {
   if (cond.flag) {
     return sb << cond.on_true;
   } else {
@@ -269,7 +269,7 @@ inline StringBuilder &operator<<(StringBuilder &sb, const Cond<TrueT, FalseT> &c
 }
 
 template <class TrueT, class FalseT = Unit>
-inline Cond<TrueT, FalseT> cond(bool flag, const TrueT &on_true, const FalseT &on_false = FalseT()) {
+Cond<TrueT, FalseT> cond(bool flag, const TrueT &on_true, const FalseT &on_false = FalseT()) {
   return Cond<TrueT, FalseT>{flag, on_true, on_false};
 }
 
@@ -280,13 +280,13 @@ struct Concat {
 };
 
 template <class T>
-inline StringBuilder &operator<<(StringBuilder &sb, const Concat<T> &concat) {
+StringBuilder &operator<<(StringBuilder &sb, const Concat<T> &concat) {
   tuple_for_each(concat.args, [&sb](auto &x) { sb << x; });
   return sb;
 }
 
 template <class... ArgsT>
-inline auto concat(const ArgsT &... args) {
+auto concat(const ArgsT &... args) {
   return Concat<decltype(std::tie(args...))>{std::tie(args...)};
 }
 

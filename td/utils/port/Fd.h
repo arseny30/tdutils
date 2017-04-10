@@ -106,17 +106,17 @@ class Fd {
 };
 
 template <class FdT>
-inline bool can_read(const FdT &fd) {
+bool can_read(const FdT &fd) {
   return fd.get_flags() & Fd::Read;
 }
 
 template <class FdT>
-inline bool can_write(const FdT &fd) {
+bool can_write(const FdT &fd) {
   return fd.get_flags() & Fd::Write;
 }
 
 template <class FdT>
-inline bool can_close(const FdT &fd) {
+bool can_close(const FdT &fd) {
   return fd.get_flags() & Fd::Close;
 }
 

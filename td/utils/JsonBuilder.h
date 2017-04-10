@@ -664,7 +664,7 @@ inline Result<JsonValue> json_decode(MutableSlice from) {
 }
 
 template <class StrT, class ValT>
-inline StrT json_encode(const ValT &val) {
+StrT json_encode(const ValT &val) {
   auto buf_len = 1 << 19;
   auto buf = StackAllocator<>::alloc(buf_len);
   JsonBuilder jb(StringBuilder(buf.as_slice()));

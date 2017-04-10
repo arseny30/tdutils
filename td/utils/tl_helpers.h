@@ -34,85 +34,85 @@
 
 namespace td {
 template <class Storer>
-inline void store(bool x, Storer &storer) {
+void store(bool x, Storer &storer) {
   storer.template store_binary<int32>(static_cast<int32>(x));
 }
 template <class Parser>
-inline void parse(bool &x, Parser &parser) {
+void parse(bool &x, Parser &parser) {
   x = parser.fetch_int() != 0;
 }
 
 template <class Storer>
-inline void store(int32 x, Storer &storer) {
+void store(int32 x, Storer &storer) {
   storer.template store_binary<int32>(x);
 }
 template <class Parser>
-inline void parse(int32 &x, Parser &parser) {
+void parse(int32 &x, Parser &parser) {
   x = parser.fetch_int();
 }
 
 template <class Storer>
-inline void store(uint32 x, Storer &storer) {
+void store(uint32 x, Storer &storer) {
   storer.template store_binary<int32>(x);
 }
 template <class Parser>
-inline void parse(uint32 &x, Parser &parser) {
+void parse(uint32 &x, Parser &parser) {
   x = static_cast<uint32>(parser.fetch_int());
 }
 
 template <class Storer>
-inline void store(int64 x, Storer &storer) {
+void store(int64 x, Storer &storer) {
   storer.template store_binary<int64>(x);
 }
 template <class Parser>
-inline void parse(int64 &x, Parser &parser) {
+void parse(int64 &x, Parser &parser) {
   x = parser.fetch_long();
 }
 template <class Storer>
-inline void store(uint64 x, Storer &storer) {
+void store(uint64 x, Storer &storer) {
   storer.template store_binary<int64>(x);
 }
 template <class Parser>
-inline void parse(uint64 &x, Parser &parser) {
+void parse(uint64 &x, Parser &parser) {
   x = static_cast<uint64>(parser.fetch_long());
 }
 
 template <class Storer>
-inline void store(double x, Storer &storer) {
+void store(double x, Storer &storer) {
   storer.template store_binary<double>(x);
 }
 template <class Parser>
-inline void parse(double &x, Parser &parser) {
+void parse(double &x, Parser &parser) {
   x = parser.fetch_double();
 }
 
 template <class Storer>
-inline void store(const string &x, Storer &storer) {
+void store(const string &x, Storer &storer) {
   storer.store_string(x);
 }
 template <class Parser>
-inline void parse(string &x, Parser &parser) {
+void parse(string &x, Parser &parser) {
   x = parser.template fetch_string<string>();
 }
 
 template <class Storer>
-inline void store(const BufferSlice &x, Storer &storer) {
+void store(const BufferSlice &x, Storer &storer) {
   storer.store_string(x);
 }
 template <class Parser>
-inline void parse(BufferSlice &x, Parser &parser) {
+void parse(BufferSlice &x, Parser &parser) {
   x = parser.template fetch_string<BufferSlice>();
 }
 
 template <class T, class Storer>
-inline void store(const vector<T> &vec, Storer &storer) {
+void store(const vector<T> &vec, Storer &storer) {
   storer.template store_binary<int32>(narrow_cast<int32>(vec.size()));
   for (auto &val : vec) {
     store(val, storer);
   }
 }
 template <class T, class Parser>
-inline void parse(vector<T> &vec, Parser &parser) {
+void parse(vector<T> &vec, Parser &parser) {
   int32 size = parser.fetch_int();
   vec = vector<T>(size);
   for (auto &val : vec) {
@@ -121,27 +121,27 @@ inline void parse(vector<T> &vec, Parser &parser) {
 }
 
 template <class T, class Storer>
-inline std::enable_if_t<std::is_enum<T>::value> store(const T &val, Storer &storer) {
+std::enable_if_t<std::is_enum<T>::value> store(const T &val, Storer &storer) {
   store(static_cast<int32>(val), storer);
 }
 template <class T, class Parser>
-inline std::enable_if_t<std::is_enum<T>::value> parse(T &val, Parser &parser) {
+std::enable_if_t<std::is_enum<T>::value> parse(T &val, Parser &parser) {
   int32 result;
   parse(result, parser);
   val = static_cast<T>(result);
 }
 
 template <class T, class Storer>
-inline std::enable_if_t<!std::is_enum<T>::value> store(const T &val, Storer &storer) {
+std::enable_if_t<!std::is_enum<T>::value> store(const T &val, Storer &storer) {
   val.store(storer);
 }
 template <class T, class Parser>
-inline std::enable_if_t<!std::is_enum<T>::value> parse(T &val, Parser &parser) {
+std::enable_if_t<!std::is_enum<T>::value> parse(T &val, Parser &parser) {
   val.parse(parser);
 }
 
 template <class T>
-inline string serialize(const T &object) {
+string serialize(const T &object) {
   tl::tl_storer_calc_length calc_length;
   store(object, calc_length);
   size_t length = calc_length.get_length();
@@ -162,7 +162,7 @@ inline string serialize(const T &object) {
 }
 
 template <class T>
-inline WARN_UNUSED_RESULT Status unserialize(T &object, Slice data) {
+WARN_UNUSED_RESULT Status unserialize(T &object, Slice data) {
   tl::tl_parser parser(data.begin(), data.size());
   parse(object, parser);
   parser.fetch_end();

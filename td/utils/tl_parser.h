@@ -77,25 +77,25 @@ class tl_parser {
 
   void set_error(const string &error_message);
 
-  inline const char *get_error() const {
+  const char *get_error() const {
     if (error.empty()) {
       return nullptr;
     }
     return error.c_str();
   }
 
-  inline Status get_status() const {
+  Status get_status() const {
     if (error.empty()) {
       return Status::OK();
     }
     return Status::Error(PSLICE() << error << " at: " << error_pos);
   }
 
-  inline int get_error_pos() const {
+  int get_error_pos() const {
     return error_pos;
   }
 
-  inline void check_len(const int len) {
+  void check_len(const int len) {
     if (unlikely(data_len < len)) {
       set_error("Not enough data to read");
     } else {
@@ -103,39 +103,39 @@ class tl_parser {
     }
   }
 
-  inline int32 fetch_int_unsafe() {
+  int32 fetch_int_unsafe() {
     return *data++;
   }
 
-  inline int32 fetch_int() {
+  int32 fetch_int() {
     check_len(1);
     return fetch_int_unsafe();
   }
 
-  inline int64 fetch_long_unsafe() {
+  int64 fetch_long_unsafe() {
     int64 result = *reinterpret_cast<const int64 *>(data);
     data += 2;
     return result;
   }
 
-  inline int64 fetch_long() {
+  int64 fetch_long() {
     check_len(2);
     return fetch_long_unsafe();
   }
 
-  inline double fetch_double_unsafe() {
+  double fetch_double_unsafe() {
     double result = *reinterpret_cast<const double *>(data);
     data += 2;
     return result;
   }
 
-  inline double fetch_double() {
+  double fetch_double() {
     check_len(2);
     return fetch_double_unsafe();
   }
 
   template <class T>
-  inline T fetch_binary() {
+  T fetch_binary() {
     static_assert(sizeof(T) <= sizeof(empty_data), "too big fetch_binary");
     check_len(static_cast<int>(sizeof(T) / 4));
     T result = *reinterpret_cast<const T *>(data);
@@ -153,7 +153,7 @@ class tl_parser {
   }
 
   template <class T>
-  inline T fetch_string() {
+  T fetch_string() {
     check_len(1);
     const uint8_t *str = reinterpret_cast<const uint8_t *>(data);
     int result_len = (uint8_t)*str;
@@ -173,7 +173,7 @@ class tl_parser {
   }
 
   template <class T>
-  inline T fetch_string_raw(const int size) {
+  T fetch_string_raw(const int size) {
     const uint8_t *str = reinterpret_cast<const uint8_t *>(data);
     CHECK(size % 4 == 0);
     check_len(size >> 2);
@@ -181,17 +181,17 @@ class tl_parser {
     return T(reinterpret_cast<const char *>(str), size);
   }
 
-  inline void fetch_end() {
+  void fetch_end() {
     if (data_len) {
       set_error("Too much data to fetch");
     }
   }
 
-  inline int get_pos() const {
+  int get_pos() const {
     return (int)(data - data_begin);
   }
 
-  inline bool set_pos(int pos) {
+  bool set_pos(int pos) {
     if (!error.empty() || pos < 0 || data_begin + pos > data) {
       return false;
     }
@@ -212,7 +212,7 @@ class tl_buffer_parser : public tl_parser {
       : tl_parser(buffer_slice->as_slice().begin(), buffer_slice->as_slice().size()), parent_(buffer_slice) {
   }
   template <class T>
-  inline T fetch_string() {
+  T fetch_string() {
     auto result = tl_parser::fetch_string<T>();
     for (auto &c : result) {
       if (c == '\0') {
@@ -238,7 +238,7 @@ class tl_buffer_parser : public tl_parser {
     return T();
   }
   template <class T>
-  inline T fetch_string_raw(const int size) {
+  T fetch_string_raw(const int size) {
     return tl_parser::fetch_string_raw<T>(size);
   }
 

@@ -23,7 +23,7 @@ class tl_storer_unsafe {
   }
 
   template <class T>
-  inline void store_binary(const T &x) {
+  void store_binary(const T &x) {
     *reinterpret_cast<T *>(buf) = x;
     buf += sizeof(x);
   }
@@ -35,17 +35,17 @@ class tl_storer_unsafe {
     store_binary<int64>(x);
   }
 
-  inline void store_slice(Slice slice) {
+  void store_slice(Slice slice) {
     memcpy(buf, slice.begin(), slice.size());
     buf += slice.size();
   }
-  inline void store_storer(const Storer &storer) {
+  void store_storer(const Storer &storer) {
     size_t size = storer.store(reinterpret_cast<uint8 *>(buf));
     buf += size;
   }
 
   template <class T>
-  inline void store_string(const T &str) {
+  void store_string(const T &str) {
     int len = (int)str.size();
     if (len < 254) {
       *buf++ = (char)(len);
@@ -87,7 +87,7 @@ class tl_storer_calc_length {
   }
 
   template <class T>
-  inline void store_binary(const T &x) {
+  void store_binary(const T &x) {
     length += sizeof(x);
   }
 
@@ -99,16 +99,16 @@ class tl_storer_calc_length {
     store_binary<int64>(x);
   }
 
-  inline void store_slice(Slice slice) {
+  void store_slice(Slice slice) {
     length += slice.size();
   }
 
-  inline void store_storer(const Storer &storer) {
+  void store_storer(const Storer &storer) {
     length += storer.size();
   }
 
   template <class T>
-  inline void store_string(const T &str) {
+  void store_string(const T &str) {
     size_t add = str.size();
     if (add < 254) {
       add += 1;

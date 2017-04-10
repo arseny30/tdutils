@@ -71,7 +71,7 @@ class DefaultStorer : public Storer {
 };
 
 template <class T>
-inline DefaultStorer<T> create_default_storer(const T &from) {
+DefaultStorer<T> create_default_storer(const T &from) {
   return DefaultStorer<T>(from);
 }
 
