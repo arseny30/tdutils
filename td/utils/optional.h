@@ -5,7 +5,8 @@ template <class T>
 class optional {
  public:
   optional() = default;
-  optional(T &&t) : impl_(std::forward<T>(t)) {
+  template <class T1>
+  optional(T1 &&t) : impl_(std::forward<T1>(t)) {
   }
   explicit operator bool() {
     return impl_.is_ok();
