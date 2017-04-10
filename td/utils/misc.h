@@ -698,15 +698,18 @@ inline unsigned int rand_device_helper() {
 inline uint32 rand_fast_uint32() {
   static TD_THREAD_LOCAL std::mt19937 *gen;
   if (!gen) {
-    init_thread_local<std::mt19937>(gen, rand_device_helper());
+    auto &rg = rand_device_helper;
+    std::seed_seq seq{rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg()};
+    init_thread_local<std::mt19937>(gen, seq);
   }
   return static_cast<uint32>((*gen)());
 }
 inline uint64 rand_fast_uint64() {
   static TD_THREAD_LOCAL std::mt19937_64 *gen;
   if (!gen) {
-    init_thread_local<std::mt19937_64>(gen,
-                                       static_cast<std::uint_fast64_t>(rand_device_helper()) + rand_device_helper());
+    auto &rg = rand_device_helper;
+    std::seed_seq seq{rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg(), rg()};
+    init_thread_local<std::mt19937_64>(gen, seq);
   }
   return static_cast<uint64>((*gen)());
 }
