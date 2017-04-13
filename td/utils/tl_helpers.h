@@ -70,7 +70,7 @@ void parse(int64 &x, Parser &parser) {
 }
 template <class Storer>
 void store(uint64 x, Storer &storer) {
-  storer.template store_binary<int64>(x);
+  storer.template store_binary<uint64>(x);
 }
 template <class Parser>
 void parse(uint64 &x, Parser &parser) {
