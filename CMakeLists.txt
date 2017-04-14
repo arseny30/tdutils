@@ -121,6 +121,7 @@ set (TDUTILS_SOURCE
   td/utils/tl_storer.h
   td/utils/unicode.h
   td/utils/utf8.h
+  td/utils/Variant.h
 )
 
 #RULES
