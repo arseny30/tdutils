@@ -97,11 +97,50 @@ class ForEachType {
 template <class... Types>
 class Variant {
  public:
+  static constexpr int npos = -1;
   Variant() = default;
-  Variant(const Variant &other);
   Variant(Variant &&other) {
+    other.visit([&](auto &&value) { this->init_empty(std::forward<decltype(value)>(value)); });
+  }
+  Variant(const Variant &other) {
+    other.visit([&](auto &&value) { this->init_empty(std::forward<decltype(value)>(value)); });
+  }
+  Variant &operator=(Variant &&other) {
     clear();
     other.visit([&](auto &&value) { this->init_empty(std::forward<decltype(value)>(value)); });
+    return *this;
+  }
+  Variant &operator=(const Variant &other) {
+    clear();
+    other.visit([&](auto &&value) { this->init_empty(std::forward<decltype(value)>(value)); });
+    return *this;
+  }
+
+  bool operator==(const Variant &other) const {
+    if (offset_ != other.offset_) {
+      return false;
+    }
+    bool res = false;
+    for_each([&](int offset, auto *ptr) {
+      using T = std::decay_t<decltype(*ptr)>;
+      if (offset == offset_) {
+        res = get<T>() == other.get<T>();
+      }
+    });
+    return res;
+  }
+  bool operator<(const Variant &other) const {
+    if (offset_ != other.offset_) {
+      return offset_ < other.offset_;
+    }
+    bool res = false;
+    for_each([&](int offset, auto *ptr) {
+      using T = std::decay_t<decltype(*ptr)>;
+      if (offset == offset_) {
+        res = get<T>() < other.get<T>();
+      }
+    });
+    return res;
   }
 
   template <class T>
@@ -114,12 +153,16 @@ class Variant {
     init_empty(std::forward<T>(t));
     return *this;
   }
+  template <class T>
+  static constexpr int offset() {
+    return detail::FindTypeOffset<std::decay_t<T>, Types...>::value;
+  }
 
   template <class T>
   void init_empty(T &&t) {
-    CHECK(offset_ == -1);
+    CHECK(offset_ == npos);
     offset_ = offset<T>();
-    new (&get<T>()) T(std::forward<T>(t));
+    new (&get<T>()) std::decay_t<T>(std::forward<T>(t));
   }
   ~Variant() {
     clear();
@@ -134,16 +177,32 @@ class Variant {
       }
     });
   }
-
   template <class F>
   void for_each(F &&f) {
     detail::ForEachType<Types...>::visit(f);
   }
-
-  template <class T>
-  static constexpr int offset() {
-    return detail::FindTypeOffset<T, Types...>::value;
+  template <class F>
+  void visit(F &&f) const {
+    for_each([&](int offset, auto *ptr) {
+      using T = std::decay_t<decltype(*ptr)>;
+      if (offset == offset_) {
+        f(std::move(this->get_unsafe<T>()));
+      }
+    });
   }
+  template <class F>
+  void for_each(F &&f) const {
+    detail::ForEachType<Types...>::visit(f);
+  }
+
+  void clear() {
+    visit([](auto &&value) {
+      using T = std::decay_t<decltype(value)>;
+      value.~T();
+    });
+    offset_ = npos;
+  }
+
   template <int offset>
   auto &get() {
     CHECK(offset == offset_);
@@ -154,18 +213,20 @@ class Variant {
     return get<offset<T>()>();
   }
 
-  void clear() {
-    visit([](auto &&value) {
-      using T = std::decay_t<decltype(value)>;
-      value.~T();
-    });
-    offset_ = -1;
+  template <int offset>
+  auto &get() const {
+    CHECK(offset == offset_);
+    return get_unsafe<offset>();
+  }
+  template <class T>
+  auto &get() const {
+    return get<offset<T>()>();
   }
 
-  int offset_{-1};
+ private:
+  int offset_{npos};
   char data_[detail::MaxSize<Types...>::value];
 
- private:
   template <class T>
   auto &get_unsafe() {
     return *reinterpret_cast<T *>(data_);
@@ -176,5 +237,33 @@ class Variant {
     using T = typename detail::IthType<offset, Types...>::type;
     return get_unsafe<T>();
   }
+
+  template <class T>
+  auto &get_unsafe() const {
+    return *reinterpret_cast<const T *>(data_);
+  }
+
+  template <int offset>
+  auto &get_unsafe() const {
+    using T = typename detail::IthType<offset, Types...>::type;
+    return get_unsafe<T>();
+  }
 };
+
+template <class T, class... Types>
+auto &get(Variant<Types...> &v) {
+  return v.template get<T>();
+}
+template <class T, class... Types>
+auto &get(const Variant<Types...> &v) {
+  return v.template get<T>();
+}
+template <int T, class... Types>
+auto &get(Variant<Types...> &v) {
+  return v.template get<T>();
+}
+template <int T, class... Types>
+auto &get(const Variant<Types...> &v) {
+  return v.template get<T>();
+}
 }  // namespace td
