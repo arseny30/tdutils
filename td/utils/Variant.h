@@ -1,13 +1,11 @@
+#pragma once
+
+#include "td/utils/common.h"
+#include "td/utils/logging.h"
 
 #include <algorithm>
-#include <cassert>
-#include <iostream>
-#include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
-
-#include "td/utils/logging.h"
 
 namespace td {
 namespace detail {
