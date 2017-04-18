@@ -18,7 +18,7 @@
 #error "Poll's implementation is not defined"
 #endif
 
-#if TD_TIZEN || TD_ANDROID
+#if TD_TIZEN
 #define TD_THREAD_PTHREAD 1
 #else
 #define TD_THREAD_STL 1
