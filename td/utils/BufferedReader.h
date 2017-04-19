@@ -1,11 +1,16 @@
 #pragma once
 
+#include "td/utils/common.h"
 #include "td/utils/port/FileFd.h"
+
+#include <algorithm>
+#include <cstring>
 
 namespace td {
 class BufferedReader {
  public:
-  BufferedReader(FileFd &file, size_t buff_size = 8152) : file_(file), buff_(buff_size), begin_pos_(0), end_pos_(0) {
+  explciit BufferedReader(FileFd &file, size_t buff_size = 8152)
+      : file_(file), buff_(buff_size), begin_pos_(0), end_pos_(0) {
   }
 
   Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT;
@@ -21,13 +26,13 @@ inline Result<size_t> BufferedReader::read(MutableSlice slice) {
   size_t available = end_pos_ - begin_pos_;
   if (available >= slice.size()) {
     // have enough data in buffer
-    memcpy(slice.begin(), &buff_[begin_pos_], slice.size());
+    std::memcpy(slice.begin(), &buff_[begin_pos_], slice.size());
     begin_pos_ += slice.size();
     return slice.size();
   }
 
   if (available) {
-    memcpy(slice.begin(), &buff_[begin_pos_], available);
+    std::memcpy(slice.begin(), &buff_[begin_pos_], available);
     begin_pos_ += available;
     slice.remove_prefix(available);
   }
@@ -42,7 +47,7 @@ inline Result<size_t> BufferedReader::read(MutableSlice slice) {
   end_pos_ = result;
 
   size_t left = std::min(end_pos_, slice.size());
-  memcpy(slice.begin(), &buff_[begin_pos_], left);
+  std::memcpy(slice.begin(), &buff_[begin_pos_], left);
   begin_pos_ += left;
   return left + available;
 }

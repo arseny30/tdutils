@@ -21,6 +21,8 @@
 #pragma GCC diagnostic pop
 #endif
 
+#include <cstring>
+
 namespace td {
 FileFd::operator FdRef() {
   return fd_;

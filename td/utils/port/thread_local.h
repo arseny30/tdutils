@@ -4,7 +4,6 @@
 
 #include "td/utils/int_types.h"
 
-#include <functional>
 #include <memory>
 
 namespace td {

@@ -1,5 +1,11 @@
 #pragma once
+
+#include "td/utils/common.h"
 #include "td/utils/logging.h"
+#include "td/utils/Slice.h"
+
+#include <atomic>
+#include <cstring>
 
 namespace td {
 template <int buffer_size = 32 * (1 << 10)>

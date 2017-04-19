@@ -11,13 +11,6 @@
 #include <type_traits>
 #include <utility>
 
-using std::atomic_thread_fence;
-using std::atomic;
-using std::memory_order_acquire;
-using std::memory_order_release;
-using std::memory_order_relaxed;
-using std::memory_order_seq_cst;
-
 namespace td {
 class Backoff {
  private:
@@ -74,8 +67,8 @@ class SPSCBlockQueue {
   }
 
   struct Position {
-    atomic<uint32> i;
-    char pad[64 - sizeof(atomic<uint32>)];
+    std::atomic<uint32> i;
+    char pad[64 - sizeof(std::atomic<uint32>)];
     uint32 local_writer_i;
     char pad2[64 - sizeof(uint32)];
     uint32 local_reader_i;
@@ -123,12 +116,12 @@ class SPSCBlockQueue {
   }
 
   int writer_update() {
-    writer_.local_reader_i = reader_.i.load(memory_order_acquire);
+    writer_.local_reader_i = reader_.i.load(std::memory_order_acquire);
     return writer_size();
   }
 
   void writer_flush() {
-    writer_.i.store(writer_.local_writer_i, memory_order_release);
+    writer_.i.store(writer_.local_writer_i, std::memory_order_release);
   }
 
   int reader_size() {
@@ -144,12 +137,12 @@ class SPSCBlockQueue {
   }
 
   int reader_update() {
-    reader_.local_writer_i = writer_.i.load(memory_order_acquire);
+    reader_.local_writer_i = writer_.i.load(std::memory_order_acquire);
     return reader_size();
   }
 
   void reader_flush() {
-    reader_.i.store(reader_.local_reader_i, memory_order_release);
+    reader_.i.store(reader_.local_reader_i, std::memory_order_release);
   }
 };
 
@@ -203,7 +196,7 @@ class SPSCChainQueue {
 
     Node *new_tail = create_node();
     tail_->next_ = new_tail;
-    tail_->is_closed_.store(true, memory_order_release);
+    tail_->is_closed_.store(true, std::memory_order_release);
     tail_ = new_tail;
     return tail_->q_.writer_update();
   }
@@ -230,7 +223,7 @@ class SPSCChainQueue {
       return res;
     }
 
-    if (!head_->is_closed_.load(memory_order_acquire)) {
+    if (!head_->is_closed_.load(std::memory_order_acquire)) {
       return 0;
     }
 
@@ -255,7 +248,7 @@ class SPSCChainQueue {
  private:
   struct Node {
     BlockQueueT q_;
-    atomic<bool> is_closed_;
+    std::atomic<bool> is_closed_;
     Node *next_;
 
     void init() {
@@ -343,11 +336,11 @@ class PollQueue : public QueueT {
   void writer_flush() {
     int old_wait_state = get_wait_state();
 
-    atomic_thread_fence(memory_order_seq_cst);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
 
     QueueType::writer_flush();
 
-    atomic_thread_fence(memory_order_seq_cst);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
 
     int wait_state = get_wait_state();
     if ((wait_state & 1) && wait_state != writer_wait_state_) {
@@ -373,7 +366,7 @@ class PollQueue : public QueueT {
 
       inc_wait_state();
 
-      atomic_thread_fence(memory_order_seq_cst);
+      std::atomic_thread_fence(std::memory_order_seq_cst);
 
       res = this->reader_update();
       if (res != 0) {
@@ -383,7 +376,7 @@ class PollQueue : public QueueT {
     }
 
     event_fd_.acquire();
-    atomic_thread_fence(memory_order_seq_cst);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
     res = this->reader_update();
     if (res != 0) {
       inc_wait_state();
@@ -409,15 +402,15 @@ class PollQueue : public QueueT {
 
  private:
   EventFd event_fd_;
-  atomic<int> wait_state_;
+  std::atomic<int> wait_state_;
   int writer_wait_state_;
 
   int get_wait_state() {
-    return wait_state_.load(memory_order_relaxed);
+    return wait_state_.load(std::memory_order_relaxed);
   }
 
   void inc_wait_state() {
-    wait_state_.store(get_wait_state() + 1, memory_order_relaxed);
+    wait_state_.store(get_wait_state() + 1, std::memory_order_relaxed);
   }
 
   void destroy_impl() {

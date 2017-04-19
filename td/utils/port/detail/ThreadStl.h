@@ -3,7 +3,12 @@
 
 #ifdef TD_THREAD_STL
 
+#include "td/utils/common.h"
+
 #include <thread>
+#include <tuple>
+#include <type_traits>
+#include <utility>
 
 namespace td {
 namespace detail {

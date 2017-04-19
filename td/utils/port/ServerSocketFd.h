@@ -1,5 +1,7 @@
 #pragma once
+
 #include "td/utils/port/config.h"
+
 #ifdef TD_PORT_POSIX
 
 #include "td/utils/port/IPAddress.h"
@@ -41,6 +43,7 @@ class ServerSocketFd {
 };
 }  // namespace td
 #endif  // TD_PORT_POSIX
+
 #ifdef TD_PORT_WINDOWS
 #include "td/utils/port/Fd.h"
 #include "td/utils/port/SocketFd.h"

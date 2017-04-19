@@ -3,6 +3,7 @@
 #include "td/utils/logging.h"
 
 #include <algorithm>
+#include <cstring>
 
 namespace td {
 /*** MutableSlice ***/

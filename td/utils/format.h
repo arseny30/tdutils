@@ -2,6 +2,8 @@
 #include "td/utils/common.h"
 #include "td/utils/StringBuilder.h"
 
+#include <tuple>
+
 namespace td {
 namespace format {
 /*** HexDump ***/

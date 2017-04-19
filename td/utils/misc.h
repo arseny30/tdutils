@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <initializer_list>
 #include <iterator>
+#include <limits>
 #include <random>
 #include <tuple>
 #include <type_traits>

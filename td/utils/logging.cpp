@@ -10,7 +10,6 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
-#include <iostream>
 
 #if TD_ANDROID
 #include <android/log.h>

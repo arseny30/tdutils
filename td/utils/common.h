@@ -22,10 +22,13 @@
 #endif
 
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <string>
+#include <tuple>  // for ctie implementation
+#include <type_traits>
+#include <utility>  // for std::move and std::forward
 #include <vector>
-#include <functional>
 
 #include <cassert>  // TODO remove this header
 

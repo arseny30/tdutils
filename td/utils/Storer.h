@@ -4,6 +4,8 @@
 #include "td/utils/Slice.h"
 #include "td/utils/tl_storer.h"
 
+#include <cstring>
+
 namespace td {
 class SliceStorer : public Storer {
  private:

@@ -1,5 +1,8 @@
 #include "td/utils/Gzip.h"
 
+#include <cstring>
+#include <limits>
+
 namespace td {
 Status Gzip::init_encode() {
   CHECK(mode_ == Empty);

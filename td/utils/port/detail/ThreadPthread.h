@@ -3,6 +3,12 @@
 
 #ifdef TD_THREAD_PTHREAD
 
+#include "td/utils/common.h"
+
+#include <tuple>
+#include <type_traits>
+#include <utility>
+
 #include <pthread.h>
 #include <sched.h>
 

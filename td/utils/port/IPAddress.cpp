@@ -14,7 +14,7 @@
 #include <sys/types.h>
 #endif
 
-#include <algorithm>
+#include <cstring>
 
 namespace td {
 /*** IPAddress ***/

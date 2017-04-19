@@ -31,6 +31,7 @@
 
 #include <cinttypes>
 #include <cstdio>
+#include <cstring>
 
 namespace td {
 namespace detail {

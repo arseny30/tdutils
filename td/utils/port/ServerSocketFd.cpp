@@ -8,7 +8,6 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <unistd.h>
-#include <algorithm>
 
 namespace td {
 ServerSocketFd::operator FdRef() {

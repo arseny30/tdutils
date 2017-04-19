@@ -2,6 +2,8 @@
 
 #include <cstdarg>
 #include <cstdio>
+#include <cstring>
+#include <type_traits>
 
 #include "td/utils/common.h"
 #include "td/utils/Slice-decl.h"

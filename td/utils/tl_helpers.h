@@ -9,6 +9,8 @@
 #include "td/utils/tl_parser.h"
 #include "td/utils/tl_storer.h"
 
+#include <type_traits>
+
 #define BEGIN_STORE_FLAGS() \
   uint32 flags_store = 0;   \
   uint32 bit_offset_store = 0

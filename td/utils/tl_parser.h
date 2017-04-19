@@ -10,6 +10,7 @@
 #include "td/utils/utf8.h"
 
 #include <array>
+#include <cstring>
 #include <limits>
 #include <string>
 

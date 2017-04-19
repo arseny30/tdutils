@@ -1,6 +1,7 @@
 #include "td/utils/JsonBuilder.h"
 
 #include <cstdlib>
+#include <cstring>
 
 namespace td {
 StringBuilder &operator<<(StringBuilder &sb, const JsonRawString &val) {

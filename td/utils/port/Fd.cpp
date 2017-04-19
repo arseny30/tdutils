@@ -7,10 +7,11 @@
 #include "td/utils/format.h"
 #include "td/utils/misc.h"
 
+#include <atomic>
+
+#include <fcntl.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <atomic>
-#include <fcntl.h>
 
 namespace td {
 Fd::InfoSet::InfoSet() {
@@ -374,7 +375,12 @@ Stat Fd::stat() const {
 #endif  // TD_PORT_POSIX
 
 #ifdef TD_PORT_WINDOWS
+
 #include "td/utils/port/Fd.h"
+
+#include <algorithm>
+#include <cstring>
+
 namespace td {
 namespace detail {
 class FdImpl {

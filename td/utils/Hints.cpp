@@ -1,6 +1,8 @@
 #include "td/utils/Hints.h"
 #include "td/utils/misc.h"
 
+#include <algorithm>
+
 namespace td {
 
 vector<string> Hints::get_words(const string &name) {

@@ -3,7 +3,9 @@
 #include "td/utils/common.h"
 #include "td/utils/Slice.h"
 
+#include <algorithm>
 #include <atomic>
+#include <cstring>
 
 namespace td {
 

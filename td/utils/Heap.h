@@ -2,6 +2,8 @@
 
 #include "td/utils/common.h"
 
+#include <algorithm>
+
 namespace td {
 
 struct HeapNode {
