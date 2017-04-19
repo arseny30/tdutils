@@ -59,7 +59,7 @@ Result<Gzip::State> Gzip::run() {
       return Done;
     }
     clear();
-    return Status::Error("zlib error");
+    return Status::Error(PSLICE() << "zlib error " << ret);
   }
 }
 void Gzip::init_common() {

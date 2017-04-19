@@ -1,6 +1,6 @@
 #pragma once
-#include "td/utils/Status.h"
 #include "td/utils/Slice.h"
+#include "td/utils/Status.h"
 #include "td/utils/buffer.h"
 
 #include <zlib.h>
@@ -8,27 +8,10 @@
 namespace td {
 class Gzip {
  public:
-  Gzip(Gzip &&other)
-      : stream_(other.stream_)
-      , input_size_(other.input_size_)
-      , output_size_(other.output_size_)
-      , close_input_flag_(other.close_input_flag_)
-      , mode_(other.mode_) {
-    other.mode_ = Empty;
-  }
+  Gzip(Gzip &&other) = delete;
   Gzip() = default;
 
-  Gzip &operator=(Gzip &&other) {
-    clear();
-    stream_ = other.stream_;
-    input_size_ = other.input_size_;
-    output_size_ = other.output_size_;
-    close_input_flag_ = other.close_input_flag_;
-    mode_ = other.mode_;
-    other.mode_ = Empty;
-    return *this;
-  }
-
+  Gzip &operator=(Gzip &&other) = delete;
   Gzip(const Gzip &) = delete;
   Gzip &operator=(const Gzip &) = delete;
 
