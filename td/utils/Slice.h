@@ -100,6 +100,15 @@ inline MutableSlice MutableSlice::substr(size_t from, size_t size) const {
   return MutableSlice(s_ + from, std::min(size, len_ - from));
 }
 
+inline size_t MutableSlice::find(char c) const {
+  for (size_t pos = 0; pos < len_; pos++) {
+    if (s_[pos] == c) {
+      return pos;
+    }
+  }
+  return static_cast<size_t>(-1);
+}
+
 inline size_t MutableSlice::rfind(char c) const {
   for (size_t pos = len_; pos-- > 0;) {
     if (s_[pos] == c) {
@@ -222,6 +231,15 @@ inline Slice Slice::substr(size_t from) const {
 inline Slice Slice::substr(size_t from, size_t size) const {
   CHECK(from <= len_);
   return Slice(s_ + from, std::min(size, len_ - from));
+}
+
+inline size_t Slice::find(char c) const {
+  for (size_t pos = 0; pos < len_; pos++) {
+    if (s_[pos] == c) {
+      return pos;
+    }
+  }
+  return static_cast<size_t>(-1);
 }
 
 inline size_t Slice::rfind(char c) const {

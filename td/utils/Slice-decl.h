@@ -49,6 +49,7 @@ class MutableSlice {
   string str() const;
   MutableSlice substr(size_t from) const;
   MutableSlice substr(size_t from, size_t size) const;
+  size_t find(char c) const;
   size_t rfind(char c) const;
 
   void copy_from(Slice from);
@@ -109,6 +110,7 @@ class Slice {
   string str() const;
   Slice substr(size_t from) const;
   Slice substr(size_t from, size_t size) const;
+  size_t find(char c) const;
   size_t rfind(char c) const;
 
   char back() const;

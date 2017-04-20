@@ -249,21 +249,20 @@ class Named {
   string name_;
 };
 
-inline std::tuple<string, string> split(string s, char delimiter = ' ') {
+template <class T>
+std::pair<T, T> split(T s, char delimiter = ' ') {
   auto delimiter_pos = s.find(delimiter);
   if (delimiter_pos == string::npos) {
-    return std::make_tuple(std::move(s), "");
+    return {std::move(s), T()};
   } else {
-    auto head = s.substr(0, delimiter_pos);
-    auto tail = s.substr(delimiter_pos + 1);
-    return std::make_tuple(head, tail);
+    return {s.substr(0, delimiter_pos), s.substr(delimiter_pos + 1)};
   }
 }
 
-inline vector<string> full_split(string s, char delimiter = ' ') {
-  // TODO optimize
-  string next;
-  vector<string> result;
+template <class T>
+vector<T> full_split(T s, char delimiter = ' ') {
+  T next;
+  vector<T> result;
   while (!s.empty()) {
     std::tie(next, s) = split(s, delimiter);
     result.push_back(next);
