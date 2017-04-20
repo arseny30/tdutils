@@ -188,8 +188,12 @@ class tl_parser {
     }
   }
 
-  int get_pos() const {
-    return (int)(data - data_begin);
+  int32 get_data_len() const {
+    return data_len;
+  }
+
+  int32 get_pos() const {
+    return static_cast<int32>(data - data_begin);
   }
 
   bool set_pos(int pos) {

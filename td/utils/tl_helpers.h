@@ -116,6 +116,10 @@ void store(const vector<T> &vec, Storer &storer) {
 template <class T, class Parser>
 void parse(vector<T> &vec, Parser &parser) {
   int32 size = parser.fetch_int();
+  if (size < 0 || parser.get_data_len() < size) {
+    parser.set_error("Wrong vector length");
+    return;
+  }
   vec = vector<T>(size);
   for (auto &val : vec) {
     parse(val, parser);
