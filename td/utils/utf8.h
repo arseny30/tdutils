@@ -6,14 +6,14 @@ namespace td {
 
 // checks UTF-8 string for correctness
 bool check_utf8(CSlice str);
-inline const uint8 *prev_utf8_unsafe(const uint8 *ptr) {
+inline const unsigned char *prev_utf8_unsafe(const unsigned char *ptr) {
   while (((*--ptr) & 0xc0) == 0x80) {
     // pass
   }
   return ptr;
 }
 
-inline const uint8 *next_utf8_unsafe(const uint8 *ptr, uint32 *code) {
+inline const unsigned char *next_utf8_unsafe(const unsigned char *ptr, uint32 *code) {
   uint32 a = ptr[0];
   if ((a & 0x80) == 0) {
     if (code) {

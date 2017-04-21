@@ -9,7 +9,7 @@ namespace format {
 /*** HexDump ***/
 template <int size, bool reversed = true>
 struct HexDumpSize {
-  const uint8 *data;
+  const unsigned char *data;
 };
 
 inline char hex_digit(int x) {
@@ -18,7 +18,7 @@ inline char hex_digit(int x) {
 
 template <int size, bool reversed>
 StringBuilder &operator<<(StringBuilder &builder, const HexDumpSize<size, reversed> &dump) {
-  const uint8 *ptr = dump.data;
+  const unsigned char *ptr = dump.data;
   // TODO: append unsafe
   if (!reversed) {
     for (int i = 0; i < size; i++) {
@@ -46,7 +46,7 @@ struct HexDumpSlice {
 template <int align>
 StringBuilder &operator<<(StringBuilder &builder, const HexDumpSlice<align> &dump) {
   int size = static_cast<int>(dump.slice.size());
-  const uint8 *ptr = dump.slice.ubegin();
+  const unsigned char *ptr = dump.slice.ubegin();
 
   builder << '\n';
 
@@ -94,7 +94,7 @@ HexDumpSlice<align> as_hex_dump(const T &value) {
 }
 template <class T>
 HexDumpSize<sizeof(T), true> as_hex_dump(const T &value) {
-  return HexDumpSize<sizeof(T), true>{reinterpret_cast<const uint8 *>(&value)};
+  return HexDumpSize<sizeof(T), true>{reinterpret_cast<const unsigned char *>(&value)};
 }
 
 /*** Hex ***/
