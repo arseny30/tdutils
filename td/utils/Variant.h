@@ -226,8 +226,8 @@ class Variant {
   }
 
  private:
+  alignas(Types...) char data_[detail::MaxSize<Types...>::value];
   int offset_{npos};
-  char data_[detail::MaxSize<Types...>::value];
 
   template <class T>
   auto &get_unsafe() {
