@@ -3,7 +3,6 @@
 #include "td/utils/common.h"
 #include "td/utils/logging.h"
 
-#include <algorithm>
 #include <type_traits>
 #include <utility>
 
@@ -13,10 +12,15 @@ namespace detail {
 template <size_t... Args>
 class MaxSizeImpl {};
 
+template <class T>
+constexpr const T &constexpr_max(const T &a, const T &b) {
+  return a < b ? b : a;
+}
+
 template <size_t Res, size_t X, size_t... Args>
 class MaxSizeImpl<Res, X, Args...> {
  public:
-  static constexpr size_t value = MaxSizeImpl<std::max(Res, X), Args...>::value;
+  static constexpr size_t value = MaxSizeImpl<constexpr_max(Res, X), Args...>::value;
 };
 
 template <size_t Res>
