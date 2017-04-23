@@ -226,7 +226,7 @@ class Variant {
   }
 
  private:
-  alignas(Types...) char data_[detail::MaxSize<Types...>::value];
+  alignas(detail::MaxSizeImpl<alignof(Types)...>::value) char data_[detail::MaxSize<Types...>::value];
   int offset_{npos};
 
   template <class T>
