@@ -176,7 +176,7 @@ class Variant {
     for_each([&](int offset, auto *ptr) {
       using T = std::decay_t<decltype(*ptr)>;
       if (offset == offset_) {
-        f(std::move(this->get_unsafe<T>()));
+        f(std::move(*this->get_unsafe<T>()));
       }
     });
   }
@@ -189,7 +189,7 @@ class Variant {
     for_each([&](int offset, auto *ptr) {
       using T = std::decay_t<decltype(*ptr)>;
       if (offset == offset_) {
-        f(std::move(this->get_unsafe<T>()));
+        f(std::move(*this->get_unsafe<T>()));
       }
     });
   }
@@ -209,7 +209,7 @@ class Variant {
   template <int offset>
   auto &get() {
     CHECK(offset == offset_);
-    return get_unsafe<offset>();
+    return *get_unsafe<offset>();
   }
   template <class T>
   auto &get() {
@@ -217,12 +217,12 @@ class Variant {
   }
 
   template <int offset>
-  auto &get() const {
+  const auto &get() const {
     CHECK(offset == offset_);
-    return get_unsafe<offset>();
+    return *get_unsafe<offset>();
   }
   template <class T>
-  auto &get() const {
+  const auto &get() const {
     return get<offset<T>()>();
   }
 
@@ -234,23 +234,23 @@ class Variant {
   int offset_{npos};
 
   template <class T>
-  auto &get_unsafe() {
-    return *reinterpret_cast<T *>(data_);
+  auto *get_unsafe() {
+    return reinterpret_cast<T *>(data_);
   }
 
   template <int offset>
-  auto &get_unsafe() {
+  auto *get_unsafe() {
     using T = typename detail::IthType<offset, Types...>::type;
     return get_unsafe<T>();
   }
 
   template <class T>
-  auto &get_unsafe() const {
-    return *reinterpret_cast<const T *>(data_);
+  const auto *get_unsafe() const {
+    return reinterpret_cast<const T *>(data_);
   }
 
   template <int offset>
-  auto &get_unsafe() const {
+  const auto *get_unsafe() const {
     using T = typename detail::IthType<offset, Types...>::type;
     return get_unsafe<T>();
   }
