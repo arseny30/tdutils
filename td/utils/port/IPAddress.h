@@ -9,7 +9,7 @@
 #include <sys/socket.h>
 #endif
 
-/*** IPAdress ***/
+/*** IPAddress ***/
 namespace td {
 class IPAddress {
  public:
