@@ -347,4 +347,10 @@ void reset(T &value) {
   swap(tmp, value);
 }
 
+template <int Alignment, class T>
+bool is_aligned_pointer(const T *pointer) {
+  static_assert(Alignment > 0 && (Alignment & (Alignment - 1)) == 0, "Wrong alignment");
+  return (reinterpret_cast<std::uintptr_t>(static_cast<const void *>(pointer)) & (Alignment - 1)) == 0;
+}
+
 }  // namespace td

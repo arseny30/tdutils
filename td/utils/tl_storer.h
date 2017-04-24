@@ -19,7 +19,7 @@ class tl_storer_unsafe {
 
  public:
   explicit tl_storer_unsafe(char *buf) : buf(buf) {
-    CHECK((reinterpret_cast<uint64>(buf) & 3) == 0);
+    CHECK(is_aligned_pointer<4>(buf));
   }
 
   template <class T>

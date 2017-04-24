@@ -155,7 +155,7 @@ string serialize(const T &object) {
   string key(length, '\0');
   MutableSlice data = key;
   StackAllocator<>::Ptr ptr;
-  if (reinterpret_cast<uint64>(data.begin()) & 3) {  // not aligned
+  if (!is_aligned_pointer<4>(data.begin())) {
     ptr = StackAllocator<>::alloc(data.size());
     data = ptr.as_slice();
   }

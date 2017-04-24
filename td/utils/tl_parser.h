@@ -55,7 +55,7 @@ class tl_parser {
     }
 
     data_len = static_cast<int32>(data_ptr_len / sizeof(int32));
-    if (reinterpret_cast<std::uintptr_t>(data_ptr) % sizeof(int32) == 0) {
+    if (is_aligned_pointer<4>(data_ptr)) {
       data = reinterpret_cast<const int32 *>(data_ptr);
     } else {
       int32 *buf;
@@ -175,10 +175,11 @@ class tl_parser {
 
   template <class T>
   T fetch_string_raw(const int size) {
+    const char *result = reinterpret_cast<const char *>(data);
     CHECK(size % 4 == 0);
     check_len(size >> 2);
     data += size >> 2;
-    return T(reinterpret_cast<const char *>(data), size);
+    return T(result, size);
   }
 
   void fetch_end() {
@@ -250,7 +251,7 @@ class tl_buffer_parser : public tl_parser {
   const BufferSlice *parent_;
 
   BufferSlice as_buffer_slice(Slice slice) {
-    if (reinterpret_cast<uint64>(slice.data()) % 4 == 0) {
+    if (is_aligned_pointer<4>(slice.data())) {
       return parent_->from_slice(slice);
     }
     return BufferSlice(slice);
