@@ -100,7 +100,8 @@ template <class... Types>
 class Variant {
  public:
   static constexpr int npos = -1;
-  Variant() = default;
+  Variant() {
+  }
   Variant(Variant &&other) {
     other.visit([&](auto &&value) { this->init_empty(std::forward<decltype(value)>(value)); });
   }
@@ -226,7 +227,10 @@ class Variant {
   }
 
  private:
-  alignas(detail::MaxSizeImpl<alignof(Types)...>::value) char data_[detail::MaxSize<Types...>::value];
+  union {
+    int64 align_;
+    char data_[detail::MaxSize<Types...>::value];
+  };
   int offset_{npos};
 
   template <class T>
