@@ -63,7 +63,7 @@ void md5(Slice input, MutableSlice output);
 class Random {
  public:
   static void secure_bytes(MutableSlice dest);
-  static void secure_bytes(uint8 *ptr, size_t size);
+  static void secure_bytes(unsigned char *ptr, size_t size);
   static int32 secure_int32();
   static int64 secure_int64();
   static uint32 fast_uint32();

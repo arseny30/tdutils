@@ -156,8 +156,8 @@ class tl_parser {
   template <class T>
   T fetch_string() {
     check_len(1);
-    const uint8_t *str = reinterpret_cast<const uint8_t *>(data);
-    int result_len = (uint8_t)*str;
+    const unsigned char *str = reinterpret_cast<const unsigned char *>(data);
+    int result_len = *str;
     if (result_len < 254) {
       check_len(result_len >> 2);
       data += (result_len >> 2) + 1;
@@ -175,11 +175,10 @@ class tl_parser {
 
   template <class T>
   T fetch_string_raw(const int size) {
-    const uint8_t *str = reinterpret_cast<const uint8_t *>(data);
     CHECK(size % 4 == 0);
     check_len(size >> 2);
     data += size >> 2;
-    return T(reinterpret_cast<const char *>(str), size);
+    return T(reinterpret_cast<const char *>(data), size);
   }
 
   void fetch_end() {

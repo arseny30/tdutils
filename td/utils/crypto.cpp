@@ -41,7 +41,7 @@ static string as_big_endian_string(const FromT &from) {
   size_t size = sizeof(from);
   string res(size, '\0');
 
-  auto ptr = reinterpret_cast<const int8 *>(&from);
+  auto ptr = reinterpret_cast<const unsigned char *>(&from);
   memcpy(&res[0], ptr, size);
 
   size_t i = size;
@@ -368,11 +368,11 @@ void md5(Slice input, MutableSlice output) {
 void Random::secure_bytes(MutableSlice dest) {
   Random::secure_bytes(dest.ubegin(), dest.size());
 }
-void Random::secure_bytes(uint8 *ptr, size_t size) {
+void Random::secure_bytes(unsigned char *ptr, size_t size) {
   constexpr size_t buf_size = 512;
-  static TD_THREAD_LOCAL uint8 *buf;  // static zero initialized
+  static TD_THREAD_LOCAL unsigned char *buf;  // static zero initialized
   static TD_THREAD_LOCAL size_t buf_pos;
-  if (init_thread_local<uint8[]>(buf, buf_size)) {
+  if (init_thread_local<unsigned char[]>(buf, buf_size)) {
     buf_pos = buf_size;
   }
 
@@ -402,16 +402,14 @@ void Random::secure_bytes(uint8 *ptr, size_t size) {
 }
 
 int32 Random::secure_int32() {
-  static_assert(sizeof(int32) == 4 * sizeof(uint8), "I should remove this assert");
   int32 res = 0;
-  secure_bytes(reinterpret_cast<uint8 *>(reinterpret_cast<char *>(&res)), 4);
+  secure_bytes(reinterpret_cast<unsigned char *>(&res), sizeof(int32));
   return res;
 }
 
 int64 Random::secure_int64() {
-  static_assert(sizeof(int64) == 8 * sizeof(uint8), "anyway this assert is stupid");
   int64 res = 0;
-  secure_bytes(reinterpret_cast<uint8 *>(reinterpret_cast<char *>(&res)), 8);
+  secure_bytes(reinterpret_cast<unsigned char *>(&res), sizeof(int64));
   return res;
 }
 uint32 Random::fast_uint32() {

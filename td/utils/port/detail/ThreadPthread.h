@@ -54,7 +54,7 @@ class ThreadPthread {
   }
 
   static void *run_thread(void *ptr) {
-    auto func = reinterpret_cast<decltype(func_.get())>(ptr);
+    auto func = static_cast<decltype(func_.get())>(ptr);
     func->reset();
     return nullptr;
   }
