@@ -56,7 +56,7 @@ static string as_big_endian_string(const FromT &from) {
 
 // static void BN_print(Slice name, BIGNUM *num) {
 // char *p_dec = BN_bn2dec(num);
-// LOG(INFO) << tag(name, (const char *)p_dec);
+// LOG(INFO) << tag(name, p_dec);
 // OPENSSL_free(p_dec);
 //}
 

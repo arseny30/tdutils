@@ -35,7 +35,7 @@ Status ServerSocketFd::get_pending_error() {
   fd_.clear_flags(Fd::Error);
   int error = 0;
   socklen_t errlen = sizeof(error);
-  if (getsockopt(fd_.get_native_fd(), SOL_SOCKET, SO_ERROR, (void *)&error, &errlen) == 0) {
+  if (getsockopt(fd_.get_native_fd(), SOL_SOCKET, SO_ERROR, static_cast<void *>(&error), &errlen) == 0) {
     if (error == 0) {
       return Status::OK();
     }

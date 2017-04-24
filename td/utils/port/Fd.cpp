@@ -572,8 +572,8 @@ class FdImpl {
     LPFN_CONNECTEX ConnectExPtr = nullptr;
     GUID guid = WSAID_CONNECTEX;
     DWORD numBytes;
-    int success = ::WSAIoctl(socket_, SIO_GET_EXTENSION_FUNCTION_POINTER, (void *)&guid, sizeof(guid),
-                             (void *)&ConnectExPtr, sizeof(ConnectExPtr), &numBytes, nullptr, nullptr);
+    int success = ::WSAIoctl(socket_, SIO_GET_EXTENSION_FUNCTION_POINTER, static_cast<void *>(&guid), sizeof(guid),
+                             static_cast<void *>(&ConnectExPtr), sizeof(ConnectExPtr), &numBytes, nullptr, nullptr);
     auto status = ConnectExPtr(socket_, addr.get_sockaddr(), narrow_cast<int>(addr.get_sockaddr_len()), nullptr, 0,
                                &bytes_read, &read_overlapped_);
     if (status != 0) {
