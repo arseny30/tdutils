@@ -21,14 +21,14 @@ StringBuilder &operator<<(StringBuilder &builder, const HexDumpSize<size, revers
   const unsigned char *ptr = dump.data;
   // TODO: append unsafe
   if (!reversed) {
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
       int xy = ptr[i];
       int x = xy >> 4;
       int y = xy & 15;
       builder << hex_digit(x) << hex_digit(y);
     }
   } else {
-    for (int i = size - 1; i >= 0; i--) {
+    for (size_t i = size - 1; i >= 0; i--) {
       int xy = ptr[i];
       int x = xy >> 4;
       int y = xy & 15;
