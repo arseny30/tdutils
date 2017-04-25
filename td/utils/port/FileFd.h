@@ -74,7 +74,7 @@ class FileFd : public Fd {
   static Result<FileFd> open(CSlice filepath, int32 flags, int32 todo = 0) WARN_UNUSED_RESULT {
     auto r_filepath = to_wstring(filepath);
     if (r_filepath.is_error()) {
-      return Status::Error(PSLICE() << "Failed to convert file path \" << filepath << \" to utf16");
+      return Status::Error(PSLICE() << "Failed to convert file path \" << filepath << \" to UTF-16");
     }
     auto w_filepath = r_filepath.move_as_ok();
     DWORD desired_access = 0;
