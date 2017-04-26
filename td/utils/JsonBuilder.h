@@ -10,6 +10,7 @@
 #include "td/utils/Status.h"
 #include "td/utils/StringBuilder.h"
 
+#include <new>
 #include <tuple>
 #include <type_traits>
 #include <utility>

@@ -2,6 +2,7 @@
 
 #include "td/utils/common.h"
 #include "td/utils/logging.h"
+
 #include <atomic>
 
 namespace td {
@@ -199,7 +200,7 @@ class ObjectPool {
 
     template <class... ArgsT>
     void init_data(ArgsT &&... args) {
-      // new (&data) DataT(std::forward<ArgsT>(args)...);
+      // new  (&data) DataT(std::forward<ArgsT>(args)...);
       data = DataT(std::forward<ArgsT>(args)...);
     }
     void destroy_data() {

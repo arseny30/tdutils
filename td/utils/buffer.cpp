@@ -1,6 +1,7 @@
 #include "td/utils/buffer.h"
 
 #include <cstdlib>  // for malloc
+#include <new>
 
 namespace td {
 

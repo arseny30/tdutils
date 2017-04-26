@@ -7,7 +7,10 @@
 // KQueue poll implementation
 #include <sys/event.h>
 
+#include "td/utils/common.h"
 #include "td/utils/port/PollBase.h"
+
+#include <cstdint>
 
 namespace td {
 namespace detail {
@@ -23,7 +26,7 @@ class KQueue final : public PollBase {
 
   void flush_changes();
 
-  void add_change(uintptr_t ident, int16 filter, uint16 flags, uint32 fflags, intptr_t data, void *udata);
+  void add_change(std::uintptr_t ident, int16 filter, uint16 flags, uint32 fflags, std::intptr_t data, void *udata);
 
  public:
   KQueue();

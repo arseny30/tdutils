@@ -163,11 +163,11 @@ class tl_storer_to_string {
     store_field_end();
   }
 
-  void store_field(const char *name, int32_t value) {
-    store_field(name, (int64_t)value);
+  void store_field(const char *name, int32 value) {
+    store_field(name, (int64)value);
   }
 
-  void store_field(const char *name, int64_t value) {
+  void store_field(const char *name, int64 value) {
     store_field_begin(name);
     store_long(value);
     store_field_end();

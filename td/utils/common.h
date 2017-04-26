@@ -21,7 +21,7 @@
 #undef small
 #endif
 
-#include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <string>

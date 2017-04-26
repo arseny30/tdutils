@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
     }
     assert(!extensions.empty());
 
-    size_t index = 0;
+    std::size_t index = 0;
     if (mime_type == "image/jpeg") {
       index = std::find(extensions.begin(), extensions.end(), "jpg") - extensions.begin();
       assert(index < extensions.size());

@@ -50,7 +50,8 @@ void KQueue::flush_changes() {
   CHECK(n == 0);
 }
 
-void KQueue::add_change(uintptr_t ident, int16 filter, uint16 flags, uint32 fflags, intptr_t data, void *udata) {
+void KQueue::add_change(std::uintptr_t ident, int16 filter, uint16 flags, uint32 fflags, std::intptr_t data,
+                        void *udata) {
   if (changes_n == static_cast<int>(events.size())) {
     flush_changes();
   }
@@ -70,7 +71,7 @@ void KQueue::subscribe(const Fd &fd, Fd::Flags flags) {
 
 void KQueue::invalidate(const Fd &fd) {
   for (int i = 0; i < changes_n; i++) {
-    if (events[i].ident == static_cast<uintptr_t>(fd.get_native_fd())) {
+    if (events[i].ident == static_cast<std::uintptr_t>(fd.get_native_fd())) {
       changes_n--;
       std::swap(events[i], events[changes_n]);
       i--;
