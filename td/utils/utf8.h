@@ -2,42 +2,63 @@
 
 #include "td/utils/Slice.h"
 
+#include <cstddef>
+
 namespace td {
 
 // checks UTF-8 string for correctness
 bool check_utf8(CSlice str);
 
+// checks if a code unit is a first code unit of a UTF-8 character
+inline bool is_utf8_symbol_begin_char(unsigned char c) {
+  return (c & 0xC0) != 0x80;
+}
+
+// moves pointer one UTF-8 character back
 inline const unsigned char *prev_utf8_unsafe(const unsigned char *ptr) {
-  while (((*--ptr) & 0xc0) == 0x80) {
+  while (!is_utf8_symbol_begin_char(*--ptr)) {
     // pass
   }
   return ptr;
 }
 
-inline const unsigned char *next_utf8_unsafe(const unsigned char *ptr, uint32 *code) {
-  uint32 a = ptr[0];
-  if ((a & 0x80) == 0) {
-    if (code) {
-      *code = a;
+// moves pointer one UTF-8 character forward and saves code of the skipped character in *code
+const unsigned char *next_utf8_unsafe(const unsigned char *ptr, uint32 *code);
+
+// truncates UTF-8 string to the given length in Unicode characters
+template <class T>
+T utf8_truncate(T str, size_t length) {
+  if (str.size() > length) {
+    for (size_t i = 0; i < str.size(); i++) {
+      if (is_utf8_symbol_begin_char(static_cast<unsigned char>(str[i]))) {
+        if (length == 0) {
+          return str.substr(0, i);
+        } else {
+          length--;
+        }
+      }
     }
-    return ptr + 1;
-  } else if ((a & 0x20) == 0) {
-    if (code) {
-      *code = ((a & 0x1f) << 6) | (ptr[1] & 0x3f);
-    }
-    return ptr + 2;
-  } else if ((a & 0x10) == 0) {
-    if (code) {
-      *code = ((a & 0x0f) << 12) | ((ptr[1] & 0x3f) << 6) | (ptr[2] & 0x3f);
-    }
-    return ptr + 3;
-  } else if ((a & 0x08) == 0) {
-    if (code) {
-      *code = ((a & 0x07) << 18) | ((ptr[1] & 0x3f) << 12) | ((ptr[2] & 0x3f) << 6) | (ptr[3] & 0x3f);
-    }
-    return ptr + 4;
   }
-  UNREACHABLE();
+  return str;
+}
+
+// truncates UTF-8 string to the given length given in UTF-16 code units
+template <class T>
+T utf8_utf16_truncate(T str, size_t length) {
+  for (size_t i = 0; i < str.size(); i++) {
+    auto c = static_cast<unsigned char>(str[i]);
+    if (is_utf8_symbol_begin_char(c)) {
+      if (length <= 0) {
+        return str.substr(0, i);
+      } else {
+        length--;
+        if (c >= 0xf0) {  // >= 4 bytes in symbol => surrogaite pair
+          length--;
+        }
+      }
+    }
+  }
+  return str;
 }
 
 }  // namespace td
