@@ -53,7 +53,7 @@ class Benchmark {
   virtual void run(int n) = 0;
 };
 
-inline std::pair<double, double> bench_n(Benchmark &&b, int n) {
+inline std::pair<double, double> bench_n(Benchmark &b, int n) {
   double total = -Clocks::monotonic();
   b.start_up_n(n);
   double t = -Clocks::monotonic();
@@ -65,13 +65,17 @@ inline std::pair<double, double> bench_n(Benchmark &&b, int n) {
   return std::make_pair(t, total);
 }
 
-inline void bench(Benchmark &&b, double max_time = 1.0) {
+inline std::pair<double, double> bench_n(Benchmark &&b, int n) {
+  return bench_n(b, n);
+}
+
+inline void bench(Benchmark &b, double max_time = 1.0) {
   int n = 1;
   double pass_time = 0;
   double total_pass_time = 0;
   while (pass_time < max_time && total_pass_time < max_time * 3 && n < (1 << 30)) {
     n *= 2;
-    std::tie(pass_time, total_pass_time) = bench_n(std::move(b), n);
+    std::tie(pass_time, total_pass_time) = bench_n(b, n);
   }
   pass_time = n / pass_time;
 
@@ -82,7 +86,7 @@ inline void bench(Benchmark &&b, double max_time = 1.0) {
   double max_pass_time = pass_time;
 
   for (int i = 1; i < pass_cnt; i++) {
-    pass_time = n / bench_n(std::move(b), n).first;
+    pass_time = n / bench_n(b, n).first;
     sum += pass_time;
     square_sum += pass_time * pass_time;
     if (pass_time < min_pass_time) {
@@ -98,4 +102,9 @@ inline void bench(Benchmark &&b, double max_time = 1.0) {
   LOG(ERROR, "Bench [%40s]:\t%.3lf ops/sec,\t", b.get_description().c_str(), avg)
       << format::as_time(1 / avg) << (PSLICE(" [d = %.6lf]", d));
 }
+
+inline void bench(Benchmark &&b, double max_time = 1.0) {
+  bench(b, max_time);
+}
+
 }  // namespace td
