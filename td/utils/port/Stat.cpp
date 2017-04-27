@@ -175,7 +175,7 @@ Result<MemStat> mem_stat() {
 
   const char *s = mem;
   MemStat res;
-  memset(&res, 0, sizeof(res));
+  std::memset(&res, 0, sizeof(res));
   while (*s) {
     const char *name_begin = s;
     while (*s != 0 && *s != '\n') {

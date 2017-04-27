@@ -47,7 +47,7 @@ class StringBuilder {
     } else {
       size = slice.size();
     }
-    memcpy(current_ptr_, slice.begin(), size);
+    std::memcpy(current_ptr_, slice.begin(), size);
     current_ptr_ += size;
     return *this;
   }

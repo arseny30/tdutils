@@ -14,11 +14,11 @@
 
 #include <sys/types.h>
 
+#endif
+
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
-
-#endif
 
 namespace td {
 
@@ -117,7 +117,7 @@ Status unlink(CSlice path) {
 CSlice get_temporary_dir() {
   static bool is_inited = [] {
     if (temporary_dir.empty()) {
-      const char *s = getenv("TMPDIR");
+      const char *s = std::getenv("TMPDIR");
       if (s != nullptr && s[0] != '\0') {
         temporary_dir = s;
       } else if (P_tmpdir != nullptr && P_tmpdir[0] != '\0') {

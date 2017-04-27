@@ -148,11 +148,11 @@ Result<MutableSlice> json_string_decode(Parser &parser) {
   auto *begin_dest = cur_src;
 
   while (cur_src != end_src) {
-    auto *slash = static_cast<char *>(memchr(cur_src, '\\', end_src - cur_src));
+    auto *slash = static_cast<char *>(std::memchr(cur_src, '\\', end_src - cur_src));
     if (slash == nullptr) {
       slash = end_src;
     }
-    memmove(cur_dest, cur_src, slash - cur_src);
+    std::memmove(cur_dest, cur_src, slash - cur_src);
     cur_dest += slash - cur_src;
     cur_src = slash;
     if (cur_src != end_src) {
@@ -264,7 +264,7 @@ Status json_string_skip(Parser &parser) {
   end_src = end;
 
   while (cur_src != end_src) {
-    auto *slash = static_cast<char *>(memchr(cur_src, '\\', end_src - cur_src));
+    auto *slash = static_cast<char *>(std::memchr(cur_src, '\\', end_src - cur_src));
     if (slash == nullptr) {
       slash = end_src;
     }
@@ -607,7 +607,7 @@ Result<double> get_json_object_double_field(JsonObject &object, Slice name, bool
   if (value.type() == JsonValue::Type::Null) {
     return default_value;
   }
-  return atof(value.get_number().str().c_str());  // TODO atof
+  return std::atof(value.get_number().str().c_str());  // TODO atof
 }
 
 Result<string> get_json_object_string_field(JsonObject &object, Slice name, bool is_optional, string default_value) {

@@ -194,10 +194,10 @@ class JsonScope {
   JsonScope &operator=(JsonScope &&) = delete;
   ~JsonScope() {
     if (jb_) {
-      exit();
+      leave();
     }
   }
-  void exit() {
+  void leave() {
     CHECK(is_active());
     jb_->scope_ = save_scope_;
   }
@@ -311,10 +311,10 @@ class JsonArrayScope : public JsonScope {
   JsonArrayScope(JsonArrayScope &&other) = default;
   ~JsonArrayScope() {
     if (jb_) {
-      exit();
+      leave();
     }
   }
-  void exit() {
+  void leave() {
     *sb_ << "]";
   }
   template <class T>
@@ -344,10 +344,10 @@ class JsonObjectScope : public JsonScope {
   JsonObjectScope(JsonObjectScope &&other) = default;
   ~JsonObjectScope() {
     if (jb_) {
-      exit();
+      leave();
     }
   }
-  void exit() {
+  void leave() {
     *sb_ << "}";
   }
   template <class S, class T>

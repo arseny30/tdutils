@@ -42,7 +42,7 @@ class Parser {
     if (status_.is_error()) {
       return MutableSlice();
     }
-    char *till = reinterpret_cast<char *>(memchr(ptr_, c, end_ - ptr_));
+    char *till = reinterpret_cast<char *>(std::memchr(ptr_, c, end_ - ptr_));
     if (till == nullptr) {
       till = end_;
     }
@@ -57,7 +57,7 @@ class Parser {
     }
     char *best_till = end_;
     for (auto c : str) {
-      char *till = reinterpret_cast<char *>(memchr(ptr_, c, end_ - ptr_));
+      char *till = reinterpret_cast<char *>(std::memchr(ptr_, c, end_ - ptr_));
       if (till != nullptr && till < best_till) {
         best_till = till;
       }
@@ -129,7 +129,7 @@ class Parser {
 
   void skip_till_not(Slice str) {
     while (ptr_ != end_) {
-      if (memchr(str.data(), *ptr_, str.size()) == nullptr) {
+      if (std::memchr(str.data(), *ptr_, str.size()) == nullptr) {
         break;
       }
       ptr_++;
@@ -151,7 +151,7 @@ class Parser {
     if (prefix.size() + ptr_ > end_) {
       return false;
     }
-    return memcmp(prefix.begin(), ptr_, prefix.size()) == 0;
+    return std::memcmp(prefix.begin(), ptr_, prefix.size()) == 0;
   }
 
   bool skip_start_with(Slice prefix) {

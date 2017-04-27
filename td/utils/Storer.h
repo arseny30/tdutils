@@ -18,7 +18,7 @@ class SliceStorer : public Storer {
     return slice.size();
   }
   size_t store(uint8 *ptr) const override {
-    memcpy(ptr, slice.ubegin(), slice.size());
+    std::memcpy(ptr, slice.ubegin(), slice.size());
     return slice.size();
   }
 };

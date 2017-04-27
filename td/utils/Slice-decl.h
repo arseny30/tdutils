@@ -20,7 +20,7 @@ class MutableSlice {
   MutableSlice(string &s);
   template <class T>
   explicit MutableSlice(T s, std::enable_if_t<std::is_same<char *, T>::value, private_tag> = {})
-      : MutableSlice(s, strlen(s)) {
+      : MutableSlice(s, std::strlen(s)) {
   }
   explicit MutableSlice(const Slice &from);
   MutableSlice(void *s, void *t);
@@ -74,11 +74,11 @@ class Slice {
   Slice(const std::vector<char> &v);
   template <class T>
   explicit Slice(T s, std::enable_if_t<std::is_same<char *, std::remove_const_t<T>>::value, private_tag> = {})
-      : Slice(s, strlen(s)) {
+      : Slice(s, std::strlen(s)) {
   }
   template <class T>
   explicit Slice(T s, std::enable_if_t<std::is_same<const char *, std::remove_const_t<T>>::value, private_tag> = {})
-      : Slice(s, strlen(s)) {
+      : Slice(s, std::strlen(s)) {
   }
   Slice(const void *s, const void *t);
 

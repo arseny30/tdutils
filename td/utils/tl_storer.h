@@ -36,7 +36,7 @@ class tl_storer_unsafe {
   }
 
   void store_slice(Slice slice) {
-    memcpy(buf, slice.begin(), slice.size());
+    std::memcpy(buf, slice.begin(), slice.size());
     buf += slice.size();
   }
   void store_storer(const Storer &storer) {
@@ -58,7 +58,7 @@ class tl_storer_unsafe {
     } else {
       LOG(FATAL) << "String size " << len << " is too big to be stored";
     }
-    memcpy(buf, str.data(), str.size());
+    std::memcpy(buf, str.data(), str.size());
     buf += str.size();
 
     switch (len & 3) {

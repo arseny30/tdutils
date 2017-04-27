@@ -86,7 +86,7 @@ inline bool no_return_func() {
 
 #define UNREACHABLE(...)   \
   LOG(FATAL, __VA_ARGS__); \
-  abort()
+  std::abort()
 
 constexpr int VERBOSITY_NAME(CUSTOM) = -6;
 constexpr int VERBOSITY_NAME(PLAIN) = -5;

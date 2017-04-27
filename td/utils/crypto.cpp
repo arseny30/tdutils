@@ -40,7 +40,7 @@ static string as_big_endian_string(const FromT &from) {
   string res(size, '\0');
 
   auto ptr = reinterpret_cast<const unsigned char *>(&from);
-  memcpy(&res[0], ptr, size);
+  std::memcpy(&res[0], ptr, size);
 
   size_t i = size;
   while (i && res[i - 1] == 0) {
@@ -376,7 +376,7 @@ void Random::secure_bytes(unsigned char *ptr, size_t size) {
 
   auto ready = std::min(size, buf_size - buf_pos);
   if (ready != 0) {
-    memcpy(ptr, buf + buf_pos, ready);
+    std::memcpy(ptr, buf + buf_pos, ready);
     buf_pos += ready;
     ptr += ready;
     size -= ready;
@@ -389,7 +389,7 @@ void Random::secure_bytes(unsigned char *ptr, size_t size) {
     // TODO: it CAN fail
     CHECK(err == 1);
     buf_pos = size;
-    memcpy(ptr, buf, size);
+    std::memcpy(ptr, buf, size);
     return;
   }
 

@@ -191,7 +191,7 @@ class DefaultLog : public LogInterface {
     TsCerr() << slice;
 #endif
     if (log_level == VERBOSITY_NAME(FATAL)) {
-      abort();
+      std::abort();
     }
   }
   void rotate() override {

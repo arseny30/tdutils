@@ -5,12 +5,16 @@
 #include "td/utils/port/FileFd.h"
 #include "td/utils/port/path.h"
 
-#include <limits>
 #ifdef TD_PORT_POSIX
 #include <unistd.h>  // TODO: move to port
 #endif
 
+#include <cstdlib>
+#include <limits>
+
 namespace td {
+
+// TODO move implementation to cpp
 class FileLog : public LogInterface {
  private:
   static constexpr int DEFAULT_ROTATE_THRESHOLD = 10 * (1 << 20);
@@ -31,20 +35,20 @@ class FileLog : public LogInterface {
     while (!slice.empty()) {
       auto r_size = fd_.write(slice);
       if (r_size.is_error()) {
-        abort();
+        std::abort();
       }
       auto written = r_size.ok();
       size_ += written;
       slice.remove_prefix(written);
     }
     if (log_level == VERBOSITY_NAME(FATAL)) {
-      abort();
+      std::abort();
     }
 
     if (size_ > rotate_threshold_) {
       auto status = rename(path_, path_ + ".old");
       if (status.is_error()) {
-        abort();
+        std::abort();
       }
       do_rotate();
     }
@@ -92,7 +96,7 @@ class FileLog : public LogInterface {
     fd_.close();
     auto r_fd = FileFd::open(path_, FileFd::Create | FileFd::Truncate | FileFd::Write);
     if (r_fd.is_error()) {
-      abort();
+      std::abort();
     }
     fd_ = r_fd.move_as_ok().move_as_fd();
     dup2(fd_.get_native_fd(), 2);  // TODO: move to port

@@ -63,7 +63,7 @@ Result<Gzip::State> Gzip::run() {
   }
 }
 void Gzip::init_common() {
-  memset(&stream_, 0, sizeof(stream_));
+  std::memset(&stream_, 0, sizeof(stream_));
   stream_.zalloc = Z_NULL;
   stream_.zfree = Z_NULL;
   stream_.opaque = Z_NULL;

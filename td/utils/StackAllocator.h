@@ -14,7 +14,7 @@ class StackAllocator {
   class Deleter {
    public:
     void operator()(void *ptr) {
-      free(ptr);
+      free_ptr(ptr);
     }
   };
   // memory still can be corrupted, but it is better than explicit free function.
@@ -45,8 +45,8 @@ class StackAllocator {
   }
 
  private:
-  static void free(void *ptr) {
-    impl().free(ptr);
+  static void free_ptr(void *ptr) {
+    impl().free_ptr(ptr);
   }
   struct Impl {
     static const size_t MEM_SIZE = 1024 * 1024;
@@ -63,7 +63,7 @@ class StackAllocator {
       ASSERT_CHECK(pos < MEM_SIZE);
       return res;
     }
-    void free(void *ptr) {
+    void free_ptr(void *ptr) {
       size_t new_pos = static_cast<char *>(ptr) - mem.data();
       ASSERT_CHECK(new_pos < MEM_SIZE);
       ASSERT_CHECK(new_pos < pos);

@@ -261,7 +261,7 @@ class Status {
     char *ptr = ptr_.get();
     reinterpret_cast<Info *>(ptr)[0] = info;
     ptr += sizeof(Info);
-    memcpy(ptr, msg.begin(), msg.size());
+    std::memcpy(ptr, msg.begin(), msg.size());
     ptr += msg.size();
     *ptr = 0;
   }
@@ -425,11 +425,11 @@ inline CSlice strerror_safe(int code) {
 
 #if TD_WINDOWS
   strerror_s(buf, size, code);
-  return CSlice(buf, buf + strlen(buf));
+  return CSlice(buf, buf + std::strlen(buf));
 #else
 #if !defined(__GLIBC__) || ((_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && !_GNU_SOURCE)
   strerror_r(code, buf, size);
-  return CSlice(buf, buf + strlen(buf));
+  return CSlice(buf, buf + std::strlen(buf));
 #else
   return CSlice(strerror_r(code, buf, size));
 #endif

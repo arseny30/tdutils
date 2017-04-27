@@ -120,7 +120,7 @@ inline size_t MutableSlice::rfind(char c) const {
 
 inline void MutableSlice::copy_from(Slice from) {
   CHECK(size() >= from.size());
-  memcpy(ubegin(), from.ubegin(), from.size());
+  std::memcpy(ubegin(), from.ubegin(), from.size());
 }
 
 inline char &MutableSlice::back() {
@@ -261,7 +261,7 @@ inline char Slice::operator[](size_t i) const {
 }
 
 inline bool operator==(const Slice &a, const Slice &b) {
-  return a.size() == b.size() && memcmp(a.data(), b.data(), a.size()) == 0;
+  return a.size() == b.size() && std::memcmp(a.data(), b.data(), a.size()) == 0;
 }
 
 inline bool operator!=(const Slice &a, const Slice &b) {

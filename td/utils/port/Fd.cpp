@@ -567,7 +567,7 @@ class FdImpl {
     CHECK(!connected_);
     CHECK(type_ == Fd::Type::SocketFd);
     DWORD bytes_read;
-    memset(&read_overlapped_, 0, sizeof(read_overlapped_));
+    std::memset(&read_overlapped_, 0, sizeof(read_overlapped_));
     read_overlapped_.hEvent = read_event_;
     LPFN_CONNECTEX ConnectExPtr = nullptr;
     GUID guid = WSAID_CONNECTEX;
@@ -605,7 +605,7 @@ class FdImpl {
   Result<size_t> pwrite(Slice slice, off_t pos) WARN_UNUSED_RESULT {
     DWORD bytes_written = 0;
     OVERLAPPED overlapped;
-    memset(&overlapped, 0, sizeof(overlapped));
+    std::memset(&overlapped, 0, sizeof(overlapped));
     auto pos64 = static_cast<uint64>(pos);
     overlapped.Offset = static_cast<DWORD>(pos64);
     overlapped.OffsetHigh = static_cast<DWORD>(pos64 >> 32);
@@ -619,7 +619,7 @@ class FdImpl {
   Result<size_t> pread(MutableSlice slice, off_t pos) WARN_UNUSED_RESULT {
     DWORD bytes_read = 0;
     OVERLAPPED overlapped;
-    memset(&overlapped, 0, sizeof(overlapped));
+    std::memset(&overlapped, 0, sizeof(overlapped));
     auto pos64 = static_cast<uint64>(pos);
     overlapped.Offset = static_cast<DWORD>(pos64);
     overlapped.OffsetHigh = static_cast<DWORD>(pos64 >> 32);
@@ -832,7 +832,7 @@ class FdImpl {
   void try_start_read() {
     auto dest = input_writer_.prepare_append();
     DWORD bytes_read;
-    memset(&read_overlapped_, 0, sizeof(read_overlapped_));
+    std::memset(&read_overlapped_, 0, sizeof(read_overlapped_));
     read_overlapped_.hEvent = read_event_;
     VLOG(fd) << "try_read..";
     auto status =
@@ -859,7 +859,7 @@ class FdImpl {
   void try_start_write() {
     auto dest = output_reader_.prepare_read();
     DWORD bytes_written;
-    memset(&write_overlapped_, 0, sizeof(write_overlapped_));
+    std::memset(&write_overlapped_, 0, sizeof(write_overlapped_));
     write_overlapped_.hEvent = write_event_;
     VLOG(fd) << "try_start_write";
     auto status =
@@ -887,7 +887,7 @@ class FdImpl {
     }
     accept_socket_ = socket(socket_family_, SOCK_STREAM, 0);
     DWORD bytes_read;
-    memset(&read_overlapped_, 0, sizeof(read_overlapped_));
+    std::memset(&read_overlapped_, 0, sizeof(read_overlapped_));
     read_overlapped_.hEvent = read_event_;
     auto status =
         AcceptEx(socket_, accept_socket_, addr_buf_, 0, MAX_ADDR_SIZE, MAX_ADDR_SIZE, &bytes_read, &read_overlapped_);

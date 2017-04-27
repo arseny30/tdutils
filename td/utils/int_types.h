@@ -56,27 +56,27 @@ struct UInt2048 {
 };
 
 inline bool operator==(const UInt128 &a, const UInt128 &b) {
-  return memcmp(a.raw, b.raw, sizeof(a)) == 0;
+  return std::memcmp(a.raw, b.raw, sizeof(a)) == 0;
 }
 
 inline bool operator!=(const UInt128 &a, const UInt128 &b) {
-  return memcmp(a.raw, b.raw, sizeof(a)) != 0;
+  return std::memcmp(a.raw, b.raw, sizeof(a)) != 0;
 }
 
 inline bool operator==(const UInt160 &a, const UInt160 &b) {
-  return memcmp(a.raw, b.raw, sizeof(a)) == 0;
+  return std::memcmp(a.raw, b.raw, sizeof(a)) == 0;
 }
 
 inline bool operator!=(const UInt160 &a, const UInt160 &b) {
-  return memcmp(a.raw, b.raw, sizeof(a)) != 0;
+  return std::memcmp(a.raw, b.raw, sizeof(a)) != 0;
 }
 
 inline bool operator==(const UInt256 &a, const UInt256 &b) {
-  return memcmp(a.raw, b.raw, sizeof(a)) == 0;
+  return std::memcmp(a.raw, b.raw, sizeof(a)) == 0;
 }
 
 inline bool operator!=(const UInt256 &a, const UInt256 &b) {
-  return memcmp(a.raw, b.raw, sizeof(a)) != 0;
+  return std::memcmp(a.raw, b.raw, sizeof(a)) != 0;
 }
 
 }  // namespace td

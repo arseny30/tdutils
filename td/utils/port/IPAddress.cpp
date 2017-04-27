@@ -87,7 +87,7 @@ Status IPAddress::init_ipv6_port(CSlice ipv6, int port) {
   if (port <= 0 || port >= (1 << 16)) {
     return Status::Error(PSLICE() << "Invalid [port=" << port << "]");
   }
-  memset(&ipv6_addr_, 0, sizeof(ipv6_addr_));
+  std::memset(&ipv6_addr_, 0, sizeof(ipv6_addr_));
   ipv6_addr_.sin6_family = AF_INET6;
   ipv6_addr_.sin6_port = htons(static_cast<uint16>(port));
   // NB: ipv6 must be zero terminated...
@@ -110,7 +110,7 @@ Status IPAddress::init_ipv4_port(CSlice ipv4, int port) {
   if (port <= 0 || port >= (1 << 16)) {
     return Status::Error(PSLICE() << "Invalid [port=" << port << "[");
   }
-  memset(&ipv4_addr_, 0, sizeof(ipv4_addr_));
+  std::memset(&ipv4_addr_, 0, sizeof(ipv4_addr_));
   ipv4_addr_.sin_family = AF_INET;
   ipv4_addr_.sin_port = htons(static_cast<uint16>(port));
   // NB: ipv4 must be zero terminated...
@@ -131,7 +131,7 @@ Status IPAddress::init_host_port(CSlice host, int port) {
 Status IPAddress::init_host_port(CSlice host, CSlice port) {
   struct addrinfo hints;
   struct addrinfo *info = nullptr;
-  memset(&hints, 0, sizeof(hints));
+  std::memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_INET;  // TODO AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
   LOG(INFO) << "Try to init ipv4 address with port " << port;
@@ -167,10 +167,10 @@ Status IPAddress::init_host_port(CSlice host_port) {
 Status IPAddress::init_sockaddr(struct sockaddr *addr, socklen_t len) {
   if (addr->sa_family == AF_INET6) {
     CHECK(len == sizeof(ipv6_addr_));
-    memcpy(&ipv6_addr_, reinterpret_cast<struct sockaddr_in6 *>(addr), sizeof(ipv6_addr_));
+    std::memcpy(&ipv6_addr_, reinterpret_cast<struct sockaddr_in6 *>(addr), sizeof(ipv6_addr_));
   } else if (addr->sa_family == AF_INET) {
     CHECK(len == sizeof(ipv4_addr_));
-    memcpy(&ipv4_addr_, reinterpret_cast<struct sockaddr_in *>(addr), sizeof(ipv4_addr_));
+    std::memcpy(&ipv4_addr_, reinterpret_cast<struct sockaddr_in *>(addr), sizeof(ipv4_addr_));
     LOG(INFO) << "Have ipv4 address with port " << ntohs(ipv4_addr_.sin_port);
   } else {
     return Status::Error(PSLICE() << "Unknown " << tag("sa_family", addr->sa_family));
@@ -254,10 +254,10 @@ bool operator==(const IPAddress &a, const IPAddress &b) {
 
   if (a.get_address_family() == AF_INET) {
     return a.ipv4_addr_.sin_port == b.ipv4_addr_.sin_port &&
-           memcmp(&a.ipv4_addr_.sin_addr, &b.ipv4_addr_.sin_addr, sizeof(a.ipv4_addr_.sin_addr)) == 0;
+           std::memcmp(&a.ipv4_addr_.sin_addr, &b.ipv4_addr_.sin_addr, sizeof(a.ipv4_addr_.sin_addr)) == 0;
   } else if (a.get_address_family() == AF_INET6) {
     return a.ipv6_addr_.sin6_port == b.ipv6_addr_.sin6_port &&
-           memcmp(&a.ipv6_addr_.sin6_addr, &b.ipv6_addr_.sin6_addr, sizeof(a.ipv6_addr_.sin6_addr)) == 0;
+           std::memcmp(&a.ipv6_addr_.sin6_addr, &b.ipv6_addr_.sin6_addr, sizeof(a.ipv6_addr_.sin6_addr)) == 0;
   }
 
   UNREACHABLE("Unknown address family");
@@ -274,12 +274,12 @@ bool operator<(const IPAddress &a, const IPAddress &b) {
     if (a.ipv4_addr_.sin_port != b.ipv4_addr_.sin_port) {
       return a.ipv4_addr_.sin_port < b.ipv4_addr_.sin_port;
     }
-    return memcmp(&a.ipv4_addr_.sin_addr, &b.ipv4_addr_.sin_addr, sizeof(a.ipv4_addr_.sin_addr)) < 0;
+    return std::memcmp(&a.ipv4_addr_.sin_addr, &b.ipv4_addr_.sin_addr, sizeof(a.ipv4_addr_.sin_addr)) < 0;
   } else if (a.get_address_family() == AF_INET6) {
     if (a.ipv6_addr_.sin6_port != b.ipv6_addr_.sin6_port) {
       return a.ipv6_addr_.sin6_port < b.ipv6_addr_.sin6_port;
     }
-    return memcmp(&a.ipv6_addr_.sin6_addr, &b.ipv6_addr_.sin6_addr, sizeof(a.ipv6_addr_.sin6_addr)) < 0;
+    return std::memcmp(&a.ipv6_addr_.sin6_addr, &b.ipv6_addr_.sin6_addr, sizeof(a.ipv6_addr_.sin6_addr)) < 0;
   }
 
   UNREACHABLE("Unknown address family");

@@ -109,7 +109,7 @@ class BufferSlice {
   }
 
   explicit BufferSlice(Slice slice) : BufferSlice(slice.size()) {
-    memcpy(as_slice().begin(), slice.begin(), slice.size());
+    std::memcpy(as_slice().begin(), slice.begin(), slice.size());
   }
 
   BufferSlice(const char *ptr, size_t size) : BufferSlice(Slice(ptr, size)) {
@@ -471,7 +471,7 @@ class ChainBufferIterator {
       // copy to dest if possible
       auto to_dest_size = std::min(ready.size(), dest.size());
       if (to_dest_size != 0) {
-        memcpy(dest.data(), ready.data(), to_dest_size);
+        std::memcpy(dest.data(), ready.data(), to_dest_size);
         dest.remove_prefix(to_dest_size);
       }
 
@@ -652,7 +652,7 @@ class ChainBufferWriter {
     while (!slice.empty()) {
       auto ready = prepare_append(slice.size());
       auto shift = std::min(ready.size(), slice.size());
-      memcpy(ready.data(), slice.data(), shift);
+      std::memcpy(ready.data(), slice.data(), shift);
       confirm_append(shift);
       slice.remove_prefix(shift);
     }

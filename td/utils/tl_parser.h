@@ -66,7 +66,7 @@ class tl_parser {
         data_buf = make_unique<int32[]>(data_len);
         buf = data_buf.get();
       }
-      memcpy(static_cast<void *>(buf), static_cast<const void *>(data_ptr), data_ptr_len);
+      std::memcpy(static_cast<void *>(buf), static_cast<const void *>(data_ptr), data_ptr_len);
       data = buf;
     }
     data_begin = data;

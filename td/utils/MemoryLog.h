@@ -5,6 +5,7 @@
 #include "td/utils/Slice.h"
 
 #include <atomic>
+#include <cstdio>
 #include <cstring>
 
 namespace td {
@@ -16,7 +17,7 @@ class MemoryLog : public LogInterface {
   enum { BufferSize = buffer_size };
 
   MemoryLog() {
-    memset(buffer_, ' ', sizeof(buffer_));
+    std::memset(buffer_, ' ', sizeof(buffer_));
   }
 
   void append(CSlice new_slice, int log_level) override {
@@ -35,17 +36,17 @@ class MemoryLog : public LogInterface {
     uint32 start_pos = real_pos & (buffer_size - 1);
     uint32 end_pos = start_pos + total_size;
     if (likely(end_pos <= buffer_size)) {
-      memcpy(&buffer_[start_pos + magic_size], slice.data(), slice_size);
-      memcpy(&buffer_[start_pos + magic_size + slice_size], "                     ", pad_size);
+      std::memcpy(&buffer_[start_pos + magic_size], slice.data(), slice_size);
+      std::memcpy(&buffer_[start_pos + magic_size + slice_size], "                     ", pad_size);
     } else {
       size_t first = buffer_size - start_pos - magic_size;
       size_t second = slice_size - first;
-      memcpy(&buffer_[start_pos + magic_size], slice.data(), first);
-      memcpy(&buffer_[0], slice.data() + first, second);
-      memcpy(&buffer_[second], "                            ", pad_size);
+      std::memcpy(&buffer_[start_pos + magic_size], slice.data(), first);
+      std::memcpy(&buffer_[0], slice.data() + first, second);
+      std::memcpy(&buffer_[second], "                            ", pad_size);
     }
 
-    snprintf(&buffer_[start_pos], 16, "\nLOG:%08x:  ", real_pos);
+    std::snprintf(&buffer_[start_pos], 16, "\nLOG:%08x:  ", real_pos);
   }
   Slice get_buffer() {
     return Slice(buffer_, sizeof(buffer_));
