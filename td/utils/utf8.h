@@ -13,6 +13,15 @@ inline bool is_utf8_symbol_begin_char(unsigned char c) {
   return (c & 0xC0) != 0x80;
 }
 
+// returns length of UTF-8 string in characters
+inline size_t utf8_length(Slice str) {
+  size_t result = 0;
+  for (auto c : str) {
+    result += is_utf8_symbol_begin_char(c);
+  }
+  return result;
+}
+
 // moves pointer one UTF-8 character back
 inline const unsigned char *prev_utf8_unsafe(const unsigned char *ptr) {
   while (!is_utf8_symbol_begin_char(*--ptr)) {
