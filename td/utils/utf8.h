@@ -69,4 +69,26 @@ T utf8_utf16_truncate(T str, size_t length) {
   return str;
 }
 
+template <class T>
+T utf8_substr(T str, size_t offset) {
+  auto offset_pos = utf8_truncate(str, offset).size();
+  return str.substr(offset_pos);
+}
+
+template <class T>
+T utf8_substr(T str, size_t offset, size_t length) {
+  return utf8_truncate(utf8_substr(str, offset), length);
+}
+
+template <class T>
+T utf8_utf16_substr(T str, size_t offset) {
+  auto offset_pos = utf8_utf16_truncate(str, offset).size();
+  return str.substr(offset_pos);
+}
+
+template <class T>
+T utf8_utf16_substr(T str, size_t offset, size_t length) {
+  return utf8_utf16_truncate(utf8_utf16_substr(str, offset), length);
+}
+
 }  // namespace td
