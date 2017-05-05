@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdio>
 #include <cstring>
 
 #include "td/utils/int_types.h"
@@ -46,20 +45,20 @@ class tl_storer_unsafe {
 
   template <class T>
   void store_string(const T &str) {
-    int len = (int)str.size();
+    size_t len = str.size();
     if (len < 254) {
-      *buf++ = (char)(len);
+      *buf++ = static_cast<char>(len);
       len++;
     } else if (len < (1 << 24)) {
-      *buf++ = (char)(254);
-      *buf++ = (char)(len & 255);
-      *buf++ = (char)((len >> 8) & 255);
-      *buf++ = (char)(len >> 16);
+      *buf++ = static_cast<char>(254);
+      *buf++ = static_cast<char>(len & 255);
+      *buf++ = static_cast<char>((len >> 8) & 255);
+      *buf++ = static_cast<char>(len >> 16);
     } else {
       LOG(FATAL) << "String size " << len << " is too big to be stored";
     }
-    std::memcpy(buf, str.data(), str.size());
-    buf += str.size();
+    std::memcpy(buf, str.data(), len);
+    buf += len;
 
     switch (len & 3) {
       case 1:
@@ -147,10 +146,7 @@ class tl_storer_to_string {
   }
 
   void store_long(int64 value) {
-    char buf[64];
-    auto len = snprintf(buf, sizeof(buf), "%lld", (long long)value);
-    CHECK(static_cast<size_t>(len) < sizeof(buf));
-    result += buf;
+    result += (PSLICE() << value).c_str();
   }
 
  public:
@@ -175,10 +171,7 @@ class tl_storer_to_string {
 
   void store_field(const char *name, double value) {
     store_field_begin(name);
-    char buf[640];
-    auto len = snprintf(buf, sizeof(buf), "%lf", value);
-    CHECK(static_cast<size_t>(len) < sizeof(buf));
-    result += buf;
+    result += (PSLICE() << value).c_str();
     store_field_end();
   }
 

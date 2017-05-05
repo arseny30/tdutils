@@ -77,7 +77,7 @@ class StringBuilder {
     if (unlikely(end_ptr_ < current_ptr_)) {
       return on_error();
     }
-    current_ptr_ += snprintf(current_ptr_, reserved_size, "%d", x);
+    current_ptr_ += std::snprintf(current_ptr_, reserved_size, "%d", x);
     return *this;
   }
 
@@ -85,7 +85,7 @@ class StringBuilder {
     if (unlikely(end_ptr_ < current_ptr_)) {
       return on_error();
     }
-    current_ptr_ += snprintf(current_ptr_, reserved_size, "%u", x);
+    current_ptr_ += std::snprintf(current_ptr_, reserved_size, "%u", x);
     return *this;
   }
 
@@ -93,7 +93,7 @@ class StringBuilder {
     if (unlikely(end_ptr_ < current_ptr_)) {
       return on_error();
     }
-    current_ptr_ += snprintf(current_ptr_, reserved_size, "%ld", x);
+    current_ptr_ += std::snprintf(current_ptr_, reserved_size, "%ld", x);
     return *this;
   }
 
@@ -101,7 +101,7 @@ class StringBuilder {
     if (unlikely(end_ptr_ < current_ptr_)) {
       return on_error();
     }
-    current_ptr_ += snprintf(current_ptr_, reserved_size, "%lu", x);
+    current_ptr_ += std::snprintf(current_ptr_, reserved_size, "%lu", x);
     return *this;
   }
 
@@ -109,7 +109,7 @@ class StringBuilder {
     if (unlikely(end_ptr_ < current_ptr_)) {
       return on_error();
     }
-    current_ptr_ += snprintf(current_ptr_, reserved_size, "%lld", x);
+    current_ptr_ += std::snprintf(current_ptr_, reserved_size, "%lld", x);
     return *this;
   }
 
@@ -117,7 +117,7 @@ class StringBuilder {
     if (unlikely(end_ptr_ < current_ptr_)) {
       return on_error();
     }
-    current_ptr_ += snprintf(current_ptr_, reserved_size, "%llu", x);
+    current_ptr_ += std::snprintf(current_ptr_, reserved_size, "%llu", x);
     return *this;
   }
 
@@ -126,7 +126,7 @@ class StringBuilder {
       return on_error();
     }
     auto left = end_ptr_ + reserved_size - current_ptr_;
-    int len = snprintf(current_ptr_, left, "%lf", x);
+    int len = std::snprintf(current_ptr_, left, "%lf", x);
     if (unlikely(len >= left)) {
       error_flag_ = true;
       current_ptr_ += left - 1;
@@ -141,7 +141,7 @@ class StringBuilder {
     if (unlikely(end_ptr_ < current_ptr_)) {
       return on_error();
     }
-    current_ptr_ += snprintf(current_ptr_, reserved_size, "%p", ptr);
+    current_ptr_ += std::snprintf(current_ptr_, reserved_size, "%p", ptr);
     return *this;
   }
 
@@ -152,7 +152,7 @@ class StringBuilder {
     }
 
     auto left = end_ptr_ + reserved_size - current_ptr_;
-    int len = vsnprintf(current_ptr_, left, fmt, list);
+    int len = std::vsnprintf(current_ptr_, left, fmt, list);
     if (unlikely(len >= left)) {
       error_flag_ = true;
       current_ptr_ += left - 1;
@@ -164,7 +164,7 @@ class StringBuilder {
   void printf(const char *fmt, ...) IF_NO_MSVC(__attribute__((format(printf, 2, 3)))) {
     va_list list;
     va_start(list, fmt);
-    vprintf(fmt, list);
+    std::vprintf(fmt, list);
     va_end(list);
   }
 

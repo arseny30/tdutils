@@ -91,11 +91,11 @@ Status update_atime(int native_fd) {
   struct timeval upd[2];
   auto now = Clocks::system();
   // access time
-  upd[0].tv_sec = (int32)now;
-  upd[0].tv_usec = (int)((now - (int32)now) * 1000000);
+  upd[0].tv_sec = static_cast<decltype(upd[0].tv_sec)>(now);
+  upd[0].tv_usec = static_cast<decltype(upd[0].tv_usec)>((now - upd[0].tv_sec) * 1000000);
   // modify time
-  upd[1].tv_sec = static_cast<int32>(info.mtime_nsec_ / 1000000000ll);
-  upd[1].tv_usec = static_cast<int32>(info.mtime_nsec_ % 1000000000ll / 1000);
+  upd[1].tv_sec = static_cast<decltype(upd[1].tv_sec)>(info.mtime_nsec_ / 1000000000ll);
+  upd[1].tv_usec = static_cast<decltype(upd[1].tv_usec)>(info.mtime_nsec_ % 1000000000ll / 1000);
   int err = futimes(native_fd, upd);
   if (err < 0) {
     auto futimes_errno = errno;
@@ -201,16 +201,14 @@ Result<MemStat> mem_stat() {
       x = &res.resident_size_;
     }
     if (x != nullptr) {
-      *x = (unsigned long long)-1;
-
       unsigned long long xx;
       if (name_end == s || name_end + 1 == s || sscanf(name_end + 1, "%llu", &xx) != 1) {
         LOG(ERROR) << "Failed to parse memory stats" << tag("line", Slice(name_begin, s))
                    << tag(":number", Slice(name_end, s));
+        *x = static_cast<uint64>(-1);
       } else {
-        xx *= 1024;
+        xx *= 1024;  // memory is in kB
         *x = static_cast<uint64>(xx);
-        // memory is in kB
       }
     }
     if (*s == 0) {

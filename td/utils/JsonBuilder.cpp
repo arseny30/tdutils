@@ -220,19 +220,19 @@ Result<MutableSlice> json_string_decode(Parser &parser) {
           }
 
           if (num < 128) {
-            *cur_dest++ = (char)num;
+            *cur_dest++ = static_cast<char>(num);
           } else if (num < 0x800) {
-            *cur_dest++ = (char)(0xc0 + (num >> 6));
-            *cur_dest++ = (char)(0x80 + (num & 63));
+            *cur_dest++ = static_cast<char>(0xc0 + (num >> 6));
+            *cur_dest++ = static_cast<char>(0x80 + (num & 63));
           } else if (num < 0xffff) {
-            *cur_dest++ = (char)(0xe0 + (num >> 12));
-            *cur_dest++ = (char)(0x80 + ((num >> 6) & 63));
-            *cur_dest++ = (char)(0x80 + (num & 63));
+            *cur_dest++ = static_cast<char>(0xe0 + (num >> 12));
+            *cur_dest++ = static_cast<char>(0x80 + ((num >> 6) & 63));
+            *cur_dest++ = static_cast<char>(0x80 + (num & 63));
           } else {
-            *cur_dest++ = (char)(0xf0 + (num >> 18));
-            *cur_dest++ = (char)(0x80 + ((num >> 12) & 63));
-            *cur_dest++ = (char)(0x80 + ((num >> 6) & 63));
-            *cur_dest++ = (char)(0x80 + (num & 63));
+            *cur_dest++ = static_cast<char>(0xf0 + (num >> 18));
+            *cur_dest++ = static_cast<char>(0x80 + ((num >> 12) & 63));
+            *cur_dest++ = static_cast<char>(0x80 + ((num >> 6) & 63));
+            *cur_dest++ = static_cast<char>(0x80 + (num & 63));
           }
           break;
         }

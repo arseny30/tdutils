@@ -201,7 +201,7 @@ class tl_parser {
       return false;
     }
 
-    data_len += (int)(data - data_begin - pos);
+    data_len += static_cast<int32>(data - data_begin - pos);
     data = data_begin + pos;
     return true;
   }

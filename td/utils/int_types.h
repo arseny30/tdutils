@@ -23,6 +23,10 @@ using uint64 = std::uint64_t;
 static_assert(sizeof(std::uint8_t) == sizeof(unsigned char), "Unsigned char expected to be 8-bit");
 using uint8 = unsigned char;
 
+static_assert(static_cast<char>(128) == -128 || static_cast<char>(128) == 128,
+              "Unexpected cast to char implementation-defined behaviour");
+static_assert(static_cast<char>(256) == 0, "Unexpected cast to char implementation-defined behaviour");
+
 struct UInt96 {
   uint8 raw[96 / 8];
 };
