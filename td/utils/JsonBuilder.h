@@ -634,6 +634,9 @@ inline StringBuilder &operator<<(StringBuilder &sb, JsonValue::Type type) {
       return sb << "JsonArray";
     case JsonValue::Type::String:
       return sb << "JsonString";
+    default:
+      UNREACHABLE();
+      return sb;
   }
 }
 

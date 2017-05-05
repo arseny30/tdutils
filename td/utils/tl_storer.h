@@ -50,15 +50,15 @@ class tl_storer_unsafe {
       *buf++ = static_cast<char>(len);
       len++;
     } else if (len < (1 << 24)) {
-      *buf++ = static_cast<char>(254);
+      *buf++ = static_cast<char>(static_cast<unsigned char>(254));
       *buf++ = static_cast<char>(len & 255);
       *buf++ = static_cast<char>((len >> 8) & 255);
       *buf++ = static_cast<char>(len >> 16);
     } else {
       LOG(FATAL) << "String size " << len << " is too big to be stored";
     }
-    std::memcpy(buf, str.data(), len);
-    buf += len;
+    std::memcpy(buf, str.data(), str.size());
+    buf += str.size();
 
     switch (len & 3) {
       case 1:
