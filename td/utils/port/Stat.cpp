@@ -182,7 +182,7 @@ Result<MemStat> mem_stat() {
       s++;
     }
     auto name_end = name_begin;
-    while (isalpha(*name_end)) {
+    while (is_alpha(*name_end)) {
       name_end++;
     }
     Slice name(name_begin, name_end);

@@ -1,4 +1,5 @@
 #include "td/utils/Hints.h"
+
 #include "td/utils/misc.h"
 
 #include <algorithm>
@@ -12,8 +13,8 @@ vector<string> Hints::get_words(const string &name) {
   for (auto c : name) {
     if ((c & 0x7f) == c) {
       // TODO unicode lowercase
-      if (isalpha(c) || isdigit(c)) {
-        c = tolower(c);
+      if (is_alpha(c) || is_digit(c)) {
+        c = to_lower(c);
       } else {
         c = ' ';
       }

@@ -325,7 +325,7 @@ inline bool ends_with(Slice str, Slice suffix) {
   return suffix.size() <= str.size() && suffix == Slice(str.data() + str.size() - suffix.size(), suffix.size());
 }
 
-inline char tolower(char c) {
+inline char to_lower(char c) {
   if ('A' <= c && c <= 'Z') {
     return static_cast<char>(c - 'A' + 'a');
   }
@@ -333,33 +333,53 @@ inline char tolower(char c) {
   return c;
 }
 
-inline void tolower_inplace(MutableSlice slice) {
+inline void to_lower_inplace(MutableSlice slice) {
   for (auto &c : slice) {
-    c = tolower(c);
+    c = to_lower(c);
   }
 }
 
-inline string tolower(Slice slice) {
+inline string to_lower(Slice slice) {
   auto result = slice.str();
-  tolower_inplace(result);
+  to_lower_inplace(result);
   return result;
 }
 
-inline bool isspace(char c) {
+inline char to_upper(char c) {
+  if ('a' <= c && c <= 'z') {
+    return static_cast<char>(c - 'a' + 'A');
+  }
+
+  return c;
+}
+
+inline void to_upper_inplace(MutableSlice slice) {
+  for (auto &c : slice) {
+    c = to_upper(c);
+  }
+}
+
+inline string to_upper(Slice slice) {
+  auto result = slice.str();
+  to_upper_inplace(result);
+  return result;
+}
+
+inline bool is_space(char c) {
   return c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\0' || c == '\v';
 }
 
-inline bool isalpha(char c) {
+inline bool is_alpha(char c) {
   c |= 0x20;
   return 'a' <= c && c <= 'z';
 }
 
-inline bool isdigit(char c) {
+inline bool is_digit(char c) {
   return '0' <= c && c <= '9';
 }
 
-inline bool ishexdigit(char c) {
-  if (isdigit(c)) {
+inline bool is_hex_digit(char c) {
+  if (is_digit(c)) {
     return true;
   }
   c |= 0x20;
@@ -370,10 +390,10 @@ template <class T>
 T trim(T str) {
   auto begin = str.data();
   auto end = begin + str.size();
-  while (begin < end && isspace(*begin)) {
+  while (begin < end && is_space(*begin)) {
     begin++;
   }
-  while (begin < end && isspace(end[-1])) {
+  while (begin < end && is_space(end[-1])) {
     end--;
   }
   if (static_cast<size_t>(end - begin) == str.size()) {
@@ -404,7 +424,7 @@ std::enable_if_t<std::is_signed<T>::value, T> to_integer(Slice str) {
     is_negative = true;
     begin++;
   }
-  while (begin != end && isdigit(*begin)) {
+  while (begin != end && is_digit(*begin)) {
     integer_value = static_cast<unsigned_T>(integer_value * 10 + (*begin++ - '0'));
   }
   if (integer_value > static_cast<unsigned_T>(std::numeric_limits<T>::max())) {
@@ -426,14 +446,14 @@ std::enable_if_t<std::is_unsigned<T>::value, T> to_integer(Slice str) {
   T integer_value = 0;
   auto begin = str.begin();
   auto end = str.end();
-  while (begin != end && isdigit(*begin)) {
+  while (begin != end && is_digit(*begin)) {
     integer_value = static_cast<T>(integer_value * 10 + (*begin++ - '0'));
   }
   return integer_value;
 }
 
 inline int hex_to_int(char c) {
-  if (isdigit(c)) {
+  if (is_digit(c)) {
     return c - '0';
   }
   c |= 0x20;
@@ -448,7 +468,7 @@ typename std::enable_if<std::is_unsigned<T>::value, T>::type hex_to_integer(Slic
   T integer_value = 0;
   auto begin = str.begin();
   auto end = str.end();
-  while (begin != end && ishexdigit(*begin)) {
+  while (begin != end && is_hex_digit(*begin)) {
     integer_value = static_cast<T>(integer_value * 16 + hex_to_int(*begin++));
   }
   return integer_value;
