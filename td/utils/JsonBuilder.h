@@ -620,6 +620,23 @@ class JsonValue : public Jsonable {
   }
 };
 
+inline StringBuilder &operator<<(StringBuilder &sb, JsonValue::Type type) {
+  switch (type) {
+    case JsonValue::Type::Object:
+      return sb << "JsonObject";
+    case JsonValue::Type::Boolean:
+      return sb << "JsonBoolean";
+    case JsonValue::Type::Null:
+      return sb << "JsonNull";
+    case JsonValue::Type::Number:
+      return sb << "JsonNumber";
+    case JsonValue::Type::Array:
+      return sb << "JsonArray";
+    case JsonValue::Type::String:
+      return sb << "JsonString";
+  }
+}
+
 class VirtuallyJsonable : public Jsonable {
  public:
   virtual void store(JsonValueScope *scope) const = 0;
