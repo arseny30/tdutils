@@ -49,8 +49,17 @@ Result<string> base64_decode(Slice base64) {
   static bool is_inited = init_char_to_value();
   CHECK(is_inited);
 
-  if ((base64.size() & 3) == 1) {
+  if ((base64.size() & 3) != 0) {
     return Status::Error("Wrong string length");
+  }
+
+  size_t padding_length = 0;
+  while (base64.size() > 0 && base64.back() == '=') {
+    base64.remove_suffix(1);
+    padding_length++;
+  }
+  if (padding_length >= 3) {
+    return Status::Error("Wrong string padding");
   }
 
   string output;
@@ -122,6 +131,15 @@ static bool init_url_char_to_value() {
 Result<string> base64url_decode(Slice base64) {
   static bool is_inited = init_url_char_to_value();
   CHECK(is_inited);
+
+  size_t padding_length = 0;
+  while (base64.size() > 0 && base64.back() == '=') {
+    base64.remove_suffix(1);
+    padding_length++;
+  }
+  if (padding_length >= 3 || (padding_length > 0 && ((base64.size() + padding_length) & 3) != 0)) {
+    return Status::Error("Wrong string padding");
+  }
 
   if ((base64.size() & 3) == 1) {
     return Status::Error("Wrong string length");

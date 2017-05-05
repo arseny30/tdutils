@@ -13,7 +13,7 @@ if (NOT MSVC)
   set_source_files_properties(${TDMIME_AUTO} PROPERTIES COMPILE_FLAGS -Wno-conversion)
 endif()
 
-set (TDUTILS_SOURCE
+set(TDUTILS_SOURCE
   td/utils/port/Fd.cpp
   td/utils/port/FileFd.cpp
   td/utils/port/IPAddress.cpp
@@ -126,12 +126,12 @@ set (TDUTILS_SOURCE
 
 #RULES
 #LIBRARIES
-add_library (tdutils STATIC ${TDUTILS_SOURCE})
+add_library(tdutils STATIC ${TDUTILS_SOURCE})
 target_include_directories(tdutils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 if (MSVC)
   target_link_libraries(tdutils PUBLIC ws2_32 Mswsock)
 endif()
-if(${GENERATE_SOURCE})
+if (${GENERATE_SOURCE})
   add_dependencies(tdutils tdmime_auto)
 endif()
 target_link_libraries(tdutils PUBLIC ${ZLIB_LIBRARIES} ${OPENSSL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
