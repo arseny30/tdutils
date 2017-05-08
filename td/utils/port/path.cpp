@@ -2,6 +2,7 @@
 
 #ifdef TD_PORT_POSIX
 
+// We don't want warnings from system headers
 #if TD_GCC
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"

@@ -19,8 +19,9 @@ struct Stat {
 Result<Stat> stat(CSlice path) WARN_UNUSED_RESULT;
 
 #ifdef TD_PORT_POSIX
+
 namespace detail {
-Stat fstat(int native_fd);
+Stat fstat(int native_fd);  // TODO return Result<Stat>
 }
 
 Status update_atime(CSlice path) WARN_UNUSED_RESULT;

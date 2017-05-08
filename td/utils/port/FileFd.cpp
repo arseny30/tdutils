@@ -1,8 +1,10 @@
 #include "td/utils/port/config.h"
+
 #ifdef TD_PORT_POSIX
 
-#include "td/utils/port/FileFd.h"
 #include "td/utils/format.h"
+#include "td/utils/port/FileFd.h"
+#include "td/utils/port/Stat.h"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -10,16 +12,6 @@
 #include <sys/types.h>
 #include <sys/file.h>
 #include <sys/uio.h>
-
-// We don't want warnings from system headers
-#if TD_GCC
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-#include <sys/stat.h>
-#if TD_GCC
-#pragma GCC diagnostic pop
-#endif
 
 #include <cstring>
 
@@ -230,11 +222,7 @@ Status FileFd::get_pending_error() {
 }
 
 off_t FileFd::get_size() {
-  struct stat buf;
-  int err = fstat(get_native_fd(), &buf);
-  auto fstat_errno = errno;
-  LOG_IF(FATAL, err != 0) << "fstat failed " << tag("fd", get_native_fd()) << " " << Status::PosixError(fstat_errno);
-  return static_cast<off_t>(buf.st_size);  // sometimes stat.st_size is greater than off_t
+  return detail::fstat(get_native_fd()).size_;
 }
 
 Fd FileFd::move_as_fd() {

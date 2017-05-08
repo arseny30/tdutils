@@ -15,6 +15,7 @@
 #include <sys/time.h>
 #endif
 
+// We don't want warnings from system headers
 #if TD_GCC
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
@@ -26,7 +27,6 @@
 
 #if TD_ANDROID || TD_TIZEN
 #include <sys/syscall.h>
-#include <sys/stat.h>
 #endif
 
 #include <cinttypes>
