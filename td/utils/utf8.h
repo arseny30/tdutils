@@ -22,6 +22,9 @@ inline size_t utf8_length(Slice str) {
   return result;
 }
 
+// appends a Unicode character using UTF-8 encoding
+void append_utf8_character(string &text, uint32 ch);
+
 // moves pointer one UTF-8 character back
 inline const unsigned char *prev_utf8_unsafe(const unsigned char *ptr) {
   while (!is_utf8_symbol_begin_char(*--ptr)) {
