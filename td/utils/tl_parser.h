@@ -232,7 +232,7 @@ class tl_buffer_parser : public tl_parser {
 
     // try to remove last character
     size_t new_size = result.size() - 1;
-    while (new_size != 0 && (((unsigned char)result[new_size]) & 0xc0) == 0x80) {
+    while (new_size != 0 && !is_utf8_character_first_code_unit(static_cast<unsigned char>(result[new_size]))) {
       new_size--;
     }
     result.resize(new_size);

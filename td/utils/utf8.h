@@ -9,7 +9,7 @@ namespace td {
 bool check_utf8(CSlice str);
 
 // checks if a code unit is a first code unit of a UTF-8 character
-inline bool is_utf8_symbol_begin_char(unsigned char c) {
+inline bool is_utf8_character_first_code_unit(unsigned char c) {
   return (c & 0xC0) != 0x80;
 }
 
@@ -17,17 +17,17 @@ inline bool is_utf8_symbol_begin_char(unsigned char c) {
 inline size_t utf8_length(Slice str) {
   size_t result = 0;
   for (auto c : str) {
-    result += is_utf8_symbol_begin_char(c);
+    result += is_utf8_character_first_code_unit(c);
   }
   return result;
 }
 
 // appends a Unicode character using UTF-8 encoding
-void append_utf8_character(string &text, uint32 ch);
+void append_utf8_character(string &str, uint32 ch);
 
 // moves pointer one UTF-8 character back
 inline const unsigned char *prev_utf8_unsafe(const unsigned char *ptr) {
-  while (!is_utf8_symbol_begin_char(*--ptr)) {
+  while (!is_utf8_character_first_code_unit(*--ptr)) {
     // pass
   }
   return ptr;
@@ -41,7 +41,7 @@ template <class T>
 T utf8_truncate(T str, size_t length) {
   if (str.size() > length) {
     for (size_t i = 0; i < str.size(); i++) {
-      if (is_utf8_symbol_begin_char(static_cast<unsigned char>(str[i]))) {
+      if (is_utf8_character_first_code_unit(static_cast<unsigned char>(str[i]))) {
         if (length == 0) {
           return str.substr(0, i);
         } else {
@@ -58,7 +58,7 @@ template <class T>
 T utf8_utf16_truncate(T str, size_t length) {
   for (size_t i = 0; i < str.size(); i++) {
     auto c = static_cast<unsigned char>(str[i]);
-    if (is_utf8_symbol_begin_char(c)) {
+    if (is_utf8_character_first_code_unit(c)) {
       if (length <= 0) {
         return str.substr(0, i);
       } else {

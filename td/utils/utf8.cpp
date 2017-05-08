@@ -53,21 +53,21 @@ bool check_utf8(CSlice str) {
   UNREACHABLE();
 }
 
-void append_utf8_character(string &text, uint32 ch) {
+void append_utf8_character(string &str, uint32 ch) {
   if (ch <= 0x7f) {
-    text.push_back(static_cast<char>(ch));
+    str.push_back(static_cast<char>(ch));
   } else if (ch <= 0x7ff) {
-    text.push_back(static_cast<char>(0xc0 | (ch >> 6)));  // implementation-defined
-    text.push_back(static_cast<char>(0x80 | (ch & 0x3f)));
+    str.push_back(static_cast<char>(0xc0 | (ch >> 6)));  // implementation-defined
+    str.push_back(static_cast<char>(0x80 | (ch & 0x3f)));
   } else if (ch <= 0xffff) {
-    text.push_back(static_cast<char>(0xe0 | (ch >> 12)));  // implementation-defined
-    text.push_back(static_cast<char>(0x80 | ((ch >> 6) & 0x3f)));
-    text.push_back(static_cast<char>(0x80 | (ch & 0x3f)));
+    str.push_back(static_cast<char>(0xe0 | (ch >> 12)));  // implementation-defined
+    str.push_back(static_cast<char>(0x80 | ((ch >> 6) & 0x3f)));
+    str.push_back(static_cast<char>(0x80 | (ch & 0x3f)));
   } else {
-    text.push_back(static_cast<char>(0xf0 | (ch >> 18)));  // implementation-defined
-    text.push_back(static_cast<char>(0x80 | ((ch >> 12) & 0x3f)));
-    text.push_back(static_cast<char>(0x80 | ((ch >> 6) & 0x3f)));
-    text.push_back(static_cast<char>(0x80 | (ch & 0x3f)));
+    str.push_back(static_cast<char>(0xf0 | (ch >> 18)));  // implementation-defined
+    str.push_back(static_cast<char>(0x80 | ((ch >> 12) & 0x3f)));
+    str.push_back(static_cast<char>(0x80 | ((ch >> 6) & 0x3f)));
+    str.push_back(static_cast<char>(0x80 | (ch & 0x3f)));
   }
 }
 
