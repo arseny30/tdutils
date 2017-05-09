@@ -1,4 +1,7 @@
+#include "td/utils/port/Fd.h"
+
 #include "td/utils/port/config.h"
+
 #ifdef TD_PORT_POSIX
 
 #include "td/utils/port/Fd.h"
@@ -13,7 +16,24 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#endif
+
+#ifdef TD_PORT_WINDOWS
+
+#include "td/utils/buffer.h"
+#include "td/utils/format.h"
+#include "td/utils/misc.h"
+#include "td/utils/port/IPAddress.h"
+
+#include <algorithm>
+#include <cstring>
+
+#endif
+
 namespace td {
+
+#ifdef TD_PORT_POSIX
+
 Fd::InfoSet::InfoSet() {
   get_info(0).refcnt = 1;
   get_info(1).refcnt = 1;
@@ -46,7 +66,7 @@ Fd::Fd(int fd, Mode mode, ObserverBase *observer) : fd_(fd), mode_(mode) {
 
     auto fcntl_res = fcntl(fd_, F_GETFD);
     auto fcntl_errno = errno;
-    LOG_IF(FATAL, fcntl_res < 0) << Status::PosixError(fcntl_errno, "fcntl F_GET_FD failed");
+    LOG_IF(FATAL, fcntl_res == -1) << Status::PosixError(fcntl_errno, "fcntl F_GET_FD failed");
 
     info->refcnt.store(1, std::memory_order_relaxed);
     CHECK(!is_ref());
@@ -57,7 +77,7 @@ Fd::Fd(int fd, Mode mode, ObserverBase *observer) : fd_(fd), mode_(mode) {
     CHECK(mode_ == Mode::Reference) << tag("fd", fd_);
     auto fcntl_res = fcntl(fd_, F_GETFD);
     auto fcntl_errno = errno;
-    LOG_IF(FATAL, fcntl_res < 0) << Status::PosixError(fcntl_errno, "fcntl F_GET_FD failed");
+    LOG_IF(FATAL, fcntl_res == -1) << Status::PosixError(fcntl_errno, "fcntl F_GET_FD failed");
 
     CHECK(is_ref());
     CHECK(observer == nullptr);
@@ -371,17 +391,25 @@ Stat Fd::stat() const {
   return detail::fstat(get_native_fd());
 }
 
-}  // namespace td
+Status Fd::set_is_blocking(bool is_blocking) {
+  auto old_flags = fcntl(fd_, F_GETFL);
+  if (old_flags == -1) {
+    auto fcntl_errno = errno;
+    return Status::PosixError(fcntl_errno, "Failed to get socket flags");
+  }
+  auto new_flags = is_blocking ? old_flags | O_NONBLOCK : old_flags & ~O_NONBLOCK;
+  if (new_flags != old_flags && fcntl(fd_, F_SETFL, new_flags) == -1) {
+    auto fcntl_errno = errno;
+    return Status::PosixError(fcntl_errno, "Failed to set socket flags");
+  }
+
+  return Status::OK();
+}
+
 #endif  // TD_PORT_POSIX
 
 #ifdef TD_PORT_WINDOWS
 
-#include "td/utils/port/Fd.h"
-
-#include <algorithm>
-#include <cstring>
-
-namespace td {
 namespace detail {
 class FdImpl {
  public:
@@ -680,7 +708,7 @@ class FdImpl {
 
     FILE_BASIC_INFO basic_info;
     auto status = GetFileInformationByHandleEx(get_io_handle(), FileBasicInfo, &basic_info, sizeof(basic_info));
-    LOG_IF(FATAL, !status) << "stat failed: " << Status::OsError();
+    LOG_IF(FATAL, !status) << Status::OsError("Stat failed");
     res.atime_nsec_ = basic_info.LastAccessTime.QuadPart * 100;
     res.mtime_nsec_ = basic_info.LastWriteTime.QuadPart * 100;
     res.is_dir_ = (basic_info.FileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
@@ -688,7 +716,7 @@ class FdImpl {
 
     FILE_STANDARD_INFO standard_info;
     status = GetFileInformationByHandleEx(get_io_handle(), FileStandardInfo, &standard_info, sizeof(standard_info));
-    LOG_IF(FATAL, !status) << "stat failed: " << Status::OsError();
+    LOG_IF(FATAL, !status) << Status::OsError("Stat failed");
     res.size_ = narrow_cast<off_t>(standard_info.EndOfFile.QuadPart);
 
     return res;
@@ -1082,15 +1110,14 @@ Status Fd::sync() {
 class InitWSA {
  public:
   InitWSA() {
-    WORD wVersionRequested;
-    WSADATA wsaData;
-    int err;
     /* Use the MAKEWORD(lowbyte, highbyte) macro declared in Windef.h */
-    wVersionRequested = MAKEWORD(2, 2);
-    err = WSAStartup(wVersionRequested, &wsaData);
-    LOG_IF(FATAL, err != 0) << "Failed to init WSA " << Status::OsError();
+    WORD wVersionRequested = MAKEWORD(2, 2);
+    WSADATA wsaData;
+    int err = WSAStartup(wVersionRequested, &wsaData);
+    LOG_IF(FATAL, err != 0) << Status::WsaError("Failed to init WSA");
   }
 };
 static InitWSA init_wsa;
-}  // namespace td
 #endif
+
+}  // namespace td

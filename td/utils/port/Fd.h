@@ -2,12 +2,12 @@
 
 #include "td/utils/port/config.h"
 
-#ifdef TD_PORT_POSIX
-
 #include "td/utils/common.h"
 #include "td/utils/port/Stat.h"
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
+
+#ifdef TD_PORT_POSIX
 
 #include <atomic>
 
@@ -50,6 +50,8 @@ class Fd {
   Fd &get_fd();
   int get_native_fd() const;
   int move_as_native_fd();
+
+  Status set_is_blocking(bool is_blocking);
 
   void set_observer(ObserverBase *observer);
   ObserverBase *get_observer() const;
@@ -130,15 +132,6 @@ using FdRef = Fd &;
 #endif  // TD_PORT_POSIX
 
 #ifdef TD_PORT_WINDOWS
-
-#include "td/utils/buffer.h"
-#include "td/utils/common.h"
-#include "td/utils/format.h"
-#include "td/utils/misc.h"
-#include "td/utils/port/IPAddress.h"
-#include "td/utils/port/Stat.h"
-#include "td/utils/Slice.h"
-#include "td/utils/Status.h"
 
 namespace td {
 namespace detail {

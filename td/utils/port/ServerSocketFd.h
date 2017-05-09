@@ -69,22 +69,14 @@ class ServerSocketFd : public Fd {
 
     int e_bind = bind(fd, address.get_sockaddr(), static_cast<socklen_t>(address.get_sockaddr_len()));
     if (e_bind == -1) {
-#if TD_WINDOWS
       ::closesocket(fd);
-#else
-      ::close(fd);
-#endif
       return Status::OsError("Failed to bind socket");
     }
 
     // TODO: magic constant
     int e_listen = listen(fd, 8192);
     if (e_listen == -1) {
-#if TD_WINDOWS
       ::closesocket(fd);
-#else
-      ::close(fd);
-#endif
       return Status::OsError("Failed to listen");
     }
 
@@ -108,28 +100,15 @@ class ServerSocketFd : public Fd {
 
  private:
   static Status init_socket(SOCKET fd) WARN_UNUSED_RESULT {
-#if TD_WINDOWS
     u_long iMode = 1;
     int err = ioctlsocket(fd, FIONBIO, &iMode);
-#else
-    int err = fcntl(fd, F_SETFL, O_NONBLOCK);
-#endif
-
-    if (err == -1) {
-// TODO: can be interrupted by signal oO
-#if TD_WINDOWS
+    if (err != 0) {
       ::closesocket(fd);
-#else
-      ::close(fd);
-#endif
-      return Status::OsError("Failed to make socket nonblocking");
+      return Status::WsaError("Failed to make socket nonblocking");
     }
 
     int flags = 1;
     struct linger ling = {0, 0};
-#if !TD_ANDROID && !TD_WINDOWS
-    setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &flags, sizeof(flags));
-#endif
     setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char *>(&flags), sizeof(flags));
     setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<char *>(&flags), sizeof(flags));
     setsockopt(fd, SOL_SOCKET, SO_LINGER, reinterpret_cast<char *>(&ling), sizeof(ling));

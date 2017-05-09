@@ -95,11 +95,15 @@ class Status {
   }
 
 #if TD_WINDOWS
-  static Status OsError(Slice msg = Slice()) WARN_UNUSED_RESULT {
+  static Status WsaError(Slice msg) WARN_UNUSED_RESULT {
+    return Status(false, ErrorType::os, WSAGetLastError(), msg);
+  }
+
+  static Status OsError(Slice msg) WARN_UNUSED_RESULT {
     return Status(false, ErrorType::os, GetLastError(), msg);
   }
 #else
-  static Status OsError(Slice msg = Slice()) WARN_UNUSED_RESULT {
+  static Status OsError(Slice msg) WARN_UNUSED_RESULT {
     return Status(false, ErrorType::os, errno, msg);
   }
 #endif
@@ -242,7 +246,7 @@ class Status {
  private:
   struct Info {
     bool static_flag : 1;
-    int error_code : 23;
+    signed int error_code : 23;
     ErrorType error_type;
   };
 

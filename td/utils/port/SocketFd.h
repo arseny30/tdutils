@@ -94,20 +94,11 @@ class SocketFd : public Fd {
 
  private:
   static Status init_socket(SOCKET fd) WARN_UNUSED_RESULT {
-#if TD_WINDOWS
     u_long iMode = 1;
     int err = ioctlsocket(fd, FIONBIO, &iMode);
-#else
-    int err = fcntl(fd, F_SETFL, O_NONBLOCK);
-#endif
-    if (err == -1) {
-// TODO: can be interrupted by signal oO
-#if TD_WINDOWS
+    if (err != 0) {
       ::closesocket(fd);
-#else
-      ::close(fd);
-#endif
-      return Status::OsError("Failed to make socket nonblocking");
+      return Status::WsaError("Failed to make socket nonblocking");
     }
 
     int flags = 1;
