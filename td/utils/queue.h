@@ -7,6 +7,7 @@
 #include <poll.h>  // for pollfd, poll, POLLIN
 #include <sched.h>
 #endif
+
 #include <atomic>
 #include <type_traits>
 #include <utility>

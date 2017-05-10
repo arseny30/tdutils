@@ -43,7 +43,7 @@
 
 namespace td {
 inline CSlice strerror_safe(int code);
-#ifdef TD_WINDOWS
+#if TD_WINDOWS
 string winerror_to_string(int code);
 #endif
 

@@ -1054,20 +1054,20 @@ HANDLE Fd::get_write_event() {
 #if !TD_WINDOWS || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 Fd Fd::Stderr() {
   static auto handle = GetStdHandle(STD_ERROR_HANDLE);
-  static auto fd = Fd(Fd::Type::FileFd, Fd::Mode::Reference, handle);
   LOG_IF(FATAL, handle == INVALID_HANDLE_VALUE) << "Failed to get stderr";
+  static auto fd = Fd(Fd::Type::FileFd, Fd::Mode::Reference, handle);
   return fd.clone();
 }
 Fd Fd::Stdin() {
   static auto handle = GetStdHandle(STD_INPUT_HANDLE);
-  static auto fd = Fd(Fd::Type::FileFd, Fd::Mode::Reference, handle);
   LOG_IF(FATAL, handle == INVALID_HANDLE_VALUE) << "Failed to get stdin";
+  static auto fd = Fd(Fd::Type::FileFd, Fd::Mode::Reference, handle);
   return fd.clone();
 }
 Fd Fd::Stdout() {
   static auto handle = GetStdHandle(STD_OUTPUT_HANDLE);
-  static auto fd = Fd(Fd::Type::FileFd, Fd::Mode::Reference, handle);
   LOG_IF(FATAL, handle == INVALID_HANDLE_VALUE) << "Failed to get stdout";
+  static auto fd = Fd(Fd::Type::FileFd, Fd::Mode::Reference, handle);
   return fd.clone();
 }
 #else
