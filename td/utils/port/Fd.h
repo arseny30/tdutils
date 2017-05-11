@@ -133,6 +133,8 @@ using FdRef = Fd &;
 
 #ifdef TD_PORT_WINDOWS
 
+#include "td/utils/port/IPAddress.h"
+
 namespace td {
 namespace detail {
 class EventFdWindows;

@@ -2,17 +2,16 @@
 #include "td/utils/port/config.h"
 
 #include "td/utils/common.h"
+#include "td/utils/format.h"
+#include "td/utils/logging.h"
+#include "td/utils/port/FileFd.h"
 #include "td/utils/ScopeGuard.h"
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
 
-#include "td/utils/port/FileFd.h"
-
 #include <utility>
 
 #ifdef TD_PORT_POSIX
-
-#include "td/utils/format.h"
 
 #include <sys/types.h>
 #include <dirent.h>

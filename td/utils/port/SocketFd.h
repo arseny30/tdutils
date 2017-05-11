@@ -1,5 +1,7 @@
 #pragma once
+
 #include "td/utils/port/config.h"
+
 #ifdef TD_PORT_POSIX
 
 #include "td/utils/port/IPAddress.h"
@@ -51,7 +53,10 @@ class SocketFd {
 #endif  // TD_PORT_POSIX
 
 #ifdef TD_PORT_WINDOWS
+
+#include "td/utils/misc.h"
 #include "td/utils/port/Fd.h"
+#include "td/utils/Status.h"
 
 namespace td {
 class SocketFd : public Fd {

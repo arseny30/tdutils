@@ -17,6 +17,10 @@
 
 #endif
 
+#if TD_WINDOWS
+#include "td/utils/misc.h"
+#endif
+
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
@@ -200,6 +204,8 @@ Result<string> mkdtemp(CSlice dir, Slice prefix) {
 #endif  // TD_PORT_POSIX
 
 #ifdef TD_PORT_WINDOWS
+
+#include "td/utils/misc.h"
 
 Status mkdir(CSlice dir, int32 mode) {
   TRY_RESULT(wdir, to_wstring(dir));

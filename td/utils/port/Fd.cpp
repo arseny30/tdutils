@@ -23,7 +23,6 @@
 #include "td/utils/buffer.h"
 #include "td/utils/format.h"
 #include "td/utils/misc.h"
-#include "td/utils/port/IPAddress.h"
 
 #include <algorithm>
 #include <cstring>

@@ -440,6 +440,8 @@ inline CSlice strerror_safe(int code) {
 #endif
 }
 
+// TODO move to_string somewhere else
+
 #if TD_WINDOWS
 template <class Facet>
 class usable_facet : public Facet {
