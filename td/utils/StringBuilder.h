@@ -164,7 +164,7 @@ class StringBuilder {
   void printf(const char *fmt, ...) IF_NO_MSVC(__attribute__((format(printf, 2, 3)))) {
     va_list list;
     va_start(list, fmt);
-    std::vprintf(fmt, list);
+    vprintf(fmt, list);
     va_end(list);
   }
 
