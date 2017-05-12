@@ -1,11 +1,9 @@
 #pragma once
 #include "td/utils/common.h"
-#include "td/utils/misc.h"
-#include "td/utils/logging.h"
 #include "td/utils/format.h"
-
-#include "td/utils/port/path.h"
-#include "td/utils/FileLog.h"
+#include "td/utils/logging.h"
+#include "td/utils/misc.h"
+#include "td/utils/Slice.h"
 
 #if TD_USE_GTEST
 #if TD_GCC
@@ -38,7 +36,7 @@ class Test : private ListNode {
       test->run();
     }
   }
-  Test(CSlice name) : name_(name) {
+  explicit Test(CSlice name) : name_(name) {
     get_tests_list()->put_back(this);
   }
 
