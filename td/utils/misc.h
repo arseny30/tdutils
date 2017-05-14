@@ -6,6 +6,7 @@
 #include "td/utils/Slice.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <initializer_list>
 #include <iterator>
 #include <limits>
@@ -248,6 +249,13 @@ class Named {
  private:
   string name_;
 };
+
+inline char *str_dup(Slice str) {
+  char *res = static_cast<char *>(std::malloc(str.size() + 1));
+  std::copy(str.begin(), str.end(), res);
+  res[str.size()] = '\0';
+  return res;
+}
 
 template <class T>
 std::pair<T, T> split(T s, char delimiter = ' ') {

@@ -1,8 +1,6 @@
 #pragma once
 
 #include "td/utils/port/platform.h"
-#include "td/utils/int_types.h"
-#include "td/utils/port/thread_local.h"
 
 #if TD_WINDOWS
 #define NOMINMAX
@@ -21,6 +19,9 @@
 #undef small
 #endif
 
+#include "td/utils/int_types.h"
+#include "td/utils/port/thread_local.h"
+
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -35,7 +36,6 @@
 #define ASSERT_CHECK assert
 
 #if TD_MSVC
-#pragma warning(disable : 4996)
 #pragma warning(disable : 4267)
 #endif
 
