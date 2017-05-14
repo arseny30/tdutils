@@ -34,7 +34,7 @@ bool check_utf8(CSlice str) {
     ENSURE((c & 0xc0) == 0x80);
     if ((a & 0x10) == 0) {
       int x = (((a & 0x0f) << 6) | (b & 0x20));
-      ENSURE(x != 0 && x != 0x360);  // surrogates //-V560
+      ENSURE(x != 0 && x != 0x360);  // surrogates
       continue;
     }
 
@@ -42,7 +42,7 @@ bool check_utf8(CSlice str) {
     ENSURE((d & 0xc0) == 0x80);
     if ((a & 0x08) == 0) {
       int t = (((a & 0x07) << 6) | (b & 0x30));
-      ENSURE(0 < t && t < 0x110);  // end of unicode //-V560
+      ENSURE(0 < t && t < 0x110);  // end of unicode
       continue;
     }
 

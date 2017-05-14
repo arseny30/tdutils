@@ -23,10 +23,10 @@ class Time {
 };
 
 inline void relax_timeout_at(double *timeout, double new_timeout) {
-  if (new_timeout == 0) {  //-V550
+  if (new_timeout == 0) {
     return;
   }
-  if (*timeout == 0 || new_timeout < *timeout) {  //-V550
+  if (*timeout == 0 || new_timeout < *timeout) {
     *timeout = new_timeout;
   }
 }

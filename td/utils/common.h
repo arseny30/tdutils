@@ -35,10 +35,6 @@
 
 #define ASSERT_CHECK assert
 
-#if TD_MSVC
-#pragma warning(disable : 4267)
-#endif
-
 #define TD_DEBUG
 
 #define TD_CONCAT_IMPL(x, y) x##y

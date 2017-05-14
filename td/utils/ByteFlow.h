@@ -227,7 +227,7 @@ class ByteFlowSink : public ByteFlowInterface {
     return status_;
   }
   ChainBufferReader *result() {
-    CHECK(is_ready() && status().is_ok());  //-V560
+    CHECK(is_ready() && status().is_ok());
     return buffer_;
   }
   ChainBufferReader *get_output() {

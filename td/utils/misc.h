@@ -551,7 +551,7 @@ class TimedStat {
 
   void update(double now) {
     CHECK(now >= next_timestamp_);
-    if (duration_ == 0) {  //-V550
+    if (duration_ == 0) {
       return;
     }
     if (next_timestamp_ + 2 * duration_ < now) {
