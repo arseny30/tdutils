@@ -35,7 +35,6 @@
 #define ASSERT_CHECK assert
 
 #if TD_MSVC
-#pragma warning(disable : 4200)
 #pragma warning(disable : 4996)
 #pragma warning(disable : 4267)
 #endif
