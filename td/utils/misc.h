@@ -252,6 +252,9 @@ class Named {
 
 inline char *str_dup(Slice str) {
   char *res = static_cast<char *>(std::malloc(str.size() + 1));
+  if (res == nullptr) {
+    return nullptr;
+  }
   std::copy(str.begin(), str.end(), res);
   res[str.size()] = '\0';
   return res;
