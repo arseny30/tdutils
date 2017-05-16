@@ -128,7 +128,7 @@ class Variant {
     for_each([&](int offset, auto *ptr) {
       using T = std::decay_t<decltype(*ptr)>;
       if (offset == offset_) {
-        res = get<T>() == other.get<T>();
+        res = this->get<T>() == other.get<T>();
       }
     });
     return res;
@@ -141,7 +141,7 @@ class Variant {
     for_each([&](int offset, auto *ptr) {
       using T = std::decay_t<decltype(*ptr)>;
       if (offset == offset_) {
-        res = get<T>() < other.get<T>();
+        res = this->get<T>() < other.get<T>();
       }
     });
     return res;
