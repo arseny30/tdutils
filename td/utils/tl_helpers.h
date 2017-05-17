@@ -37,7 +37,7 @@
 namespace td {
 template <class Storer>
 void store(bool x, Storer &storer) {
-  storer.template store_binary<int32>(static_cast<int32>(x));
+  storer.store_binary(static_cast<int32>(x));
 }
 template <class Parser>
 void parse(bool &x, Parser &parser) {
@@ -46,7 +46,7 @@ void parse(bool &x, Parser &parser) {
 
 template <class Storer>
 void store(int32 x, Storer &storer) {
-  storer.template store_binary<int32>(x);
+  storer.store_binary(x);
 }
 template <class Parser>
 void parse(int32 &x, Parser &parser) {
@@ -55,7 +55,7 @@ void parse(int32 &x, Parser &parser) {
 
 template <class Storer>
 void store(uint32 x, Storer &storer) {
-  storer.template store_binary<int32>(x);
+  storer.store_binary(x);
 }
 template <class Parser>
 void parse(uint32 &x, Parser &parser) {
@@ -64,7 +64,7 @@ void parse(uint32 &x, Parser &parser) {
 
 template <class Storer>
 void store(int64 x, Storer &storer) {
-  storer.template store_binary<int64>(x);
+  storer.store_binary(x);
 }
 template <class Parser>
 void parse(int64 &x, Parser &parser) {
@@ -72,7 +72,7 @@ void parse(int64 &x, Parser &parser) {
 }
 template <class Storer>
 void store(uint64 x, Storer &storer) {
-  storer.template store_binary<uint64>(x);
+  storer.store_binary(x);
 }
 template <class Parser>
 void parse(uint64 &x, Parser &parser) {
@@ -81,7 +81,7 @@ void parse(uint64 &x, Parser &parser) {
 
 template <class Storer>
 void store(double x, Storer &storer) {
-  storer.template store_binary<double>(x);
+  storer.store_binary(x);
 }
 template <class Parser>
 void parse(double &x, Parser &parser) {
@@ -108,7 +108,7 @@ void parse(BufferSlice &x, Parser &parser) {
 
 template <class T, class Storer>
 void store(const vector<T> &vec, Storer &storer) {
-  storer.template store_binary<int32>(narrow_cast<int32>(vec.size()));
+  storer.store_binary(narrow_cast<int32>(vec.size()));
   for (auto &val : vec) {
     store(val, storer);
   }
