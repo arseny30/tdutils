@@ -104,7 +104,7 @@ Status SocketFd::get_pending_error() {
     return Status::PosixError(error, PSLICE() << "Error on socket [fd_ = " << fd_.get_native_fd() << "]");
   }
   auto getsockopt_errno = errno;
-  LOG(INFO) << "can't load errno = " << getsockopt_errno;
+  LOG(INFO) << "Can't load errno = " << getsockopt_errno;
   return Status::PosixError(getsockopt_errno,
                             PSLICE() << "Can't load error on socket [fd_ = " << fd_.get_native_fd() << "]");
 }
