@@ -417,7 +417,7 @@ class FdImpl {
     init();
   }
   FdImpl(Fd::Type type, SOCKET sock, int32 socket_family)
-      : type_(type), socket_(sock), async_mode_(true), socket_family_(socket_family) {
+      : type_(type), socket_(sock), socket_family_(socket_family), async_mode_(true) {
     init();
   }
 
@@ -599,8 +599,11 @@ class FdImpl {
     LPFN_CONNECTEX ConnectExPtr = nullptr;
     GUID guid = WSAID_CONNECTEX;
     DWORD numBytes;
-    int success = ::WSAIoctl(socket_, SIO_GET_EXTENSION_FUNCTION_POINTER, static_cast<void *>(&guid), sizeof(guid),
+    int error = ::WSAIoctl(socket_, SIO_GET_EXTENSION_FUNCTION_POINTER, static_cast<void *>(&guid), sizeof(guid),
                              static_cast<void *>(&ConnectExPtr), sizeof(ConnectExPtr), &numBytes, nullptr, nullptr);
+    if (error) {
+      return on_error(Status::WsaError("WSAIoctl failed"), Fd::Flag::Read);
+    }
     auto status = ConnectExPtr(socket_, addr.get_sockaddr(), narrow_cast<int>(addr.get_sockaddr_len()), nullptr, 0,
                                &bytes_read, &read_overlapped_);
     if (status != 0) {
@@ -614,7 +617,7 @@ class FdImpl {
     if (last_error == ERROR_IO_PENDING) {
       return;
     }
-    on_error(Status::OsError("AcceptExFailed"), Fd::Flag::Read);
+    on_error(Status::WsaError("ConnectEx failed"), Fd::Flag::Read);
   }
 
   // for EventFd
@@ -964,10 +967,6 @@ class FdImpl {
 };
 
 }  // namespace detail
-
-Fd::operator FdRef() {
-  return *this;
-}
 
 Result<size_t> Fd::write(Slice slice) {
   CHECK(!empty());

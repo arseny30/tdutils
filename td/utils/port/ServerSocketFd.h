@@ -58,8 +58,8 @@ class ServerSocketFd : public Fd {
       return std::move(status);
     }
     auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
-    if (fd == -1) {
-      return Status::OsError("Failed to create a socket");
+    if (fd == INVALID_SOCKET) {
+      return Status::WsaError("Failed to create a socket");
     }
 
     status = init_socket(fd);
@@ -68,21 +68,26 @@ class ServerSocketFd : public Fd {
     }
 
     int e_bind = bind(fd, address.get_sockaddr(), static_cast<socklen_t>(address.get_sockaddr_len()));
-    if (e_bind == -1) {
+    if (e_bind != 0) {
       ::closesocket(fd);
-      return Status::OsError("Failed to bind socket");
+      return Status::WsaError("Failed to bind socket");
     }
 
     // TODO: magic constant
     int e_listen = listen(fd, 8192);
-    if (e_listen == -1) {
+    if (e_listen != 0) {
       ::closesocket(fd);
-      return Status::OsError("Failed to listen");
+      return Status::WsaError("Failed to listen");
     }
 
     return ServerSocketFd(Fd::Type::ServerSocketFd, Fd::Mode::Owner, fd, address.get_address_family());
   }
+
   ServerSocketFd() = default;
+  ServerSocketFd(const ServerSocketFd &) = delete;
+  ServerSocketFd &operator=(const ServerSocketFd &) = delete;
+  ServerSocketFd(ServerSocketFd &&) = default;
+  ServerSocketFd &operator=(ServerSocketFd &&) = default;
 
   Result<SocketFd> accept() WARN_UNUSED_RESULT {
     auto r_socket = Fd::accept();

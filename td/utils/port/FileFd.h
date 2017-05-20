@@ -144,10 +144,9 @@ class FileFd : public Fd {
     }
     auto res = FileFd(Fd::Type::FileFd, Fd::Mode::Owner, handle);
     res.update_flags(Fd::Flag::Write);
-    return res;
+    return std::move(res);
   }
 
-  using Fd::operator FdRef;
   using Fd::write;
   using Fd::read;
   using Fd::pwrite;

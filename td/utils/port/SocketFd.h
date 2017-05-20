@@ -61,10 +61,10 @@ class SocketFd {
 namespace td {
 class SocketFd : public Fd {
  public:
-  static Result<SocketFd> SocketFd::open(const IPAddress &address) {
+  static Result<SocketFd> open(const IPAddress &address) {
     auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
-    if (fd == -1) {
-      return Status::OsError("Failed to create a socket");
+    if (fd == INVALID_SOCKET) {
+      return Status::WsaError("Failed to create a socket");
     }
 
     Status res = init_socket(fd);
@@ -73,21 +73,25 @@ class SocketFd : public Fd {
     }
 
     auto bind_addr = address.get_any_addr();
-    auto status = bind(fd, bind_addr.get_sockaddr(), narrow_cast<int>(bind_addr.get_sockaddr_len()));
-    if (status != 0) {
-      return Status::OsError("Failed to bind a socket");
+    auto e_bind = bind(fd, bind_addr.get_sockaddr(), narrow_cast<int>(bind_addr.get_sockaddr_len()));
+    if (e_bind != 0) {
+      return Status::WsaError("Failed to bind a socket");
     }
 
     auto sock = SocketFd(Fd::Type::SocketFd, Fd::Mode::Owner, fd, address.get_address_family());
     sock.connect(address);
-    return sock;
+    return std::move(sock);
   }
 
   explicit SocketFd(Fd fd) : Fd(std::move(fd)) {
   }
 
   SocketFd() = default;
-  using Fd::operator FdRef;
+  SocketFd(const SocketFd &) = delete;
+  SocketFd &operator=(const SocketFd &) = delete;
+  SocketFd(SocketFd &&) = default;
+  SocketFd &operator=(SocketFd &&) = default;
+
   using Fd::connect;
   using Fd::write;
   using Fd::read;

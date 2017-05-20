@@ -245,7 +245,7 @@ Result<string> realpath(CSlice slice) {
   return res;
 }
 
-Status chdir(CSlice dir) WARN_UNUSED_RESULT {
+Status chdir(CSlice dir) {
   TRY_RESULT(wdir, to_wstring(dir));
   auto res = SetCurrentDirectoryW(wdir.c_str());
   if (res == 0) {
@@ -312,8 +312,8 @@ Result<string> mkdtemp(CSlice dir, Slice prefix) {
 
   for (auto it = 0; it < 20; it++) {
     auto path = dir_pattern;
-    for (int i = 0; i < 6 + i / 5; i++) {
-      path += rand_fast_uint32() % 26 + 'a';
+    for (int i = 0; i < 6 + it / 5; i++) {
+      path += static_cast<char>(rand_fast_uint32() % 26 + 'a');
     }
     auto status = mkdir(path);
     if (status.is_ok()) {
@@ -344,8 +344,8 @@ Result<std::pair<FileFd, string>> mkstemp(CSlice dir) {
 
   for (auto it = 0; it < 20; it++) {
     auto path = file_pattern;
-    for (int i = 0; i < 6 + i / 5; i++) {
-      path += rand_fast_uint32() % 26 + 'a';
+    for (int i = 0; i < 6 + it / 5; i++) {
+      path += static_cast<char>(rand_fast_uint32() % 26 + 'a');
     }
     auto r_file = FileFd::open(path, FileFd::Write | FileFd::Read | FileFd::CreateNew);
     if (r_file.is_ok()) {

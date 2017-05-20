@@ -1,8 +1,12 @@
 #pragma once
+
 #include "td/utils/port/config.h"
 
 #ifdef TD_PORT_WINDOWS
+
+#include "td/utils/common.h"
 #include "td/utils/Status.h"
+
 namespace td {
 class RwMutex {
  public:
@@ -88,6 +92,7 @@ class RwMutex {
 
 #ifdef TD_PORT_POSIX
 
+#include "td/utils/common.h"
 #include "td/utils/Status.h"
 
 #include <pthread.h>

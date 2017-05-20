@@ -158,8 +158,6 @@ class Fd {
   using Flags = int32;
   Fd() = default;
 
-  operator FdRef();
-
   Result<size_t> write(Slice slice) WARN_UNUSED_RESULT;
   bool empty() const;
   void close();
