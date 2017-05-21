@@ -86,12 +86,16 @@ class SPSCBlockQueue {
   Position writer_;
   Position reader_;
 
-  int fix_i(int i) {
+  static int fix_i(int i) {
     return i & (buffer_size() - 1);
   }
 
+  ValueType *at_ptr(int i) {
+    return reinterpret_cast<ValueType *>(&data_[fix_i(i)]);
+  }
+
   ValueType &at(int i) {
-    return *(static_cast<ValueType *>(static_cast<void *>(&data_[fix_i(i)])));
+    return *at_ptr(i);
   }
 
  public:

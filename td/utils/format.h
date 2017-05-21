@@ -7,7 +7,7 @@
 namespace td {
 namespace format {
 /*** HexDump ***/
-template <int size, bool reversed = true>
+template <std::size_t size, bool reversed = true>
 struct HexDumpSize {
   const unsigned char *data;
 };
@@ -16,7 +16,7 @@ inline char hex_digit(int x) {
   return "0123456789abcdef"[x];
 }
 
-template <int size, bool reversed>
+template <std::size_t size, bool reversed>
 StringBuilder &operator<<(StringBuilder &builder, const HexDumpSize<size, reversed> &dump) {
   const unsigned char *ptr = dump.data;
   // TODO: append unsafe
@@ -38,37 +38,37 @@ StringBuilder &operator<<(StringBuilder &builder, const HexDumpSize<size, revers
   return builder;
 }
 
-template <int align>
+template <std::size_t align>
 struct HexDumpSlice {
   Slice slice;
 };
 
-template <int align>
+template <std::size_t align>
 StringBuilder &operator<<(StringBuilder &builder, const HexDumpSlice<align> &dump) {
-  int size = static_cast<int>(dump.slice.size());
+  std::size_t size = dump.slice.size();
   const unsigned char *ptr = dump.slice.ubegin();
 
   builder << '\n';
 
   if (align == 0) {
-    for (int i = 0; i < size; i++) {
+    for (std::size_t i = 0; i < size; i++) {
       builder << HexDumpSize<1>{ptr};
     }
     return builder;
   }
 
-  const int part = size % align;
+  const std::size_t part = size % align;
   if (part) {
     builder << HexDumpSlice<1>{Slice(ptr, part)} << '\n';
   }
   size -= part;
   ptr += part;
 
-  for (int i = 0; i < size; i += align) {
+  for (std::size_t i = 0; i < size; i += align) {
     builder << HexDumpSize<align>{ptr};
     ptr += align;
 
-    if (((i / align) & 15) == 15 || i + align == size) {
+    if (((i / align) & 15) == 15 || i + align >= size) {
       builder << '\n';
     } else {
       builder << ' ';
@@ -78,17 +78,17 @@ StringBuilder &operator<<(StringBuilder &builder, const HexDumpSlice<align> &dum
   return builder;
 }
 
-template <int align>
+template <std::size_t align>
 HexDumpSlice<align> as_hex_dump(Slice slice) {
   return HexDumpSlice<align>{slice};
 }
 
-template <int align>
+template <std::size_t align>
 HexDumpSlice<align> as_hex_dump(MutableSlice slice) {
   return HexDumpSlice<align>{slice};
 }
 
-template <int align, class T>
+template <std::size_t align, class T>
 HexDumpSlice<align> as_hex_dump(const T &value) {
   return HexDumpSlice<align>{Slice(&value, sizeof(value))};
 }

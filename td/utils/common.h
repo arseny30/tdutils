@@ -153,13 +153,13 @@ struct Auto {
   }
 };
 
-template <int... S>
+template <std::size_t... S>
 struct IntSeq {};
 
-template <int L, int N, int... S>
+template <std::size_t L, std::size_t N, std::size_t... S>
 struct IntSeqGen : IntSeqGen<L, N - 1, L + N - 1, S...> {};
 
-template <int L, int... S>
+template <std::size_t L, std::size_t... S>
 struct IntSeqGen<L, 0, S...> {
   typedef IntSeq<S...> type;
 };
@@ -185,10 +185,10 @@ class LogicAnd {
   static constexpr bool value = LogicAndImpl<true, Args...>::value;
 };
 
-template <int N>
+template <std::size_t N>
 using IntRange = typename IntSeqGen<0, N>::type;
 
-template <class F, class... Args, int... S>
+template <class F, class... Args, std::size_t... S>
 void call_tuple_impl(F &func, std::tuple<Args...> &&tuple, IntSeq<S...>) {
   func(std::forward<Args>(std::get<S>(tuple))...);
 }
@@ -269,7 +269,7 @@ auto invoke(F &&f, ArgTypes &&... args)
   return detail::INVOKE(std::forward<F>(f), std::forward<ArgTypes>(args)...);
 }
 
-template <class... Args, int... S>
+template <class... Args, std::size_t... S>
 void invoke_tuple_impl(std::tuple<Args...> &&tuple, IntSeq<S...>) {
   invoke(std::forward<Args>(std::get<S>(tuple))...);
 }
@@ -279,7 +279,7 @@ void invoke_tuple(std::tuple<Args...> &&tuple) {
   invoke_tuple_impl(std::move(tuple), IntRange<sizeof...(Args)>());
 }
 
-template <class Actor, class F, class... Args, int... S>
+template <class Actor, class F, class... Args, std::size_t... S>
 void mem_call_tuple_impl(Actor *actor, F &func, std::tuple<Args...> &&tuple, IntSeq<S...>) {
   (actor->*func)(std::forward<Args>(std::get<S>(tuple))...);
 }
@@ -289,7 +289,7 @@ void mem_call_tuple(Actor *actor, F &func, std::tuple<Args...> &&tuple) {
   mem_call_tuple_impl(actor, func, std::move(tuple), IntRange<sizeof...(Args)>());
 }
 
-template <class F, class... Args, int... S>
+template <class F, class... Args, std::size_t... S>
 void tuple_for_each_impl(std::tuple<Args...> &tuple, const F &func, IntSeq<S...>) {
   const auto &dummy = {0, (func(std::get<S>(tuple)), 0)...};
   (void)dummy;
@@ -300,7 +300,7 @@ void tuple_for_each(std::tuple<Args...> &tuple, const F &func) {
   tuple_for_each_impl(tuple, func, IntRange<sizeof...(Args)>());
 }
 
-template <class F, class... Args, int... S>
+template <class F, class... Args, std::size_t... S>
 void tuple_for_each_impl(const std::tuple<Args...> &tuple, const F &func, IntSeq<S...>) {
   const auto &dummy = {0, (func(std::get<S>(tuple)), 0)...};
   (void)dummy;
