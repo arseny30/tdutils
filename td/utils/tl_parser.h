@@ -70,7 +70,6 @@ class tl_parser {
       data = buf;
     }
     data_begin = data;
-    error_pos = -1;
   }
 
   explicit tl_parser(Slice slice) : tl_parser(slice.begin(), slice.size()) {
