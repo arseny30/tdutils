@@ -182,7 +182,7 @@ class BufferSlice {
   const char *data() const {
     return as_slice().data();
   }
-  char operator[](int at) const {
+  char operator[](size_t at) const {
     return as_slice()[at];
   }
 

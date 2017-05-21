@@ -38,7 +38,7 @@ class FileLog : public LogInterface {
         std::abort();
       }
       auto written = r_size.ok();
-      size_ += written;
+      size_ += static_cast<off_t>(written);
       slice.remove_prefix(written);
     }
     if (log_level == VERBOSITY_NAME(FATAL)) {
