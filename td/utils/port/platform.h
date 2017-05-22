@@ -18,10 +18,12 @@
 #include "TargetConditionals.h"
 #if TARGET_IPHONE_SIMULATOR
 // iOS Simulator
-#error "iOS Simulator is not supported"
+//#error "iOS Simulator is not supported"
+#define TD_MAC 1
 #elif TARGET_OS_IPHONE
 // iOS device
-#error "iOS device is not supported"
+//#error "iOS device is not supported"
+#define TD_MAC 1
 #elif TARGET_OS_MAC
 // Other kinds of Mac OS
 #define TD_MAC 1
