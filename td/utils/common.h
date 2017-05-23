@@ -2,35 +2,37 @@
 
 #include "td/utils/port/platform.h"
 
+// clang-format off
 #if TD_WINDOWS
-#ifndef NTDDI_VERSION
-#define NTDDI_VERSION 0x06020000
+  #ifndef NTDDI_VERSION
+    #define NTDDI_VERSION 0x06020000
+  #endif
+  #ifndef WINVER
+    #define WINVER 0x0602
+  #endif
+  #ifndef _WIN32_WINNT
+    #define _WIN32_WINNT 0x0602
+  #endif
+  #ifndef NOMINMAX
+    #define NOMINMAX
+  #endif
+  #ifndef UNICODE
+    #define UNICODE
+  #endif
+  #ifndef _UNICODE
+    #define _UNICODE
+  #endif
+  #ifndef _CRT_SECURE_NO_WARNINGS
+    #define _CRT_SECURE_NO_WARNINGS
+  #endif
+
+  #include <Winsock2.h>
+  #include <ws2tcpip.h>
+  #include <Mswsock.h>
+  #include <Windows.h>
+  #undef ERROR
 #endif
-#ifndef WINVER
-#define WINVER 0x0602
-#endif
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0602
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#ifndef UNICODE
-#define UNICODE
-#endif
-#ifndef _UNICODE
-#define _UNICODE
-#endif
-#ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-#include <Winsock2.h>
-#include <ws2tcpip.h>
-#include <Mswsock.h>
-#include <Synchapi.h>
-#include <Windows.h>
-#undef ERROR
-#endif
+// clang-format on
 
 #include "td/utils/int_types.h"
 #include "td/utils/port/thread_local.h"
@@ -54,14 +56,16 @@
 #define TD_CONCAT(x, y) TD_CONCAT_IMPL(x, y)
 #define TD_ANONYMOUS_VARIABLE(var) TD_CONCAT(TD_CONCAT(var, _), __LINE__)
 
+// clang-format off
 #if TD_WINDOWS
-#define TD_DIR_SLASH '\\'
+  #define TD_DIR_SLASH '\\'
 #else
-#define TD_DIR_SLASH '/'
+  #define TD_DIR_SLASH '/'
 #endif
+// clang-format on
 
 namespace {
-char no_empty_obj_ TD_UNUSED;
+char no_empty_obj_ TD_UNUSED; // to disable linker warning about empty files
 }
 
 namespace td {

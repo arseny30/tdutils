@@ -8,13 +8,15 @@
 
 namespace td {
 
+// clang-format off
 #if TD_THREAD_PTHREAD
-#define TD_THREAD_LOCAL __thread
+  #define TD_THREAD_LOCAL __thread
 #elif TD_THREAD_STL
-#define TD_THREAD_LOCAL thread_local
+  #define TD_THREAD_LOCAL thread_local
 #else
-#error "Thread's implementation is not defined"
+  #error "Thread's implementation is not defined"
 #endif
+// clang-format on
 
 // If raw_ptr is not nullptr, allocate T as in std::make_unique<T>(args...) and store pointer into raw_ptr
 template <class T, class P, class... ArgsT>

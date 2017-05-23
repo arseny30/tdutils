@@ -62,27 +62,29 @@
 #define GET_VERBOSITY_LEVEL() (::td::VERBOSITY_NAME(level))
 #define SET_VERBOSITY_LEVEL(new_level) (::td::VERBOSITY_NAME(level) = new_level)
 
-#ifdef __clang__
+#if TD_CLANG
 bool no_return_func() __attribute__((analyzer_noreturn));
 #endif
 inline bool no_return_func() {
   return true;
 }
 
+// clang-format off
 #ifdef CHECK
-#undef CHECK
+  #undef CHECK
 #endif
 #ifdef TD_DEBUG
-#if TD_MSVC
-#define CHECK(condition, ...)       \
-  __analysis_assume(!!(condition)); \
-  LOG_IF(FATAL, !(condition), __VA_ARGS__)
+  #if TD_MSVC
+    #define CHECK(condition, ...)       \
+      __analysis_assume(!!(condition)); \
+      LOG_IF(FATAL, !(condition), __VA_ARGS__)
+  #else
+    #define CHECK(condition, ...) LOG_IF(FATAL, !(condition) && no_return_func(), __VA_ARGS__)
+  #endif
 #else
-#define CHECK(condition, ...) LOG_IF(FATAL, !(condition) && no_return_func(), __VA_ARGS__)
+  #define CHECK(condition, ...) LOG_IF(NEVER, !(condition), __VA_ARGS__)
 #endif
-#else
-#define CHECK(condition, ...) LOG_IF(NEVER, !(condition), __VA_ARGS__)
-#endif
+// clang-format on
 
 #define UNREACHABLE(...)   \
   LOG(FATAL, __VA_ARGS__); \
@@ -184,7 +186,7 @@ class Logger {
     return *this;
   }
 
-  Logger &printf(const char *fmt, ...) IF_NO_MSVC(__attribute__((format(printf, 2 /*1 -- is this*/, 3))));
+  Logger &printf(const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
   MutableCSlice as_cslice() {
     return sb_.as_cslice();
