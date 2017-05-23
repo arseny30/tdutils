@@ -20,20 +20,11 @@ template <std::size_t size, bool reversed>
 StringBuilder &operator<<(StringBuilder &builder, const HexDumpSize<size, reversed> &dump) {
   const unsigned char *ptr = dump.data;
   // TODO: append unsafe
-  if (!reversed) {
-    for (size_t i = 0; i < size; i++) {
-      int xy = ptr[i];
-      int x = xy >> 4;
-      int y = xy & 15;
-      builder << hex_digit(x) << hex_digit(y);
-    }
-  } else {
-    for (size_t i = size - 1; i >= 0; i--) {
-      int xy = ptr[i];
-      int x = xy >> 4;
-      int y = xy & 15;
-      builder << hex_digit(x) << hex_digit(y);
-    }
+  for (std::size_t i = 0; i < size; i++) {
+    int xy = ptr[reversed ? size - 1 - i : i];
+    int x = xy >> 4;
+    int y = xy & 15;
+    builder << hex_digit(x) << hex_digit(y);
   }
   return builder;
 }

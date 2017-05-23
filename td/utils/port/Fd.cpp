@@ -806,7 +806,7 @@ class FdImpl {
   void on_read_ready() {
     async_read_flag_ = false;
     DWORD bytes_read;
-    auto status = GetOverlappedResultEx(get_io_handle(), &read_overlapped_, &bytes_read, 0, false);
+    auto status = GetOverlappedResult(get_io_handle(), &read_overlapped_, &bytes_read, false);
     if (status == 0) {
       return on_error(Status::OsError("ReadFile failed"), Fd::Flag::Read);
     }
@@ -822,7 +822,7 @@ class FdImpl {
   void on_write_ready() {
     async_write_flag_ = false;
     DWORD bytes_written;
-    auto status = GetOverlappedResultEx(get_io_handle(), &write_overlapped_, &bytes_written, 0, false);
+    auto status = GetOverlappedResult(get_io_handle(), &write_overlapped_, &bytes_written, false);
     if (status == 0) {
       return on_error(Status::OsError("WriteFile failed"), Fd::Flag::Write);
     }
@@ -836,7 +836,7 @@ class FdImpl {
   void on_accept_ready() {
     async_read_flag_ = false;
     DWORD bytes_read;
-    auto status = GetOverlappedResultEx(get_io_handle(), &read_overlapped_, &bytes_read, 0, false);
+    auto status = GetOverlappedResult(get_io_handle(), &read_overlapped_, &bytes_read, false);
     if (status == 0) {
       return on_error(Status::OsError("AcceptEx failed"), Fd::Flag::Write);
     }
@@ -849,7 +849,7 @@ class FdImpl {
     async_read_flag_ = false;
     DWORD bytes_read;
     VLOG(fd) << "on_connect_ready";
-    auto status = GetOverlappedResultEx(get_io_handle(), &read_overlapped_, &bytes_read, 0, false);
+    auto status = GetOverlappedResult(get_io_handle(), &read_overlapped_, &bytes_read, false);
     if (status == 0) {
       return on_error(Status::OsError("ConnectEx failed"), Fd::Flag::Write);
     }

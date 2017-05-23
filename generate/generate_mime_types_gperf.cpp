@@ -22,7 +22,8 @@ std::pair<std::string, std::string> split(std::string s, char delimiter = ' ') {
 
 bool generate(const char *file_name, const char *from_name, const char *to_name,
               const std::map<std::string, std::string> &map) {
-  std::ofstream out(file_name, std::ios_base::trunc);
+  // binary mode is needed for MSYS2 gperf
+  std::ofstream out(file_name, std::ios_base::trunc | std::ios_base::binary);
   if (!out) {
     std::cerr << "Can't open output file \"" << file_name << std::endl;
     return false;
