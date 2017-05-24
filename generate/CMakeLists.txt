@@ -32,9 +32,8 @@ if (${GENERATE_SOURCE})
     DEPENDS generate_mime_types_gperf mime_types.txt
   )
 
-  if (MSVC)
+  if (WIN32)
     set(MimeToExtentionCmd powershell -ExecutionPolicy ByPass \" & gperf -m100 --output-file=auto/mime_type_to_extension.cpp auto/mime_type_to_extension.gperf\")
-    message(STATUS "${MimeToExtentionCmd}")
   else()
     set(MimeToExtentionCmd gperf -m100 auto/mime_type_to_extension.gperf | grep -v __gnu_inline__ > auto/mime_type_to_extension.cpp)
   endif()
@@ -45,9 +44,8 @@ if (${GENERATE_SOURCE})
     DEPENDS auto/mime_type_to_extension.gperf
   )
 
-  if (MSVC)
+  if (WIN32)
     set(ExtentionToMimeCmd powershell -ExecutionPolicy ByPass \" & gperf -m100 --output-file=auto/extension_to_mime_type.cpp auto/extension_to_mime_type.gperf\")
-    message(STATUS "${ExtentionToMimeCmd}")
   else()
     set(ExtentionToMimeCmd gperf -m100 auto/extension_to_mime_type.gperf | grep -v __gnu_inline__ > auto/extension_to_mime_type.cpp)
   endif()
