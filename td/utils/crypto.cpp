@@ -14,7 +14,7 @@
 #include <openssl/rand.h>
 #include <openssl/sha.h>
 
-#include <zlib.h>
+#include <zlib.h>  // for crc32
 
 #include <algorithm>
 #include <cstring>

@@ -14,7 +14,6 @@
 #if TD_WINDOWS
 #include <codecvt>
 #include <locale>
-#include <Windows.h>
 #endif
 
 #define TRY_STATUS(status)               \
@@ -175,7 +174,7 @@ class Status {
   }
 
   bool is_error() const WARN_UNUSED_RESULT {
-    return bool(ptr_);
+    return ptr_ != nullptr;
   }
 
   void ensure() const {
@@ -341,11 +340,11 @@ class Result {
     if (status_.is_ok()) {
       value_.~T();
     }
-    status_ = std::move(other.status_);
-    if (status_.is_ok()) {
+    if (other.status_.is_ok()) {
       new (&value_) T(std::move(other.value_));
       other.value_.~T();
     }
+    status_ = std::move(other.status_);
     other.status_ = Status::Error();
     return *this;
   }
