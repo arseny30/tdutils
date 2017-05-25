@@ -341,7 +341,14 @@ class Result {
       value_.~T();
     }
     if (other.status_.is_ok()) {
+#if TD_GCC
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
       new (&value_) T(std::move(other.value_));
+#if TD_GCC
+#pragma GCC diagnostic pop
+#endif
       other.value_.~T();
     }
     status_ = std::move(other.status_);
