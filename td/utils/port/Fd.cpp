@@ -600,7 +600,7 @@ class FdImpl {
     GUID guid = WSAID_CONNECTEX;
     DWORD numBytes;
     int error = ::WSAIoctl(socket_, SIO_GET_EXTENSION_FUNCTION_POINTER, static_cast<void *>(&guid), sizeof(guid),
-                             static_cast<void *>(&ConnectExPtr), sizeof(ConnectExPtr), &numBytes, nullptr, nullptr);
+                           static_cast<void *>(&ConnectExPtr), sizeof(ConnectExPtr), &numBytes, nullptr, nullptr);
     if (error) {
       return on_error(Status::WsaError("WSAIoctl failed"), Fd::Flag::Read);
     }

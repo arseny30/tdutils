@@ -2,6 +2,8 @@
 
 #include "td/utils/port/platform.h"
 
+// clang-format off
+
 #if TD_LINUX || TD_ANDROID || TD_TIZEN
   #define TD_POLL_EPOLL 1
   #define TD_EVENTFD_POSIX 1
@@ -23,3 +25,5 @@
 #else
   #define TD_THREAD_STL 1
 #endif
+
+// clang-format on

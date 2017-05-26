@@ -63,10 +63,10 @@ class tl_storer_unsafe {
     switch (len & 3) {
       case 1:
         *buf++ = '\0';
-        // fallthrough
+      // fallthrough
       case 2:
         *buf++ = '\0';
-        // fallthrough
+      // fallthrough
       case 3:
         *buf++ = '\0';
     }
