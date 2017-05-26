@@ -296,12 +296,12 @@ class Status {
       error_code = MAX_ERROR_CODE;
     }
 
-#if TD_GCC || TD_CLANG
+#if TD_GCC
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
 #endif
     tmp.error_code = error_code;
-#if TD_GCC || TD_CLANG
+#if TD_GCC
 #pragma GCC diagnostic pop
 #endif
     CHECK(error_code == tmp.error_code);
