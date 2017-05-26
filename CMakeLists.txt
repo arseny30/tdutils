@@ -32,7 +32,6 @@ set(TDUTILS_SOURCE
 
   td/utils/base64.cpp
   td/utils/buffer.cpp
-  td/utils/common.cpp
   td/utils/crypto.cpp
   td/utils/filesystem.cpp
   td/utils/Gzip.cpp
@@ -41,7 +40,6 @@ set(TDUTILS_SOURCE
   td/utils/JsonBuilder.cpp
   td/utils/logging.cpp
   td/utils/MimeType.cpp
-  td/utils/Status.cpp
   td/utils/Time.cpp
   td/utils/Timer.cpp
   td/utils/tl_parser.cpp
