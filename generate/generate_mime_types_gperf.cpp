@@ -84,6 +84,10 @@ int main(int argc, char *argv[]) {
 
   std::string line;
   while (std::getline(mime_types_file, line)) {
+    while (!line.empty() && (line.back() == '\r' || line.back() == '\n')) {
+      line.pop_back();
+    }
+
     std::string mime_type;
     std::string extensions_string;
     std::tie(mime_type, extensions_string) = split(line, '\t');

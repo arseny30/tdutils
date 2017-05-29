@@ -3,7 +3,9 @@
 #include "td/utils/logging.h"
 
 namespace td {
+
 namespace detail {
+
 TD_THREAD_LOCAL int32 thread_id_;
 static TD_THREAD_LOCAL std::vector<std::unique_ptr<Destructor>> *thread_local_destructors;
 
@@ -13,6 +15,7 @@ void add_thread_local_destructor(std::unique_ptr<Destructor> destructor) {
   }
   thread_local_destructors->push_back(std::move(destructor));
 }
+
 }  // namespace detail
 
 void clear_thread_locals() {
@@ -22,4 +25,5 @@ void clear_thread_locals() {
   delete to_delete;
   CHECK(detail::thread_local_destructors == nullptr);
 }
+
 }  // namespace td

@@ -1,10 +1,13 @@
 #include "td/utils/port/config.h"
 
 #ifdef TD_POLL_SELECT
+
+#include "td/utils/logging.h"
 #include "td/utils/port/detail/Select.h"
 
 namespace td {
 namespace detail {
+
 void Select::init() {
   FD_ZERO(&all_fd_);
   FD_ZERO(&read_fd_);
@@ -23,6 +26,7 @@ void Select::subscribe(const Fd &fd, Fd::Flags flags) {
     CHECK(it.fd_ref.get_native_fd() != native_fd);
   }
   fds_.push_back(FdInfo{Fd(native_fd, Fd::Mode::Reference), flags});
+  CHECK(0 <= native_fd && native_fd < FD_SETSIZE) << native_fd << " " << FD_SETSIZE;
   FD_SET(native_fd, &all_fd_);
   if (native_fd > max_fd_) {
     max_fd_ = native_fd;
@@ -31,6 +35,7 @@ void Select::subscribe(const Fd &fd, Fd::Flags flags) {
 
 void Select::unsubscribe(const Fd &fd) {
   int native_fd = fd.get_native_fd();
+  CHECK(0 <= native_fd && native_fd < FD_SETSIZE) << native_fd << " " << FD_SETSIZE;
   FD_CLR(native_fd, &all_fd_);
   FD_CLR(native_fd, &read_fd_);
   FD_CLR(native_fd, &write_fd_);
@@ -42,6 +47,7 @@ void Select::unsubscribe(const Fd &fd) {
     if (it->fd_ref.get_native_fd() == native_fd) {
       std::swap(*it, fds_.back());
       fds_.pop_back();
+      break;
     } else {
       it++;
     }

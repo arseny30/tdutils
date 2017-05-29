@@ -495,7 +495,7 @@ std::vector<RwMutex> &openssl_mutexes() {
 }
 
 void openssl_threadid_callback(CRYPTO_THREADID *thread_id) {
-  TD_THREAD_LOCAL static int id;
+  static TD_THREAD_LOCAL int id;
   CRYPTO_THREADID_set_pointer(thread_id, &id);
 }
 

@@ -9,12 +9,10 @@
 namespace td {
 
 // clang-format off
-#if TD_THREAD_PTHREAD
+#if TD_GCC || TD_CLANG
   #define TD_THREAD_LOCAL __thread
-#elif TD_THREAD_STL
-  #define TD_THREAD_LOCAL thread_local
 #else
-  #error "Thread's implementation is not defined"
+  #define TD_THREAD_LOCAL thread_local
 #endif
 // clang-format on
 

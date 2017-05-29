@@ -1,7 +1,9 @@
 #pragma once
+
 #include "td/utils/port/config.h"
 
 #ifdef TD_POLL_SELECT
+
 #include "td/utils/port/Fd.h"
 #include "td/utils/port/PollBase.h"
 
@@ -9,6 +11,7 @@
 
 namespace td {
 namespace detail {
+
 class Select final : public PollBase {
  public:
   void init() override;
@@ -35,6 +38,8 @@ class Select final : public PollBase {
   fd_set except_fd_;
   int max_fd_;
 };
+
 }  // namespace detail
 }  // namespace td
+
 #endif  // TD_POLL_SELECT

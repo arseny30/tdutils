@@ -13,11 +13,20 @@ namespace detail {
 EventFdBsd::operator FdRef() {
   return get_fd();
 }
-// TODO: it is extreemly non optimal. kqueue events should be used for mac
+// TODO: it is extreemly non optimal on Darwin. kqueue events should be used instead
 void EventFdBsd::init() {
   int fds[2];
   int err = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
   auto socketpair_errno = errno;
+#ifdef TD_CYGWIN
+  // it looks like CYGWIN bug
+  int max_retries = 1000000;
+  while (err == -1 && socketpair_errno == EADDRINUSE && max_retries-- > 0) {
+    err = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
+    socketpair_errno = errno;
+  }
+  // LOG_IF(ERROR, max_retries < 1000000) << max_retries;
+#endif
   LOG_IF(FATAL, err == -1) << Status::PosixError(socketpair_errno, "socketpair failed");
 
   err = fcntl(fds[0], F_SETFL, O_NONBLOCK);

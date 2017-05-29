@@ -149,7 +149,7 @@ Status ServerSocketFd::init_socket(int fd) {
 
   int flags = 1;
   struct linger ling = {0, 0};
-#if !TD_ANDROID && !TD_WINDOWS
+#if !TD_ANDROID && !TD_WINDOWS && !TD_CYGWIN
   setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &flags, sizeof(flags));
 #endif
   setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flags, sizeof(flags));

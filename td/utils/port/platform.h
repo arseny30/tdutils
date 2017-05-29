@@ -36,6 +36,8 @@
   #define TD_TIZEN 1
 #elif defined(__linux__)
   #define TD_LINUX 1
+#elif defined(__CYGWIN__)
+  #define TD_CYGWIN 1
 #elif defined(__unix__)  // all unices not caught above
   #error "Probably unsupported Unix platform. Feel free to remove the error and try to recompile"
   #define TD_LINUX 1

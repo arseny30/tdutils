@@ -1,12 +1,13 @@
 #include "td/utils/filesystem.h"
 
-#include "td/utils/port/FileFd.h"
 #include "td/utils/buffer.h"
 #include "td/utils/format.h"
-#include "td/utils/Status.h"
+#include "td/utils/port/FileFd.h"
 #include "td/utils/Slice.h"
+#include "td/utils/Status.h"
 
 namespace td {
+
 Result<BufferSlice> read_file(CSlice path, off_t size) {
   TRY_RESULT(from_file, FileFd::open(path, FileFd::Read));
   if (size == -1) {
@@ -37,4 +38,5 @@ Status write_file(CSlice to, Slice data) {
   to_file.close();
   return Status::OK();
 }
+
 }  // namespace td

@@ -37,7 +37,7 @@ namespace td {
 namespace detail {
 Stat from_native_stat(const struct ::stat &buf) {
   Stat res;
-#if TD_ANDROID || TD_LINUX || TD_TIZEN
+#if TD_ANDROID || TD_LINUX || TD_TIZEN || TD_CYGWIN
 #if defined(_BSD_SOURCE) || defined(_SVID_SOURCE) || _POSIX_C_SOURCE >= 200809L || _XOPEN_SOURCE >= 700
   res.mtime_nsec_ = buf.st_mtime * 1000000000ll + buf.st_mtim.tv_nsec;
   res.atime_nsec_ = buf.st_atime * 1000000000ll + buf.st_atim.tv_nsec;
@@ -104,7 +104,7 @@ Status update_atime(int native_fd) {
     return status;
   }
   return Status::OK();
-#elif TD_ANDROID || TD_TIZEN
+#elif TD_ANDROID || TD_TIZEN || TD_CYGWIN
   return Status::Error();
 // NOT SUPPORTED...
 // struct timespec times[2];
@@ -218,6 +218,10 @@ Result<MemStat> mem_stat() {
   }
 
   return res;
+#endif
+
+#if TD_CYGWIN
+  return Status::Error();
 #endif
 }
 }  // namespace td
