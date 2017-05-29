@@ -10,7 +10,10 @@ add_subdirectory(generate)
 # TDUTILS
 set_source_files_properties(${TDMIME_AUTO} PROPERTIES GENERATED TRUE)
 if (NOT MSVC)
-  set_source_files_properties(${TDMIME_AUTO} PROPERTIES COMPILE_FLAGS -Wno-conversion)
+  set_property(SOURCE ${TDMIME_AUTO} APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-conversion")
+endif()
+if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+  set_property(SOURCE ${TDMIME_AUTO} APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-deprecated-register")
 endif()
 
 set(TDUTILS_SOURCE
