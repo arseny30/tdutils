@@ -6,7 +6,7 @@
 
 #if TD_LINUX || TD_ANDROID || TD_TIZEN
   #define TD_POLL_EPOLL 1
-  #define TD_EVENTFD_POSIX 1
+  #define TD_EVENTFD_LINUX 1
   #define TD_PORT_POSIX 1
 #elif TD_CYGWIN
   #define TD_POLL_SELECT 1

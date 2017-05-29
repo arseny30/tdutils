@@ -27,7 +27,7 @@ set(TDUTILS_SOURCE
   td/utils/port/thread_local.cpp
   td/utils/port/detail/Epoll.cpp
   td/utils/port/detail/EventFdBsd.cpp
-  td/utils/port/detail/EventFdPosix.cpp
+  td/utils/port/detail/EventFdLinux.cpp
   td/utils/port/detail/EventFdWindows.cpp
   td/utils/port/detail/KQueue.cpp
   td/utils/port/detail/Select.cpp
@@ -70,7 +70,7 @@ set(TDUTILS_SOURCE
   td/utils/port/thread_local.h
   td/utils/port/detail/Epoll.h
   td/utils/port/detail/EventFdBsd.h
-  td/utils/port/detail/EventFdPosix.h
+  td/utils/port/detail/EventFdLinux.h
   td/utils/port/detail/EventFdWindows.h
   td/utils/port/detail/KQueue.h
   td/utils/port/detail/Select.h

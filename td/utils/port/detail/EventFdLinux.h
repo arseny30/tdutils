@@ -2,13 +2,13 @@
 
 #include "td/utils/port/config.h"
 
-#ifdef TD_EVENTFD_POSIX
+#ifdef TD_EVENTFD_LINUX
 
 #include "td/utils/port/EventFdBase.h"
 
 namespace td {
 namespace detail {
-class EventFdPosix final : public EventFdBase {
+class EventFdLinux final : public EventFdBase {
  private:
   Fd fd_;
 
@@ -33,4 +33,4 @@ class EventFdPosix final : public EventFdBase {
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_EVENTFD_POSIX
+#endif  // TD_EVENTFD_LINUX

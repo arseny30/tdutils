@@ -1,17 +1,17 @@
 #include "td/utils/port/config.h"
 
-#ifdef TD_EVENTFD_POSIX
+#ifdef TD_EVENTFD_LINUX
 
 #include <sys/eventfd.h>
 
-#include "td/utils/port/detail/EventFdPosix.h"
+#include "td/utils/port/detail/EventFdLinux.h"
 
 namespace td {
 namespace detail {
-EventFdPosix::operator FdRef() {
+EventFdLinux::operator FdRef() {
   return get_fd();
 }
-void EventFdPosix::init() {
+void EventFdLinux::init() {
   int fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
   auto eventfd_errno = errno;
   LOG_IF(FATAL, fd == -1) << Status::PosixError(eventfd_errno, "eventfd call failed");
@@ -19,46 +19,46 @@ void EventFdPosix::init() {
   fd_ = Fd(fd, Fd::Mode::Own);
 }
 
-bool EventFdPosix::empty() {
+bool EventFdLinux::empty() {
   return fd_.empty();
 }
 
-void EventFdPosix::close() {
+void EventFdLinux::close() {
   fd_.close();
 }
 
-Status EventFdPosix::get_pending_error() {
+Status EventFdLinux::get_pending_error() {
   return Status::OK();
 }
 
-const Fd &EventFdPosix::get_fd() const {
+const Fd &EventFdLinux::get_fd() const {
   return fd_;
 }
 
-Fd &EventFdPosix::get_fd() {
+Fd &EventFdLinux::get_fd() {
   return fd_;
 }
 
-void EventFdPosix::release() {
+void EventFdLinux::release() {
   uint64 value = 1;
   // NB: write_unsafe is used, because release will be call from multible threads.
   auto result = fd_.write_unsafe(Slice(&value, sizeof(value)));
   if (result.is_error()) {
-    LOG(FATAL) << "EventFdPosix write failed: " << result.error();
+    LOG(FATAL) << "EventFdLinux write failed: " << result.error();
   }
   size_t size = result.ok();
   if (size != sizeof(value)) {
-    LOG(FATAL) << "EventFdPosix write returned " << value << " instead of " << sizeof(value);
+    LOG(FATAL) << "EventFdLinux write returned " << value << " instead of " << sizeof(value);
   }
 }
 
-void EventFdPosix::acquire() {
+void EventFdLinux::acquire() {
   uint64 res;
   auto result = fd_.read(MutableSlice(&res, sizeof(res)));
   if (result.is_error()) {
     if (result.error().code() == EAGAIN || result.error().code() == EWOULDBLOCK) {
     } else {
-      LOG(FATAL) << "EventFdPosix read failed: " << result.error();
+      LOG(FATAL) << "EventFdLinux read failed: " << result.error();
     }
   }
   fd_.clear_flags(Fd::Read);
@@ -66,4 +66,4 @@ void EventFdPosix::acquire() {
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_EVENTFD_POSIX
+#endif  // TD_EVENTFD_LINUX
