@@ -34,45 +34,33 @@ class tl_parser {
   tl_parser &operator=(const tl_parser &other) = delete;
 
  public:
-  tl_parser(const int32 *data, int32 len) : data(data), data_begin(data), data_len(len), error(), error_pos(-1) {
-  }
-
-  tl_parser(const char *data, int32 len) : tl_parser(data, static_cast<size_t>(len)) {
-    if (len < 0) {
-      set_error("Negative length");
-    }
-  }
-
-  tl_parser(const char *data_ptr, size_t data_ptr_len) : data(), data_begin(), data_len(), error(), error_pos(-1) {
-    if (data_ptr_len % sizeof(int32) != 0) {
+  explicit tl_parser(Slice slice) : data(), data_begin(), data_len(), error(), error_pos(-1) {
+    if (slice.size() % sizeof(int32) != 0) {
       set_error("Wrong length");
       return;
     }
     static_assert(sizeof(size_t) >= sizeof(int32), "");
-    if (data_ptr_len / sizeof(int32) > static_cast<size_t>(std::numeric_limits<int32>::max())) {
+    if (slice.size() / sizeof(int32) > static_cast<size_t>(std::numeric_limits<int32>::max())) {
       set_error("Too big length");
       return;
     }
 
-    data_len = static_cast<int32>(data_ptr_len / sizeof(int32));
-    if (is_aligned_pointer<4>(data_ptr)) {
-      data = reinterpret_cast<const int32 *>(data_ptr);
+    data_len = static_cast<int32>(slice.size() / sizeof(int32));
+    if (is_aligned_pointer<4>(slice.begin())) {
+      data = reinterpret_cast<const int32 *>(slice.begin());
     } else {
       int32 *buf;
       if (static_cast<size_t>(data_len) <= small_data_array.size()) {
         buf = &small_data_array[0];
       } else {
-        LOG(ERROR) << "Unexpected big unaligned data pointer of length " << data_ptr_len << " at " << data_ptr;
+        LOG(ERROR) << "Unexpected big unaligned data pointer of length " << slice.size() << " at " << slice.begin();
         data_buf = make_unique<int32[]>(data_len);
         buf = data_buf.get();
       }
-      std::memcpy(static_cast<void *>(buf), static_cast<const void *>(data_ptr), data_ptr_len);
+      std::memcpy(static_cast<void *>(buf), static_cast<const void *>(slice.begin()), slice.size());
       data = buf;
     }
     data_begin = data;
-  }
-
-  explicit tl_parser(Slice slice) : tl_parser(slice.begin(), slice.size()) {
   }
 
   void set_error(const string &error_message);
@@ -213,7 +201,7 @@ class tl_parser {
 class tl_buffer_parser : public tl_parser {
  public:
   explicit tl_buffer_parser(const BufferSlice *buffer_slice)
-      : tl_parser(buffer_slice->as_slice().begin(), buffer_slice->as_slice().size()), parent_(buffer_slice) {
+      : tl_parser(buffer_slice->as_slice()), parent_(buffer_slice) {
   }
   template <class T>
   T fetch_string() {

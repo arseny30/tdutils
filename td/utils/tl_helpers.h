@@ -169,7 +169,7 @@ string serialize(const T &object) {
 
 template <class T>
 WARN_UNUSED_RESULT Status unserialize(T &object, Slice data) {
-  tl::tl_parser parser(data.begin(), data.size());
+  tl::tl_parser parser(data);
   parse(object, parser);
   parser.fetch_end();
   return parser.get_status();
