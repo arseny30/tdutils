@@ -287,7 +287,7 @@ auto concat(const ArgsT &... args) {
 using format::tag;
 
 template <class A, class B>
-StringBuilder &operator<<(StringBuilder &sb, std::pair<A, B> p) {
+StringBuilder &operator<<(StringBuilder &sb, const std::pair<A, B> &p) {
   return sb << "[" << p.first << ";" << p.second << "]";
 }
 
