@@ -20,7 +20,7 @@ namespace tl {
 class tl_parser {
   const int32 *data = nullptr;
   const int32 *data_begin = nullptr;
-  int32 data_len;
+  size_t data_len;
   std::string error;
   int32 error_pos;
 
@@ -39,18 +39,13 @@ class tl_parser {
       set_error("Wrong length");
       return;
     }
-    static_assert(sizeof(size_t) >= sizeof(int32), "");
-    if (slice.size() / sizeof(int32) > static_cast<size_t>(std::numeric_limits<int32>::max())) {
-      set_error("Too big length");
-      return;
-    }
 
-    data_len = static_cast<int32>(slice.size() / sizeof(int32));
+    data_len = slice.size() / sizeof(int32);
     if (is_aligned_pointer<4>(slice.begin())) {
       data = reinterpret_cast<const int32 *>(slice.begin());
     } else {
       int32 *buf;
-      if (static_cast<size_t>(data_len) <= small_data_array.size()) {
+      if (data_len <= small_data_array.size()) {
         buf = &small_data_array[0];
       } else {
         LOG(ERROR) << "Unexpected big unaligned data pointer of length " << slice.size() << " at " << slice.begin();
@@ -79,11 +74,11 @@ class tl_parser {
     return Status::Error(PSLICE() << error << " at: " << error_pos);
   }
 
-  int get_error_pos() const {
+  int32 get_error_pos() const {
     return error_pos;
   }
 
-  void check_len(const int len) {
+  void check_len(const size_t len) {
     if (unlikely(data_len < len)) {
       set_error("Not enough data to read");
     } else {
@@ -125,17 +120,18 @@ class tl_parser {
   template <class T>
   T fetch_binary() {
     static_assert(sizeof(T) <= sizeof(empty_data), "too big fetch_binary");
-    check_len(static_cast<int>(sizeof(T) / 4));
+    static_assert(sizeof(T) % 4 == 0, "wrong call to fetch_binary");
+    check_len(sizeof(T) / 4);
     T result = *reinterpret_cast<const T *>(data);
     data += sizeof(T) / 4;
     return result;
   }
 
-  void fetch_skip_unsafe(const int len) {
+  void fetch_skip_unsafe(const size_t len) {
     data += len;
   }
 
-  void fetch_skip(const int len) {
+  void fetch_skip(const size_t len) {
     check_len(len);
     fetch_skip_unsafe(len);
   }
@@ -144,7 +140,7 @@ class tl_parser {
   T fetch_string() {
     check_len(1);
     const unsigned char *str = reinterpret_cast<const unsigned char *>(data);
-    int result_len = *str;
+    size_t result_len = *str;
     if (result_len < 254) {
       check_len(result_len >> 2);
       data += (result_len >> 2) + 1;
@@ -161,7 +157,7 @@ class tl_parser {
   }
 
   template <class T>
-  T fetch_string_raw(const int size) {
+  T fetch_string_raw(const size_t size) {
     const char *result = reinterpret_cast<const char *>(data);
     CHECK(size % 4 == 0);
     check_len(size >> 2);
@@ -175,22 +171,8 @@ class tl_parser {
     }
   }
 
-  int32 get_data_len() const {
+  size_t get_data_len() const {
     return data_len;
-  }
-
-  int32 get_pos() const {
-    return static_cast<int32>(data - data_begin);
-  }
-
-  bool set_pos(int pos) {
-    if (!error.empty() || pos < 0 || data_begin + pos > data) {
-      return false;
-    }
-
-    data_len += static_cast<int32>(data - data_begin - pos);
-    data = data_begin + pos;
-    return true;
   }
 
   const char *get_buf() const {
@@ -217,7 +199,7 @@ class tl_buffer_parser : public tl_parser {
     CHECK(!result.empty());
     LOG(WARNING) << "Wrong UTF-8 string [[" << result << "]] in " << format::as_hex_dump<4>(parent_->as_slice());
 
-    // try to remove last character
+    // trying to remove last character
     size_t new_size = result.size() - 1;
     while (new_size != 0 && !is_utf8_character_first_code_unit(static_cast<unsigned char>(result[new_size]))) {
       new_size--;
@@ -230,7 +212,7 @@ class tl_buffer_parser : public tl_parser {
     return T();
   }
   template <class T>
-  T fetch_string_raw(const int size) {
+  T fetch_string_raw(const size_t size) {
     return tl_parser::fetch_string_raw<T>(size);
   }
 
@@ -251,7 +233,7 @@ inline BufferSlice tl_buffer_parser::fetch_string<BufferSlice>() {
 }
 
 template <>
-inline BufferSlice tl_buffer_parser::fetch_string_raw<BufferSlice>(const int size) {
+inline BufferSlice tl_buffer_parser::fetch_string_raw<BufferSlice>(const size_t size) {
   return as_buffer_slice(tl_parser::fetch_string_raw<Slice>(size));
 }
 

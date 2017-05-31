@@ -67,7 +67,7 @@ class KHeap {
   }
 
   template <class F>
-  void for_each(F &f) {
+  void for_each(F &f) const {
     for (auto &it : array_) {
       f(it.key_, it.node_);
     }

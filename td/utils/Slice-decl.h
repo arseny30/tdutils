@@ -180,23 +180,4 @@ class CSlice : public Slice {
   }
 };
 
-// class String {
-// public:
-// size_t size() {
-// return size_ & ~MASK;
-//}
-// bool is_owned() {
-// return size_ & MASK;
-//}
-//~String() {
-// if (is_owned()) {
-//}
-//}
-
-// private:
-// size_t size_;
-// const char *ptr_;
-// static constexpr size_t MASK = static_cast<size_t>(1) << (sizeof(size_t) * 8 - 1);
-//};
-
 }  // namespace td

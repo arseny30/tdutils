@@ -9,7 +9,7 @@ void tl_parser::set_error(const string &error_message) {
   if (error.empty()) {
     CHECK(!error_message.empty());
     error = error_message;
-    error_pos = get_pos();
+    error_pos = static_cast<int32>(data - data_begin);
     data = empty_data;
     data_begin = empty_data;
     data_len = 0;
