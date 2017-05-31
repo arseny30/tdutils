@@ -22,7 +22,7 @@ class tl_parser {
   const int32 *data_begin = nullptr;
   size_t data_len;
   std::string error;
-  int32 error_pos;
+  size_t error_pos;
 
   unique_ptr<int32[]> data_buf;
   static constexpr size_t SMALL_DATA_ARRAY_SIZE = 6;
@@ -34,7 +34,8 @@ class tl_parser {
   tl_parser &operator=(const tl_parser &other) = delete;
 
  public:
-  explicit tl_parser(Slice slice) : data(), data_begin(), data_len(), error(), error_pos(-1) {
+  explicit tl_parser(Slice slice)
+      : data(), data_begin(), data_len(), error(), error_pos(std::numeric_limits<size_t>::max()) {
     if (slice.size() % sizeof(int32) != 0) {
       set_error("Wrong length");
       return;
@@ -74,7 +75,7 @@ class tl_parser {
     return Status::Error(PSLICE() << error << " at: " << error_pos);
   }
 
-  int32 get_error_pos() const {
+  size_t get_error_pos() const {
     return error_pos;
   }
 
