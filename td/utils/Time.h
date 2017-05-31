@@ -31,4 +31,53 @@ inline void relax_timeout_at(double *timeout, double new_timeout) {
   }
 }
 
+class Timestamp {
+ public:
+  Timestamp() = default;
+  static Timestamp now() {
+    return Timestamp{Time::now()};
+  }
+  static Timestamp now_cached() {
+    return Timestamp{Time::now_cached()};
+  }
+  static Timestamp at(double timeout) {
+    return Timestamp{timeout};
+  }
+
+  static Timestamp in(double timeout) {
+    return Timestamp{Time::now_cached() + timeout};
+  }
+
+  bool is_in_past() const {
+    return at_ <= Time::now_cached();
+  }
+
+  operator bool() const {
+    return at_ > 0;
+  }
+
+  double at() const {
+    return at_;
+  }
+
+  double in() const {
+    return at_ - Time::now_cached();
+  }
+
+  void relax(const Timestamp &timeout) {
+    if (!timeout) {
+      return;
+    }
+    if (!*this || at_ > timeout.at_) {
+      at_ = timeout.at_;
+    }
+  }
+
+ private:
+  double at_{0};
+
+  explicit Timestamp(double timeout) : at_(timeout) {
+  }
+};
+
 }  // namespace td
