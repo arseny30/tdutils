@@ -52,7 +52,7 @@ class Timestamp {
     return at_ <= Time::now_cached();
   }
 
-  operator bool() const {
+  explicit operator bool() const {
     return at_ > 0;
   }
 
