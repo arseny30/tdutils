@@ -120,9 +120,8 @@ class tl_storer_calc_length {
     length += add;
   }
 
-  int get_length() const {
-    // TODO: remove static_cast
-    return static_cast<int>(length);
+  size_t get_length() const {
+    return length;
   }
 };
 

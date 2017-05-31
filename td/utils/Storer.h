@@ -5,6 +5,7 @@
 #include "td/utils/tl_storer.h"
 
 #include <cstring>
+#include <limits>
 
 namespace td {
 class SliceStorer : public Storer {
@@ -58,7 +59,7 @@ class DefaultStorer : public Storer {
   explicit DefaultStorer(const T &object) : object_(object) {
   }
   size_t size() const override {
-    if (size_ == -1) {
+    if (size_ == std::numeric_limits<size_t>::max()) {
       size_ = tl::calc_length(object_);
     }
     return size_;
@@ -68,7 +69,7 @@ class DefaultStorer : public Storer {
   }
 
  private:
-  mutable ssize_t size_ = -1;
+  mutable size_t size_ = std::numeric_limits<size_t>::max();
   const T &object_;
 };
 
