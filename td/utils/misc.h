@@ -293,7 +293,7 @@ inline string implode(vector<string> v, char delimiter = ' ') {
 }
 
 template <class T, class Func>
-auto transform(const vector<T> &v, const Func &f) {
+auto transform(const T &v, const Func &f) {
   vector<decltype(f(v[0]))> result;
   result.reserve(v.size());
   for (auto &x : v) {
@@ -303,7 +303,7 @@ auto transform(const vector<T> &v, const Func &f) {
 }
 
 template <class T, class Func>
-auto transform(vector<T> &&v, const Func &f) {
+auto transform(T &&v, const Func &f) {
   vector<decltype(f(std::move(v[0])))> result;
   result.reserve(v.size());
   for (auto &x : v) {
