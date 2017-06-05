@@ -25,7 +25,7 @@ void EventFdBsd::init() {
     err = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
     socketpair_errno = errno;
   }
-  // LOG_IF(ERROR, max_retries < 1000000) << max_retries;
+// LOG_IF(ERROR, max_retries < 1000000) << max_retries;
 #endif
   LOG_IF(FATAL, err == -1) << Status::PosixError(socketpair_errno, "socketpair failed");
 
