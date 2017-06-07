@@ -323,6 +323,26 @@ ssize_t aes_ctr_decrypt(AesCtrState *state, Slice from, MutableSlice to) {
   return aes_ctr_xcrypt(state, from, to, false);
 }
 
+ssize_t aes_cbc_xcrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag) {
+  AES_KEY key;
+  if (encrypt_flag) {
+    AES_set_encrypt_key(aes_key.raw, 256, &key);
+  } else {
+    AES_set_decrypt_key(aes_key.raw, 256, &key);
+  }
+  CHECK(from.size() <= to.size());
+  AES_cbc_encrypt(from.ubegin(), to.ubegin(), from.size(), &key, aes_iv->raw, encrypt_flag);
+  return from.size();
+}
+
+ssize_t aes_cbc_encrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to) {
+  return aes_cbc_xcrypt(aes_key, aes_iv, from, to, true);
+}
+
+ssize_t aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to) {
+  return aes_cbc_xcrypt(aes_key, aes_iv, from, to, false);
+}
+
 /*** SHA-1 ***/
 void sha1(Slice input, unsigned char output[20]) {
   SHA1(input.ubegin(), input.size(), output);

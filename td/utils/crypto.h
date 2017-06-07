@@ -35,6 +35,11 @@ ssize_t aes_ctr_xcrypt(AesCtrState *state, Slice from, MutableSlice to, bool enc
 ssize_t aes_ctr_encrypt(AesCtrState *state, Slice from, MutableSlice to);
 ssize_t aes_ctr_decrypt(AesCtrState *state, Slice from, MutableSlice to);
 
+// cbc
+ssize_t aes_cbc_xcrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag);
+ssize_t aes_cbc_encrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to);
+ssize_t aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to);
+
 /*** SHA-1 ***/
 void sha1(Slice data, unsigned char output[20]);
 

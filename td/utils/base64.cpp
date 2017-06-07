@@ -176,4 +176,14 @@ Result<string> base64url_decode(Slice base64) {
   return output;
 }
 
+string base64_filter(Slice slice) {
+  string res;
+  for (auto c : slice) {
+    if (c == '=' || c == '+' || c == '/' || isalnum(c)) {
+      res.append(1, c);
+    }
+  }
+  return res;
+}
+
 }  // namespace td
