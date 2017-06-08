@@ -48,7 +48,7 @@ bool check_utf8(CSlice str) {
 
     return false;
 #undef ENSURE
-  } while (1);
+  } while (true);
 
   UNREACHABLE();
 }
