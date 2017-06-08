@@ -2,16 +2,15 @@
 
 #include "td/utils/logging.h"
 #include "td/utils/misc.h"
-
 #include "td/utils/port/RwMutex.h"
 #include "td/utils/port/thread.h"
+#include "td/utils/Random.h"
 
 #include <openssl/aes.h>
 #include <openssl/bn.h>
 #include <openssl/crypto.h>
 #include <openssl/evp.h>
 #include <openssl/md5.h>
-#include <openssl/rand.h>
 #include <openssl/sha.h>
 #include <openssl/hmac.h>
 
@@ -383,60 +382,6 @@ void md5(Slice input, MutableSlice output) {
   MD5(input.ubegin(), input.size(), output.ubegin());
 }
 
-/*** Random ***/
-void Random::secure_bytes(MutableSlice dest) {
-  Random::secure_bytes(dest.ubegin(), dest.size());
-}
-void Random::secure_bytes(unsigned char *ptr, size_t size) {
-  constexpr size_t buf_size = 512;
-  static TD_THREAD_LOCAL unsigned char *buf;  // static zero initialized
-  static TD_THREAD_LOCAL size_t buf_pos;
-  if (init_thread_local<unsigned char[]>(buf, buf_size)) {
-    buf_pos = buf_size;
-  }
-
-  auto ready = std::min(size, buf_size - buf_pos);
-  if (ready != 0) {
-    std::memcpy(ptr, buf + buf_pos, ready);
-    buf_pos += ready;
-    ptr += ready;
-    size -= ready;
-    if (size == 0) {
-      return;
-    }
-  }
-  if (size < buf_size) {
-    int err = RAND_bytes(buf, static_cast<int>(buf_size));
-    // TODO: it CAN fail
-    CHECK(err == 1);
-    buf_pos = size;
-    std::memcpy(ptr, buf, size);
-    return;
-  }
-
-  CHECK(size <= static_cast<size_t>(std::numeric_limits<int>::max()));
-  int err = RAND_bytes(ptr, static_cast<int>(size));
-  // TODO: it CAN fail
-  CHECK(err == 1);
-}
-
-int32 Random::secure_int32() {
-  int32 res = 0;
-  secure_bytes(reinterpret_cast<unsigned char *>(&res), sizeof(int32));
-  return res;
-}
-
-int64 Random::secure_int64() {
-  int64 res = 0;
-  secure_bytes(reinterpret_cast<unsigned char *>(&res), sizeof(int64));
-  return res;
-}
-uint32 Random::fast_uint32() {
-  return rand_fast_uint32();
-}
-uint64 Random::fast_uint64() {
-  return rand_fast_uint64();
-}
 static const uint64 crc64_table[256] = {
     0x0000000000000000, 0xb32e4cbe03a75f6f, 0xf4843657a840a05b, 0x47aa7ae9abe7ff34, 0x7bd0c384ff8f5e33,
     0xc8fe8f3afc28015c, 0x8f54f5d357cffe68, 0x3c7ab96d5468a107, 0xf7a18709ff1ebc66, 0x448fcbb7fcb9e309,

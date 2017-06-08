@@ -18,7 +18,7 @@
 #endif
 
 #if TD_WINDOWS
-#include "td/utils/misc.h"
+#include "td/utils/Random.h"
 #endif
 
 #include <climits>
@@ -313,7 +313,7 @@ Result<string> mkdtemp(CSlice dir, Slice prefix) {
   for (auto it = 0; it < 20; it++) {
     auto path = dir_pattern;
     for (int i = 0; i < 6 + it / 5; i++) {
-      path += static_cast<char>(rand_fast_uint32() % 26 + 'a');
+      path += static_cast<char>(Random::fast_uint32() % 26 + 'a');
     }
     auto status = mkdir(path);
     if (status.is_ok()) {
@@ -345,7 +345,7 @@ Result<std::pair<FileFd, string>> mkstemp(CSlice dir) {
   for (auto it = 0; it < 20; it++) {
     auto path = file_pattern;
     for (int i = 0; i < 6 + it / 5; i++) {
-      path += static_cast<char>(rand_fast_uint32() % 26 + 'a');
+      path += static_cast<char>(Random::fast_uint32() % 26 + 'a');
     }
     auto r_file = FileFd::open(path, FileFd::Write | FileFd::Read | FileFd::CreateNew);
     if (r_file.is_ok()) {

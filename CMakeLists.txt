@@ -43,6 +43,7 @@ set(TDUTILS_SOURCE
   td/utils/JsonBuilder.cpp
   td/utils/logging.cpp
   td/utils/MimeType.cpp
+  td/utils/Random.cpp
   td/utils/Time.cpp
   td/utils/Timer.cpp
   td/utils/tl_parser.cpp
@@ -106,6 +107,7 @@ set(TDUTILS_SOURCE
   td/utils/OptionsParser.h
   td/utils/Parser.h
   td/utils/queue.h
+  td/utils/Random.h
   td/utils/ScopeGuard.h
   td/utils/Slice-decl.h
   td/utils/Slice.h

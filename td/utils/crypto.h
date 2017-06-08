@@ -67,17 +67,6 @@ void md5(Slice input, MutableSlice output);
 void pbkdf2_sha256(Slice password, Slice salt, int iteration_count, MutableSlice dest);
 void hmac_sha256(Slice key, Slice message, MutableSlice dest);
 
-/*** Random ***/
-class Random {
- public:
-  static void secure_bytes(MutableSlice dest);
-  static void secure_bytes(unsigned char *ptr, size_t size);
-  static int32 secure_int32();
-  static int64 secure_int64();
-  static uint32 fast_uint32();
-  static uint64 fast_uint64();
-};
-
 void init_openssl_threads();
 
-}  // end namespace td
+}  // namespace td
