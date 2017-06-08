@@ -202,7 +202,7 @@ Result<MemStat> mem_stat() {
     }
     if (x != nullptr) {
       unsigned long long xx;
-      if (name_end == s || name_end + 1 == s || sscanf(name_end + 1, "%llu", &xx) != 1) {
+      if (name_end == s || name_end + 1 == s || std::sscanf(name_end + 1, "%llu", &xx) != 1) {
         LOG(ERROR) << "Failed to parse memory stats" << tag("line", Slice(name_begin, s))
                    << tag(":number", Slice(name_end, s));
         *x = static_cast<uint64>(-1);

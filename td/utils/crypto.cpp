@@ -58,7 +58,7 @@ static string as_big_endian_string(const FromT &from) {
 // OPENSSL_free(p_dec);
 //}
 
-uint64 gcd(uint64 a, uint64 b) {
+static uint64 gcd(uint64 a, uint64 b) {
   if (a == 0) {
     return b;
   }
@@ -96,7 +96,7 @@ uint64 pq_factorize(uint64 what) {
   }
   uint64 g = 0;
   for (int i = 0, it = 0; i < 3 || it < 1000; i++) {
-    uint64 q = ((Random::fast_uint32() & 15) + 17) % (what - 1);
+    uint64 q = Random::fast(17, 32) % (what - 1);
     uint64 x = Random::fast_uint64() % (what - 1) + 1;
     uint64 y = x;
     int lim = 1 << (std::min(5, i) + 18);
@@ -145,7 +145,7 @@ uint64 pq_factorize(uint64 what) {
   return g;
 }
 
-int pq_factorize_big(Slice pq_str, string *p_str, string *q_str) {
+static int pq_factorize_big(Slice pq_str, string *p_str, string *q_str) {
   // TODO: qsieve?
   // do not work for pq == 1
   BN_CTX *ctx = BN_CTX_new();
@@ -162,7 +162,7 @@ int pq_factorize_big(Slice pq_str, string *p_str, string *q_str) {
 
   bool found = false;
   for (int i = 0, it = 0; !found && (i < 3 || it < 1000); i++) {
-    int32 t = static_cast<int32>((Random::fast_uint32() & 15) + 17);
+    int32 t = Random::fast(17, 32);
     BN_set_word(a, Random::fast_uint32());
     BN_copy(b, a);
 

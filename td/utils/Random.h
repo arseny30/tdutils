@@ -13,6 +13,9 @@ class Random {
   static int64 secure_int64();
   static uint32 fast_uint32();
   static uint64 fast_uint64();
+
+  // distribution is not uniform, min and max are included
+  static int fast(int min, int max);
 };
 
 }  // namespace td

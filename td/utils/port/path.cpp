@@ -313,7 +313,7 @@ Result<string> mkdtemp(CSlice dir, Slice prefix) {
   for (auto it = 0; it < 20; it++) {
     auto path = dir_pattern;
     for (int i = 0; i < 6 + it / 5; i++) {
-      path += static_cast<char>(Random::fast_uint32() % 26 + 'a');
+      path += static_cast<char>(Random::fast('a', 'z'));
     }
     auto status = mkdir(path);
     if (status.is_ok()) {
@@ -345,7 +345,7 @@ Result<std::pair<FileFd, string>> mkstemp(CSlice dir) {
   for (auto it = 0; it < 20; it++) {
     auto path = file_pattern;
     for (int i = 0; i < 6 + it / 5; i++) {
-      path += static_cast<char>(Random::fast_uint32() % 26 + 'a');
+      path += static_cast<char>(Random::fast('a', 'z'));
     }
     auto r_file = FileFd::open(path, FileFd::Write | FileFd::Read | FileFd::CreateNew);
     if (r_file.is_ok()) {

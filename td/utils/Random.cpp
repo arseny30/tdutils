@@ -1,8 +1,8 @@
 #include "td/utils/Random.h"
 
-#include "td/utils/misc.h"
-
 #include <openssl/rand.h>
+
+#include <random>
 
 namespace td {
 
@@ -79,6 +79,12 @@ uint64 Random::fast_uint64() {
     init_thread_local<std::mt19937_64>(gen, seq);
   }
   return static_cast<uint64>((*gen)());
+}
+
+int Random::fast(int min, int max) {
+  CHECK(0 <= min);
+  CHECK(min <= max);
+  return static_cast<int>(min + fast_uint32() % (max - min + 1));
 }
 
 }  // namespace td
