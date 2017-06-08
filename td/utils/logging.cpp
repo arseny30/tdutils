@@ -8,7 +8,6 @@
 
 #include <atomic>
 #include <cstdarg>
-#include <cstdio>
 #include <cstdlib>
 
 #if TD_ANDROID

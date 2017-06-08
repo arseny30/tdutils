@@ -2,6 +2,9 @@
 
 #include <openssl/rand.h>
 
+#include <algorithm>
+#include <cstring>
+#include <limits>
 #include <random>
 
 namespace td {

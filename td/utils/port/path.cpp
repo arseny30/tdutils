@@ -2,6 +2,9 @@
 
 #ifdef TD_PORT_POSIX
 
+#include <limits.h>
+#include <stdio.h>
+
 // We don't want warnings from system headers
 #if TD_GCC
 #pragma GCC diagnostic push
@@ -11,9 +14,9 @@
 #if TD_GCC
 #pragma GCC diagnostic pop
 #endif
-#include <unistd.h>
 
 #include <sys/types.h>
+#include <unistd.h>
 
 #endif
 
@@ -21,8 +24,6 @@
 #include "td/utils/Random.h"
 #endif
 
-#include <climits>
-#include <cstdio>
 #include <cstdlib>
 
 namespace td {
