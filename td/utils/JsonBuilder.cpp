@@ -1,6 +1,7 @@
 #include "td/utils/JsonBuilder.h"
 
-#include <cstdlib>
+#include "td/utils/misc.h"
+
 #include <cstring>
 
 namespace td {
@@ -607,7 +608,7 @@ Result<double> get_json_object_double_field(JsonObject &object, Slice name, bool
   if (value.type() == JsonValue::Type::Null) {
     return default_value;
   }
-  return std::atof(value.get_number().str().c_str());  // TODO atof
+  return to_double(value.get_number().str());
 }
 
 Result<string> get_json_object_string_field(JsonObject &object, Slice name, bool is_optional, string default_value) {

@@ -484,6 +484,10 @@ typename std::enable_if<std::is_unsigned<T>::value, T>::type hex_to_integer(Slic
   return integer_value;
 }
 
+inline double to_double(CSlice str) {
+  return std::atof(str.c_str());
+}
+
 // run-time checked narrowing cast (type conversion):
 
 namespace detail {
