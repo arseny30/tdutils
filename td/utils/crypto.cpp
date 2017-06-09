@@ -89,14 +89,14 @@ static uint64 gcd(uint64 a, uint64 b) {
   }
 }
 
-uint64 pq_factorize(uint64 what) {
-  if (what < 2 || what > (static_cast<uint64>(1) << 63)) {
+uint64 pq_factorize(uint64 pq) {
+  if (pq < 2 || pq > (static_cast<uint64>(1) << 63)) {
     return 1;
   }
   uint64 g = 0;
   for (int i = 0, it = 0; i < 3 || it < 1000; i++) {
-    uint64 q = Random::fast(17, 32) % (what - 1);
-    uint64 x = Random::fast_uint64() % (what - 1) + 1;
+    uint64 q = Random::fast(17, 32) % (pq - 1);
+    uint64 x = Random::fast_uint64() % (pq - 1) + 1;
     uint64 y = x;
     int lim = 1 << (std::min(5, i) + 18);
     for (int j = 1; j < lim; j++) {
@@ -109,20 +109,20 @@ uint64 pq_factorize(uint64 what) {
       while (b) {
         if (b & 1) {
           c += a;
-          if (c >= what) {
-            c -= what;
+          if (c >= pq) {
+            c -= pq;
           }
         }
         a += a;
-        if (a >= what) {
-          a -= what;
+        if (a >= pq) {
+          a -= pq;
         }
         b >>= 1;
       }
 
       x = c;
-      uint64 z = x < y ? what + x - y : x - y;
-      g = gcd(z, what);
+      uint64 z = x < y ? pq + x - y : x - y;
+      g = gcd(z, pq);
       if (g != 1) {
         break;
       }
@@ -131,12 +131,12 @@ uint64 pq_factorize(uint64 what) {
         y = x;
       }
     }
-    if (g > 1 && g < what) {
+    if (g > 1 && g < pq) {
       break;
     }
   }
   if (g != 0) {
-    uint64 other = what / g;
+    uint64 other = pq / g;
     if (other < g) {
       g = other;
     }
@@ -342,13 +342,13 @@ ssize_t aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, Mut
 }
 
 /*** SHA-1 ***/
-void sha1(Slice input, unsigned char output[20]) {
-  SHA1(input.ubegin(), input.size(), output);
+void sha1(Slice data, unsigned char output[20]) {
+  SHA1(data.ubegin(), data.size(), output);
 }
 
-void sha256(Slice input, MutableSlice output) {
+void sha256(Slice data, MutableSlice output) {
   CHECK(output.size() >= 32);
-  SHA256(input.ubegin(), input.size(), output.ubegin());
+  SHA256(data.ubegin(), data.size(), output.ubegin());
 }
 
 struct Sha256StateImpl {

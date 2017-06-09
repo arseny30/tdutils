@@ -62,7 +62,7 @@ std::unique_ptr<Destructor> create_destructor(F &&f) {
   return std::make_unique<LambdaDestructor<F>>(std::move(f));
 }
 
-void add_thread_local_destructor(std::unique_ptr<Destructor> to_call);
+void add_thread_local_destructor(std::unique_ptr<Destructor> destructor);
 
 template <class T, class P, class... ArgsT>
 void do_init_thread_local(P &raw_ptr, ArgsT &&... args) {

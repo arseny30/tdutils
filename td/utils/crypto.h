@@ -46,7 +46,7 @@ void sha1(Slice data, unsigned char output[20]);
 uint32 crc32(Slice data);
 uint64 crc64(Slice data);
 
-void sha256(Slice input, MutableSlice output);
+void sha256(Slice data, MutableSlice output);
 
 struct Sha256StateImpl;
 

@@ -58,9 +58,9 @@ class Fd {
 
   void close();
 
-  void update_flags_notify(Flags mask);
-  void update_flags(Flags mask);
-  void clear_flags(Flags mask);
+  void update_flags_notify(Flags flags);
+  void update_flags(Flags flags);
+  void clear_flags(Flags flags);
 
   bool can_read() const;
   bool can_write() const;
@@ -99,7 +99,7 @@ class Fd {
   static Fd stdout_;
   static Fd stdin_;
 
-  void update_flags_inner(int32 mask, bool notify_flag);
+  void update_flags_inner(int32 new_flags, bool notify_flag);
   Info *get_info();
   const Info *get_info() const;
   void clear_info();

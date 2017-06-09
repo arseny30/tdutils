@@ -35,7 +35,7 @@ class Hints {
 
   static vector<string> get_words(const string &name);
 
-  vector<KeyT> search_word(const string &name) const;
+  vector<KeyT> search_word(const string &word) const;
 
   class CompareByRating {
     const std::unordered_map<KeyT, RatingT> &key_to_rating_;

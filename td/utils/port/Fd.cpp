@@ -253,8 +253,8 @@ int32 Fd::get_flags() const {
   return get_info()->flags;
 }
 
-void Fd::clear_flags(Flags mask) {
-  get_info()->flags &= ~mask;
+void Fd::clear_flags(Flags flags) {
+  get_info()->flags &= ~flags;
 }
 
 bool Fd::has_pending_error() const {
