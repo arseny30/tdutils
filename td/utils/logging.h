@@ -119,6 +119,8 @@ class LogInterface {
   LogInterface() = default;
   LogInterface(const LogInterface &) = delete;
   LogInterface &operator=(const LogInterface &) = delete;
+  LogInterface(LogInterface &&) = delete;
+  LogInterface &operator=(LogInterface &&) = delete;
   virtual ~LogInterface() = default;
   virtual void append(CSlice slice, int log_level_) = 0;
   virtual void rotate() = 0;

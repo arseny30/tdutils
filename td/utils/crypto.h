@@ -24,9 +24,9 @@ ssize_t aes_ige_decrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, Mut
 struct AesCtrStateImpl;
 struct AesCtrState {
   AesCtrState();
-  ~AesCtrState();
   AesCtrState(AesCtrState &&from);
   AesCtrState &operator=(AesCtrState &&from);
+  ~AesCtrState();
 
   std::unique_ptr<AesCtrStateImpl> ctx_;
 };

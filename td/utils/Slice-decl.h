@@ -128,8 +128,6 @@ class MutableCSlice : public MutableSlice {
 
  public:
   MutableCSlice() = delete;
-  MutableCSlice(const MutableCSlice &other) : MutableSlice(other) {
-  }
   MutableCSlice(string &s) : MutableSlice(s) {
   }
   template <class T>

@@ -226,10 +226,6 @@ class BufferWriter {
   }
   explicit BufferWriter(BufferWriterPtr buffer_ptr) : buffer_(std::move(buffer_ptr)) {
   }
-  BufferWriter(BufferWriter &&) = default;
-  BufferWriter &operator=(BufferWriter &&) = default;
-  BufferWriter(const BufferWriter &) = default;
-  BufferWriter &operator=(const BufferWriter &) = default;
 
   BufferSlice as_buffer_slice() const {
     return BufferSlice(BufferAllocator::create_reader(buffer_));
@@ -381,10 +377,6 @@ class ChainBufferNodeAllocator {
 class ChainBufferIterator {
  public:
   ChainBufferIterator() = default;
-  ChainBufferIterator(ChainBufferIterator &&other) = default;
-  ChainBufferIterator &operator=(ChainBufferIterator &&other) = default;
-  ChainBufferIterator(const ChainBufferIterator &other) = default;
-  ChainBufferIterator &operator=(const ChainBufferIterator &other) = default;
   ChainBufferIterator(ChainBufferNodeReaderPtr head) : head_(std::move(head)), offset_(0) {
     load_head();
   }
@@ -514,6 +506,7 @@ class ChainBufferReader {
   ChainBufferReader &operator=(ChainBufferReader &&) = default;
   ChainBufferReader(const ChainBufferReader &) = delete;
   ChainBufferReader &operator=(const ChainBufferReader &) = delete;
+  ~ChainBufferReader() = default;
 
   ChainBufferReader clone() {
     return ChainBufferReader(begin_.clone(), end_.clone(), sync_flag_);

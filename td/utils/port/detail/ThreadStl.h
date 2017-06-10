@@ -19,6 +19,7 @@ class ThreadStl {
   ThreadStl &operator=(const ThreadStl &other) = delete;
   ThreadStl(ThreadStl &&) = default;
   ThreadStl &operator=(ThreadStl &&) = default;
+  ~ThreadStl() = default;
   template <class Function, class... Args>
   explicit ThreadStl(Function &&f, Args &&... args) {
     thread_ = std::thread([args = std::make_tuple(decay_copy(std::forward<Function>(f)),

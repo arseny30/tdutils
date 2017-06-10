@@ -29,12 +29,13 @@ class Fd {
   enum class Mode { Reference, Own };
 
   Fd();
-  Fd(int fd, Mode mode, ObserverBase *observer = nullptr);
-  ~Fd();
   Fd(const Fd &) = delete;
   Fd &operator=(const Fd &) = delete;
   Fd(Fd &&other);
   Fd &operator=(Fd &&other);
+  ~Fd();
+
+  Fd(int fd, Mode mode, ObserverBase *observer = nullptr);
 
   Fd clone();
   static Fd &Stderr();

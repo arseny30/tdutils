@@ -8,6 +8,8 @@ class PollBase {
   PollBase() = default;
   PollBase(const PollBase &) = delete;
   PollBase &operator=(const PollBase &) = delete;
+  PollBase(PollBase &&) = default;
+  PollBase &operator=(PollBase &&) = default;
   virtual ~PollBase() = default;
   virtual void init() = 0;
   virtual void clear() = 0;

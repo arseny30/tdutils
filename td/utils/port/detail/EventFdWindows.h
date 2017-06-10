@@ -14,10 +14,7 @@ class EventFdWindows final : public EventFdBase {
 
  public:
   EventFdWindows() = default;
-  EventFdWindows(const EventFdWindows &) = delete;
-  EventFdWindows &operator=(const EventFdWindows &) = delete;
-  EventFdWindows(EventFdWindows &&from) = default;
-  EventFdWindows &operator=(EventFdWindows &&from) = default;
+
   operator FdRef() override;
 
   void init() override;

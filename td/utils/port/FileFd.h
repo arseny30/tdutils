@@ -12,10 +12,7 @@ namespace td {
 class FileFd {
  public:
   FileFd() = default;
-  FileFd(const FileFd &) = delete;
-  FileFd &operator=(const FileFd &) = delete;
-  FileFd(FileFd &&) = default;
-  FileFd &operator=(FileFd &&) = default;
+
   operator FdRef();
 
   enum Flags : int32 { Write = 1, Read = 2, Truncate = 4, Create = 8, Append = 16, CreateNew = 32 };
@@ -63,10 +60,6 @@ namespace td {
 class FileFd : public Fd {
  public:
   FileFd() = default;
-  FileFd(const FileFd &) = delete;
-  FileFd &operator=(const FileFd &) = delete;
-  FileFd(FileFd &&) = default;
-  FileFd &operator=(FileFd &&) = default;
 
   enum Flags : int32 { Write = 1, Read = 2, Truncate = 4, Create = 8, Append = 16, CreateNew = 32 };
 

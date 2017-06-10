@@ -24,10 +24,6 @@ class ObjectPool {
     }
     WeakPtr(int32 generation, Storage *storage) : generation_(generation), storage_(storage) {
     }
-    WeakPtr(const WeakPtr &) = default;
-    WeakPtr &operator=(const WeakPtr &) = default;
-    WeakPtr(WeakPtr &&) = default;
-    WeakPtr &operator=(WeakPtr &&) = default;
 
     DataT &operator*() const {
       return storage_->data;

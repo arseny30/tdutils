@@ -53,12 +53,6 @@ class Status {
  public:
   Status() = default;
 
-  Status(Status &&from) = default;
-  Status &operator=(Status &&from) = default;
-
-  Status(const Status &from) = delete;
-  Status &operator=(const Status &) = delete;
-
   bool operator==(const Status &other) const {
     if (get_info().static_flag) {
       return ptr_ == other.ptr_;

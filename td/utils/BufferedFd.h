@@ -15,9 +15,7 @@ class BufferedFdBase : public FdT {
  public:
   BufferedFdBase();
   BufferedFdBase(FdT &&fd_);
-  // TODO: make move safer
-  BufferedFdBase(BufferedFdBase &&) = default;
-  BufferedFdBase &operator=(BufferedFdBase &&) = default;
+  // TODO: make move constructor and move assignment safer
 
   Result<size_t> flush_read(size_t max_size = static_cast<size_t>(-1)) WARN_UNUSED_RESULT;
   Result<size_t> flush_write() WARN_UNUSED_RESULT;
@@ -60,6 +58,9 @@ class BufferedFd : public BufferedFdBase<FdT> {
   BufferedFd(FdT &&fd_);
   BufferedFd(BufferedFd &&);
   BufferedFd &operator=(BufferedFd &&);
+  BufferedFd(const BufferedFd &) = delete;
+  BufferedFd &operator=(const BufferedFd &) = delete;
+  ~BufferedFd();
 
   void close();
 
@@ -138,6 +139,7 @@ template <class FdT>
 BufferedFd<FdT>::BufferedFd(BufferedFd &&from) {
   *this = std::move(from);
 }
+
 template <class FdT>
 BufferedFd<FdT> &BufferedFd<FdT>::operator=(BufferedFd &&from) {
   FdT::operator=(std::move(static_cast<FdT &>(from)));
@@ -147,6 +149,11 @@ BufferedFd<FdT> &BufferedFd<FdT>::operator=(BufferedFd &&from) {
   output_writer_ = std::move(from.output_writer_);
   init_ptr();
   return *this;
+}
+
+template <class FdT>
+BufferedFd<FdT>::~BufferedFd() {
+  close();
 }
 
 template <class FdT>

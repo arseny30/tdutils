@@ -209,8 +209,8 @@ class JsonScope {
   JsonBuilder *jb_;
   JsonScope *save_scope_;
 
-  bool is_active() {
-    return jb_->scope_ == this;
+  bool is_active() const {
+    return jb_ && jb_->scope_ == this;
   }
 
   JsonScope &operator<<(JsonTrue x) {
@@ -646,6 +646,8 @@ class VirtuallyJsonable : public Jsonable {
   VirtuallyJsonable() = default;
   VirtuallyJsonable(const VirtuallyJsonable &) = delete;
   VirtuallyJsonable &operator=(const VirtuallyJsonable &) = delete;
+  VirtuallyJsonable(VirtuallyJsonable &&) = default;
+  VirtuallyJsonable &operator=(VirtuallyJsonable &&) = default;
   virtual ~VirtuallyJsonable() = default;
 };
 

@@ -6,6 +6,7 @@
 #include "td/utils/Status.h"
 
 namespace td {
+
 class ByteFlowInterface {
  public:
   virtual void close_input(Status status) = 0;
@@ -20,13 +21,11 @@ class ByteFlowInterface {
   ByteFlowInterface &operator=(ByteFlowInterface &&) = default;
   virtual ~ByteFlowInterface() = default;
 };
+
 class ByteFlowBaseCommon : public ByteFlowInterface {
  public:
   ByteFlowBaseCommon() = default;
-  ByteFlowBaseCommon(ByteFlowBaseCommon &&) = default;
-  ByteFlowBaseCommon &operator=(ByteFlowBaseCommon &&) = default;
-  ByteFlowBaseCommon(const ByteFlowBaseCommon &) = delete;
-  ByteFlowBaseCommon &operator=(const ByteFlowBaseCommon &) = delete;
+
   void close_input(Status status) final {
     if (status.is_error()) {
       finish(std::move(status));
@@ -102,10 +101,6 @@ class ByteFlowBaseCommon : public ByteFlowInterface {
 class ByteFlowBase : public ByteFlowBaseCommon {
  public:
   ByteFlowBase() = default;
-  ByteFlowBase(ByteFlowBase &&) = default;
-  ByteFlowBase &operator=(ByteFlowBase &&) = default;
-  ByteFlowBase(const ByteFlowBase &) = delete;
-  ByteFlowBase &operator=(const ByteFlowBase &) = delete;
 
   void set_input(ChainBufferReader *input) final {
     input_ = input;
@@ -128,10 +123,6 @@ class ByteFlowBase : public ByteFlowBaseCommon {
 class ByteFlowInplaceBase : public ByteFlowBaseCommon {
  public:
   ByteFlowInplaceBase() = default;
-  ByteFlowInplaceBase(ByteFlowInplaceBase &&) = default;
-  ByteFlowInplaceBase &operator=(ByteFlowInplaceBase &&) = default;
-  ByteFlowInplaceBase(const ByteFlowInplaceBase &) = delete;
-  ByteFlowInplaceBase &operator=(const ByteFlowInplaceBase &) = delete;
 
   void set_input(ChainBufferReader *input) final {
     input_ = input;
@@ -174,6 +165,8 @@ class ByteFlowSource : public ByteFlowInterface {
   }
   ByteFlowSource(const ByteFlowSource &) = delete;
   ByteFlowSource &operator=(const ByteFlowSource &) = delete;
+  ~ByteFlowSource() = default;
+
   void set_input(ChainBufferReader *) final {
     UNREACHABLE();
   }

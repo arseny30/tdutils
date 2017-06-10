@@ -8,6 +8,8 @@ class EventFdBase {
   EventFdBase() = default;
   EventFdBase(const EventFdBase &) = delete;
   EventFdBase &operator=(const EventFdBase &) = delete;
+  EventFdBase(EventFdBase &&) = default;
+  EventFdBase &operator=(EventFdBase &&) = default;
   virtual ~EventFdBase() = default;
   virtual operator FdRef() = 0;
   virtual void init() = 0;

@@ -15,10 +15,7 @@ class EventFdBsd final : public EventFdBase {
 
  public:
   EventFdBsd() = default;
-  EventFdBsd(const EventFdBsd &) = delete;
-  EventFdBsd &operator=(const EventFdBsd &) = delete;
-  EventFdBsd(EventFdBsd &&from) = default;
-  EventFdBsd &operator=(EventFdBsd &&from) = default;
+
   operator FdRef() override;
 
   void init() override;

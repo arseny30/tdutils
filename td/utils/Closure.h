@@ -64,8 +64,6 @@ class ImmediateClosure {
     mem_call_tuple(actor, func, std::move(args));
   }
 
-  ImmediateClosure(ImmediateClosure<ActorT, FunctionT, ArgsT...> &&) = default;
-
   // no &&. just save references as references.
   ImmediateClosure(FunctionT func, ArgsT... args) : func(func), args(std::forward<ArgsT>(args)...) {
   }

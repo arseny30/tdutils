@@ -17,6 +17,12 @@ StringBuilder &operator<<(StringBuilder &string_builder, const Timer &timer) {
 PerfWarningTimer::PerfWarningTimer(string name, double max_duration)
     : name_(std::move(name)), start_at_(Time::now()), max_duration_(max_duration) {
 }
+
+PerfWarningTimer::PerfWarningTimer(PerfWarningTimer &&other)
+    : name_(std::move(other.name_)), start_at_(other.start_at_), max_duration_(other.max_duration_) {
+  other.start_at_ = 0;
+}
+
 PerfWarningTimer::~PerfWarningTimer() {
   if (start_at_ == 0) {
     return;

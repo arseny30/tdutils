@@ -91,20 +91,16 @@ class ObserverBase {
   ObserverBase() = default;
   ObserverBase(const ObserverBase &) = delete;
   ObserverBase &operator=(const ObserverBase &) = delete;
+  ObserverBase(ObserverBase &&) = delete;
+  ObserverBase &operator=(ObserverBase &&) = delete;
   virtual ~ObserverBase() = default;
 };
 
 class Observer : ObserverBase {
  public:
   Observer() = default;
-  Observer(unique_ptr<ObserverBase> &&ptr_) : observer_ptr_(std::move(ptr_)) {
+  explicit Observer(unique_ptr<ObserverBase> &&ptr) : observer_ptr_(std::move(ptr)) {
   }
-  Observer &operator=(Observer &&observer) {
-    observer_ptr_ = std::move(observer.observer_ptr_);
-    return *this;
-  }
-  Observer(const Observer &) = delete;
-  Observer &operator=(const Observer &) = delete;
 
   void notify() override {
     if (observer_ptr_) {
@@ -132,6 +128,7 @@ class MovableValue {
   }
   MovableValue(const MovableValue &) = delete;
   MovableValue &operator=(const MovableValue &) = delete;
+  ~MovableValue() = default;
 
   void clear() {
     val_ = empty_val;
