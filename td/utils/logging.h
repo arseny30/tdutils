@@ -60,7 +60,7 @@
 #define LOG_TAG2 ::td::Logger::tag2_
 
 #define GET_VERBOSITY_LEVEL() (::td::VERBOSITY_NAME(level))
-#define SET_VERBOSITY_LEVEL(new_level) (::td::VERBOSITY_NAME(level) = new_level)
+#define SET_VERBOSITY_LEVEL(new_level) (::td::VERBOSITY_NAME(level) = (new_level))
 
 #if TD_CLANG
 bool no_return_func() __attribute__((analyzer_noreturn));

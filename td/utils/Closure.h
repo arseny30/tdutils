@@ -143,7 +143,7 @@ class DelayedClosure {
 
 template <class ImmediateClosureT>
 typename ImmediateClosureT::Delayed to_delayed_closure(ImmediateClosureT &&other) {
-  return typename ImmediateClosureT::Delayed(std::move(other));
+  return typename ImmediateClosureT::Delayed(std::forward<ImmediateClosureT>(other));
 }
 
 template <class ActorT, class ResultT, class... DestArgsT, class... SrcArgsT>

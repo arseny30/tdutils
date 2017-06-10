@@ -765,7 +765,7 @@ class OrderedEventsProcessor {
 
     if (seq_no == begin_) {  // run now
       begin_++;
-      function(seq_no, std::move(data));
+      function(seq_no, std::forward<FromDataT>(data));
 
       while (begin_ < end_) {
         auto &data_flag = data_array_[static_cast<size_t>(begin_ - offset_)];
@@ -796,7 +796,7 @@ class OrderedEventsProcessor {
       if (data_array_.size() < need_size) {
         data_array_.resize(need_size);
       }
-      data_array_[pos].first = std::move(data);
+      data_array_[pos].first = std::forward<FromDataT>(data);
       data_array_[pos].second = true;
       if (end_ < seq_no + 1) {
         end_ = seq_no + 1;

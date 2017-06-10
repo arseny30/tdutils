@@ -161,7 +161,9 @@ class ByteFlowSource : public ByteFlowInterface {
   ByteFlowSource() = default;
   explicit ByteFlowSource(ChainBufferReader *buffer) : buffer_(buffer) {
   }
-  ByteFlowSource(ByteFlowSource &&other) : buffer_(std::move(other.buffer_)), parent_(other.parent_) {
+  ByteFlowSource(ByteFlowSource &&other) : buffer_(other.buffer_), parent_(other.parent_) {
+    other.buffer_ = nullptr;
+    other.parent_ = nullptr;
   }
   ByteFlowSource &operator=(ByteFlowSource &&other) {
     buffer_ = other.buffer_;
@@ -197,7 +199,7 @@ class ByteFlowSource : public ByteFlowInterface {
   }
 
  private:
-  ChainBufferReader *buffer_;
+  ChainBufferReader *buffer_ = nullptr;
   ByteFlowInterface *parent_ = nullptr;
 };
 

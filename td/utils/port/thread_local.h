@@ -59,7 +59,7 @@ class LambdaDestructor : public Destructor {
 
 template <class F>
 std::unique_ptr<Destructor> create_destructor(F &&f) {
-  return std::make_unique<LambdaDestructor<F>>(std::move(f));
+  return std::make_unique<LambdaDestructor<F>>(std::forward<F>(f));
 }
 
 void add_thread_local_destructor(std::unique_ptr<Destructor> destructor);
