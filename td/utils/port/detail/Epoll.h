@@ -21,7 +21,7 @@ class Epoll final : public PollBase {
 
   void clear() override;
 
-  void subscribe(const Fd &fd, Fd::Flags flags = Fd::Write | Fd::Read) override;
+  void subscribe(const Fd &fd, Fd::Flags flags) override;
 
   void unsubscribe(const Fd &fd) override;
 
