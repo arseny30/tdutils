@@ -22,7 +22,7 @@ Result<Stat> stat(CSlice path) WARN_UNUSED_RESULT;
 
 namespace detail {
 Stat fstat(int native_fd);  // TODO return Result<Stat>
-}
+}  // namespace detail
 
 Status update_atime(CSlice path) WARN_UNUSED_RESULT;
 

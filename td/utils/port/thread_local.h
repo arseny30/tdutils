@@ -43,7 +43,7 @@ class Destructor {
 template <class F>
 class LambdaDestructor : public Destructor {
  public:
-  LambdaDestructor(F &&f) : f_(std::move(f)) {
+  explicit LambdaDestructor(F &&f) : f_(std::move(f)) {
   }
   LambdaDestructor(const LambdaDestructor &other) = delete;
   LambdaDestructor &operator=(const LambdaDestructor &other) = delete;

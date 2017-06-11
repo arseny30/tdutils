@@ -19,12 +19,13 @@
 #define LOAD_TESTS(x)
 #else  // TD_USE_GTEST
 
-namespace td {
 #define REGISTER_TESTS(x)                \
   void TD_CONCAT(register_tests_, x)() { \
   }
 #define DESC_TESTS(x) void TD_CONCAT(register_tests_, x)()
 #define LOAD_TESTS(x) TD_CONCAT(register_tests_, x)()
+
+namespace td {
 
 class Test : private ListNode {
  public:
@@ -52,7 +53,7 @@ class Test : private ListNode {
   }
   virtual void run() = 0;
 };
-}
+}  // namespace td
 
 #define HasNonfatalFailure() false
 

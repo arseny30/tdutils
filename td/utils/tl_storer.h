@@ -161,7 +161,7 @@ class tl_storer_to_string {
   }
 
   void store_field(const char *name, int32 value) {
-    store_field(name, (int64)value);
+    store_field(name, static_cast<int64>(value));
   }
 
   void store_field(const char *name, int64 value) {

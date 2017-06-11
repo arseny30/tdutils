@@ -4,13 +4,6 @@
 #include "td/utils/Slice.h"
 
 namespace td {
-struct UInt128;
-}
-namespace td {
-struct UInt256;
-}
-
-namespace td {
 
 uint64 pq_factorize(uint64 pq);
 

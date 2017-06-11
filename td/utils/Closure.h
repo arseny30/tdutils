@@ -65,7 +65,7 @@ class ImmediateClosure {
   }
 
   // no &&. just save references as references.
-  ImmediateClosure(FunctionT func, ArgsT... args) : func(func), args(std::forward<ArgsT>(args)...) {
+  explicit ImmediateClosure(FunctionT func, ArgsT... args) : func(func), args(std::forward<ArgsT>(args)...) {
   }
 
  private:
@@ -94,11 +94,11 @@ class DelayedClosure {
     return do_clone(*this);
   }
 
-  DelayedClosure(ImmediateClosure<ActorT, FunctionT, ArgsT...> &&other)
+  explicit DelayedClosure(ImmediateClosure<ActorT, FunctionT, ArgsT...> &&other)
       : func(std::move(other.func)), args(std::move(other.args)) {
   }
 
-  DelayedClosure(FunctionT func, ArgsT... args) : func(func), args(std::forward<ArgsT>(args)...) {
+  explicit DelayedClosure(FunctionT func, ArgsT... args) : func(func), args(std::forward<ArgsT>(args)...) {
   }
 
   template <class F>
@@ -113,14 +113,15 @@ class DelayedClosure {
   ArgsStorageT args;
 
   template <class FromActorT, class FromFunctionT, class... FromArgsT>
-  DelayedClosure(const DelayedClosure<FromActorT, FromFunctionT, FromArgsT...> &other,
-                 std::enable_if_t<LogicAnd<std::is_copy_constructible<FromArgsT>::value...>::value, int> = 0)
+  explicit DelayedClosure(const DelayedClosure<FromActorT, FromFunctionT, FromArgsT...> &other,
+                          std::enable_if_t<LogicAnd<std::is_copy_constructible<FromArgsT>::value...>::value, int> = 0)
       : func(other.func), args(other.args) {
   }
 
   template <class FromActorT, class FromFunctionT, class... FromArgsT>
-  DelayedClosure(const DelayedClosure<FromActorT, FromFunctionT, FromArgsT...> &other,
-                 std::enable_if_t<!LogicAnd<std::is_copy_constructible<FromArgsT>::value...>::value, int> = 0) {
+  explicit DelayedClosure(
+      const DelayedClosure<FromActorT, FromFunctionT, FromArgsT...> &other,
+      std::enable_if_t<!LogicAnd<std::is_copy_constructible<FromArgsT>::value...>::value, int> = 0) {
     UNREACHABLE("deleted constructor");
   }
 

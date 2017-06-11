@@ -7,7 +7,7 @@
 
 namespace td {
 /*** MutableSlice ***/
-inline MutableSlice::MutableSlice() : MutableSlice(const_cast<char *>(""), (size_t)0) {
+inline MutableSlice::MutableSlice() : MutableSlice(const_cast<char *>(""), static_cast<size_t>(0)) {
 }
 
 inline MutableSlice::MutableSlice(void *s, size_t len) : s_(static_cast<char *>(s)), len_(len) {
@@ -133,7 +133,7 @@ inline char &MutableSlice::operator[](size_t i) {
 }
 
 /*** Slice ***/
-inline Slice::Slice() : Slice("", (size_t)0) {
+inline Slice::Slice() : Slice("", static_cast<size_t>(0)) {
 }
 
 inline Slice::Slice(const MutableSlice &other) : Slice(other.begin(), other.size()) {
@@ -144,12 +144,6 @@ inline Slice::Slice(const void *s, size_t len) : s_(static_cast<const char *>(s)
 }
 
 inline Slice::Slice(const string &s) : Slice(s.c_str(), s.size()) {
-}
-
-inline Slice::Slice(const std::vector<unsigned char> &v) : Slice(v.data(), v.size()) {
-}
-
-inline Slice::Slice(const std::vector<char> &v) : Slice(v.data(), v.size()) {
 }
 
 inline Slice::Slice(const void *s, const void *t)

@@ -14,7 +14,7 @@ template <class FdT>
 class BufferedFdBase : public FdT {
  public:
   BufferedFdBase();
-  BufferedFdBase(FdT &&fd_);
+  explicit BufferedFdBase(FdT &&fd_);
   // TODO: make move constructor and move assignment safer
 
   Result<size_t> flush_read(size_t max_size = static_cast<size_t>(-1)) WARN_UNUSED_RESULT;
@@ -55,7 +55,7 @@ class BufferedFd : public BufferedFdBase<FdT> {
 
  public:
   BufferedFd();
-  BufferedFd(FdT &&fd_);
+  explicit BufferedFd(FdT &&fd_);
   BufferedFd(BufferedFd &&);
   BufferedFd &operator=(BufferedFd &&);
   BufferedFd(const BufferedFd &) = delete;

@@ -377,7 +377,7 @@ class ChainBufferNodeAllocator {
 class ChainBufferIterator {
  public:
   ChainBufferIterator() = default;
-  ChainBufferIterator(ChainBufferNodeReaderPtr head) : head_(std::move(head)), offset_(0) {
+  explicit ChainBufferIterator(ChainBufferNodeReaderPtr head) : head_(std::move(head)), offset_(0) {
     load_head();
   }
   ChainBufferIterator clone() const {
@@ -490,7 +490,7 @@ class ChainBufferIterator {
 class ChainBufferReader {
  public:
   ChainBufferReader() = default;
-  ChainBufferReader(ChainBufferNodeReaderPtr head)
+  explicit ChainBufferReader(ChainBufferNodeReaderPtr head)
       : begin_(ChainBufferNodeAllocator::clone(head)), end_(std::move(head)), sync_flag_(true) {
     end_.advance_till_end();
   }

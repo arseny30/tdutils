@@ -70,8 +70,6 @@ class Slice {
   Slice(const MutableSlice &other);
   Slice(const void *s, size_t len);
   Slice(const string &s);
-  Slice(const std::vector<unsigned char> &v);
-  Slice(const std::vector<char> &v);
   template <class T>
   explicit Slice(T s, std::enable_if_t<std::is_same<char *, std::remove_const_t<T>>::value, private_tag> = {})
       : Slice(s, std::strlen(s)) {
