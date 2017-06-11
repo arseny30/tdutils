@@ -1,12 +1,17 @@
 #pragma once
+
 #include "td/utils/common.h"
 
 #if TD_WINRT
+
+#include "td/utils/Status.h"  // for td::to_string and td::to_wstring
+
+#include "collection.h"
+
 #include <mutex>
 #include <map>
 #include <queue>
-#include "td/utils/Status.h"
-#include "collection.h"
+
 #define REF_NEW ref new
 #define CLRCALL
 #define CXCONST
@@ -17,7 +22,7 @@ using Windows::Foundation::Collections::IVector;
 #define Array IVector
 using Platform::Collections::Vector;
 
-template <class Key, class Value > class Dictionary {
+template <class Key, class Value> class Dictionary {
 public:
   bool TryGetValue(Key key, Value &value) {
     auto it = impl_.find(key);
@@ -36,7 +41,7 @@ public:
 private:
   std::map<Key, Value> impl_;
 };
-template <class Value > class ConcurrentQueue {
+template <class Value> class ConcurrentQueue {
 public:
   void Enqueue(Value value) {
     std::lock_guard<std::mutex> lock(mutex);
@@ -56,7 +61,7 @@ private:
   std::queue<Value> queue;
 };
 
-inline std::string string_to_unmanaged(String ^string) {
+inline std::string string_to_unmanaged(String^ string) {
   return td::to_string(string->Data(), string->Length()).ok();
 }
 inline String^ string_from_unmanaged(const std::string &from) {
@@ -85,7 +90,8 @@ using System::Collections::Concurrent::ConcurrentQueue;
 using System::Collections::Generic::Dictionary;
 using msclr::lock;
 using msclr::interop::marshal_as;
-inline std::string string_to_unmanaged(String ^string) {
+
+inline std::string string_to_unmanaged(String^ string) {
   return marshal_as<std::string>(string);
 }
 
