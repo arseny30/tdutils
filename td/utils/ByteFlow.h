@@ -109,7 +109,7 @@ class ByteFlowBase : public ByteFlowBaseCommon {
     parent_ = &other;
     parent_->set_input(&output_reader_);
   }
-  virtual void loop() = 0;
+  void loop() override = 0;
 
   // ChainBufferWriter &get_output() {
   // return output_;
@@ -132,7 +132,7 @@ class ByteFlowInplaceBase : public ByteFlowBaseCommon {
     parent_ = &other;
     parent_->set_input(&output_);
   }
-  virtual void loop() = 0;
+  void loop() override = 0;
 
   ChainBufferReader &get_output() {
     return output_;
@@ -165,7 +165,7 @@ class ByteFlowSource : public ByteFlowInterface {
   }
   ByteFlowSource(const ByteFlowSource &) = delete;
   ByteFlowSource &operator=(const ByteFlowSource &) = delete;
-  ~ByteFlowSource() = default;
+  ~ByteFlowSource() override = default;
 
   void set_input(ChainBufferReader *) final {
     UNREACHABLE();

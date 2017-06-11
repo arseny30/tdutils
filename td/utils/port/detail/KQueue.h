@@ -34,7 +34,7 @@ class KQueue final : public PollBase {
   KQueue &operator=(const KQueue &) = delete;
   KQueue(KQueue &&) = delete;
   KQueue &operator=(KQueue &&) = delete;
-  ~KQueue();
+  ~KQueue() override;
 
   void init() override;
 

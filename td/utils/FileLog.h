@@ -25,7 +25,7 @@ class FileLog : public LogInterface {
   FileLog &operator=(const FileLog &other) = delete;
   FileLog(FileLog &&other) = delete;
   FileLog &operator=(FileLog &&other) = delete;
-  ~FileLog() {
+  ~FileLog() override {
     if (!fd_.empty()) {
       fd_.close();
     }
