@@ -89,8 +89,7 @@ using BufferReaderPtr = BufferAllocator::ReaderPtr;
 
 class BufferSlice {
  public:
-  BufferSlice() : buffer_(), begin_(), end_() {
-  }
+  BufferSlice() = default;
   explicit BufferSlice(BufferReaderPtr buffer_ptr) : buffer_(std::move(buffer_ptr)) {
     if (is_null()) {
       return;
@@ -212,8 +211,8 @@ class BufferSlice {
 
  private:
   BufferReaderPtr buffer_;
-  size_t begin_;
-  size_t end_;
+  size_t begin_ = 0;
+  size_t end_ = 0;
 };
 
 class BufferWriter {
@@ -377,7 +376,7 @@ class ChainBufferNodeAllocator {
 class ChainBufferIterator {
  public:
   ChainBufferIterator() = default;
-  explicit ChainBufferIterator(ChainBufferNodeReaderPtr head) : head_(std::move(head)), offset_(0) {
+  explicit ChainBufferIterator(ChainBufferNodeReaderPtr head) : head_(std::move(head)) {
     load_head();
   }
   ChainBufferIterator clone() const {
@@ -491,14 +490,14 @@ class ChainBufferReader {
  public:
   ChainBufferReader() = default;
   explicit ChainBufferReader(ChainBufferNodeReaderPtr head)
-      : begin_(ChainBufferNodeAllocator::clone(head)), end_(std::move(head)), sync_flag_(true) {
+      : begin_(ChainBufferNodeAllocator::clone(head)), end_(std::move(head)) {
     end_.advance_till_end();
   }
   ChainBufferReader(ChainBufferIterator begin, ChainBufferIterator end, bool sync_flag)
       : begin_(std::move(begin)), end_(std::move(end)), sync_flag_(sync_flag) {
   }
   ChainBufferReader(ChainBufferNodeReaderPtr head, size_t size)
-      : begin_(ChainBufferNodeAllocator::clone(head)), end_(std::move(head)), sync_flag_(true) {
+      : begin_(ChainBufferNodeAllocator::clone(head)), end_(std::move(head)) {
     auto advanced = end_.advance(size);
     CHECK(advanced == size);
   }

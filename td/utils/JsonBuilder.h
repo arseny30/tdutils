@@ -409,7 +409,7 @@ class JsonValue : public Jsonable {
 
   static Slice get_type_name(Type type);
 
-  JsonValue() : type_(Type::Null) {
+  JsonValue() {
   }
   ~JsonValue() {
     destroy();
@@ -542,7 +542,7 @@ class JsonValue : public Jsonable {
   };
 
  private:
-  Type type_;
+  Type type_{Type::Null};
   union {
     MutableSlice number_;
     bool boolean_;

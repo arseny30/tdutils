@@ -13,13 +13,13 @@ namespace tl {
 class tl_storer_unsafe {
   char *buf;
 
-  tl_storer_unsafe(const tl_storer_unsafe &other) = delete;
-  tl_storer_unsafe &operator=(const tl_storer_unsafe &other) = delete;
-
  public:
   explicit tl_storer_unsafe(char *buf) : buf(buf) {
     CHECK(is_aligned_pointer<4>(buf));
   }
+
+  tl_storer_unsafe(const tl_storer_unsafe &other) = delete;
+  tl_storer_unsafe &operator=(const tl_storer_unsafe &other) = delete;
 
   template <class T>
   void store_binary(const T &x) {
@@ -78,14 +78,12 @@ class tl_storer_unsafe {
 };
 
 class tl_storer_calc_length {
-  size_t length;
-
-  tl_storer_calc_length(const tl_storer_calc_length &other) = delete;
-  tl_storer_calc_length &operator=(const tl_storer_calc_length &other) = delete;
+  size_t length = 0;
 
  public:
-  tl_storer_calc_length() : length(0) {
-  }
+  tl_storer_calc_length() = default;
+  tl_storer_calc_length(const tl_storer_calc_length &other) = delete;
+  tl_storer_calc_length &operator=(const tl_storer_calc_length &other) = delete;
 
   template <class T>
   void store_binary(const T &x) {
@@ -127,10 +125,7 @@ class tl_storer_calc_length {
 
 class tl_storer_to_string {
   std::string result;
-  int shift;
-
-  tl_storer_to_string(const tl_storer_to_string &other) = delete;
-  tl_storer_to_string &operator=(const tl_storer_to_string &other) = delete;
+  int shift = 0;
 
   void store_field_begin(const char *name) {
     for (int i = 0; i < shift; i++) {
@@ -151,8 +146,9 @@ class tl_storer_to_string {
   }
 
  public:
-  tl_storer_to_string() : result(), shift() {
-  }
+  tl_storer_to_string() = default;
+  tl_storer_to_string(const tl_storer_to_string &other) = delete;
+  tl_storer_to_string &operator=(const tl_storer_to_string &other) = delete;
 
   void store_field(const char *name, bool value) {
     store_field_begin(name);

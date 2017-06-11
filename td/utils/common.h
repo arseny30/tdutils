@@ -162,7 +162,7 @@ struct IntSeqGen : IntSeqGen<L, N - 1, L + N - 1, S...> {};
 
 template <std::size_t L, std::size_t... S>
 struct IntSeqGen<L, 0, S...> {
-  typedef IntSeq<S...> type;
+  using type = IntSeq<S...>;
 };
 
 template <bool... Args>

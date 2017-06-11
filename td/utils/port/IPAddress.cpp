@@ -17,7 +17,6 @@
 #include <cstring>
 
 namespace td {
-/*** IPAddress ***/
 IPAddress::IPAddress() : is_valid_(false) {
 }
 

@@ -158,7 +158,7 @@ class TsCerr {
   TsCerr &operator<<(Slice slice);
 
  private:
-  typedef std::atomic_flag Lock;
+  using Lock = std::atomic_flag;
   static Lock lock_;
 
   void enterCritical();
@@ -237,8 +237,7 @@ class Stringify {
 
 class TsLog : public LogInterface {
  public:
-  TsLog() : log_(nullptr) {
-  }
+  TsLog() = default;
   explicit TsLog(LogInterface *log) : log_(log) {
   }
   void init(LogInterface *log) {
@@ -258,7 +257,7 @@ class TsLog : public LogInterface {
   }
 
  private:
-  LogInterface *log_;
+  LogInterface *log_ = nullptr;
   std::atomic_flag lock_ = ATOMIC_FLAG_INIT;
   void enter_critical() {
     while (lock_.test_and_set(std::memory_order_acquire)) {

@@ -15,12 +15,9 @@
 namespace td {
 class Backoff {
  private:
-  int cnt;
+  int cnt = 0;
 
  public:
-  Backoff() : cnt(0) {
-  }
-
   bool next() {
     // TODO: find out better strategy
     // TODO: try adaptive backoff
@@ -39,12 +36,9 @@ class Backoff {
 
 class InfBackoff {
  private:
-  int cnt;
+  int cnt = 0;
 
  public:
-  InfBackoff() : cnt(0) {
-  }
-
   bool next() {
     cnt++;
     if (cnt < 50) {
@@ -59,7 +53,7 @@ class InfBackoff {
 template <class T, int P = 10>
 class SPSCBlockQueue {
  public:
-  typedef T ValueType;
+  using ValueType = T;
 
  private:
   static constexpr int buffer_size() {
@@ -154,7 +148,7 @@ class SPSCBlockQueue {
 template <class T, class BlockQueueT = SPSCBlockQueue<T> >
 class SPSCChainQueue {
  public:
-  typedef T ValueType;
+  using ValueType = T;
 
   void init() {
     head_ = tail_ = create_node();
@@ -288,7 +282,7 @@ class SPSCChainQueue {
 template <class T, class QueueT = SPSCChainQueue<T>, class BackoffT = Backoff>
 class BackoffQueue : public QueueT {
  public:
-  typedef T ValueType;
+  using ValueType = T;
 
   template <class PutValueType>
   void writer_put(PutValueType &&value) {
@@ -315,8 +309,8 @@ using InfBackoffQueue = BackoffQueue<T, QueueT, InfBackoff>;
 template <class T, class ObserverT = Observer, class QueueT = BackoffQueue<T> >
 class PollQueue : public QueueT {
  public:
-  typedef T ValueType;
-  typedef QueueT QueueType;
+  using ValueType = T;
+  using QueueType = QueueT;
 
   void init() {
     QueueType::init();

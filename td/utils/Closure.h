@@ -107,7 +107,7 @@ class DelayedClosure {
   }
 
  private:
-  typedef std::tuple<typename std::decay<ArgsT>::type...> ArgsStorageT;
+  using ArgsStorageT = std::tuple<typename std::decay<ArgsT>::type...>;
 
   FunctionT func;
   ArgsStorageT args;

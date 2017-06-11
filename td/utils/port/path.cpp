@@ -61,7 +61,7 @@ Status mkdir(CSlice dir, int32 mode) {
       // TODO check that it is a directory
       return Status::OK();
     }
-    if (errno != EAGAIN && errno != EWOULDBLOCK) {
+    if (errno != EAGAIN && errno != EWOULDBLOCK && errno != EINTR) {
       auto mkdir_errno = errno;
       return Status::PosixError(mkdir_errno, PSLICE() << "Can't create directory \"" << dir << '"');
     }

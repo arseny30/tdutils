@@ -15,7 +15,7 @@ namespace td {
 template <class FdT>
 class BufferedFdBase : public FdT {
  public:
-  BufferedFdBase();
+  BufferedFdBase() = default;
   explicit BufferedFdBase(FdT &&fd_);
   // TODO: make move constructor and move assignment safer
 
@@ -78,12 +78,9 @@ class BufferedFd : public BufferedFdBase<FdT> {
 
 /*** BufferedFd ***/
 template <class FdT>
-BufferedFdBase<FdT>::BufferedFdBase() {
-}
-
-template <class FdT>
 BufferedFdBase<FdT>::BufferedFdBase(FdT &&fd_) : FdT(std::move(fd_)) {
 }
+
 template <class FdT>
 Result<size_t> BufferedFdBase<FdT>::flush_read(size_t max_read) {
   CHECK(read_);

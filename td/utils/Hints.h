@@ -8,8 +8,8 @@ namespace td {
 
 // TODO template KeyT
 class Hints {
-  typedef int64 KeyT;
-  typedef int64 RatingT;
+  using KeyT = int64;
+  using RatingT = int64;
 
  public:
   void add(KeyT key, const string &name);

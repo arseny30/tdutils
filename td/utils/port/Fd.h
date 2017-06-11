@@ -93,8 +93,8 @@ class Fd {
   };
   static InfoSet fd_info_set_;
 
-  int fd_;
-  Mode mode_;
+  int fd_ = -1;
+  Mode mode_ = Mode::Own;
 
   static Fd stderr_;
   static Fd stdout_;
@@ -214,7 +214,7 @@ class Fd {
   friend class detail::EventFdWindows;
   friend class detail::FdImpl;
 
-  Mode mode_;
+  Mode mode_ = Mode::Owner;
   shared_ptr<detail::FdImpl> impl_;
 
   Fd(Type type, Mode mode, HANDLE handle);

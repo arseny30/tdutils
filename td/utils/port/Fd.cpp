@@ -50,8 +50,7 @@ Fd Fd::stdout_(1, Mode::Reference);
 Fd Fd::stdin_(0, Mode::Reference);
 
 /*** Fd ***/
-Fd::Fd() : fd_(-1), mode_(Mode::Own) {
-}
+Fd::Fd() = default;
 
 // TODO: separate class for FdRef!
 Fd::Fd(int fd, Mode mode, ObserverBase *observer) : fd_(fd), mode_(mode) {

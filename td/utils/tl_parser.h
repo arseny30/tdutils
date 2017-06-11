@@ -20,9 +20,9 @@ namespace tl {
 class tl_parser {
   const int32 *data = nullptr;
   const int32 *data_begin = nullptr;
-  size_t data_len;
+  size_t data_len = 0;
   std::string error;
-  size_t error_pos;
+  size_t error_pos = std::numeric_limits<size_t>::max();
 
   unique_ptr<int32[]> data_buf;
   static constexpr size_t SMALL_DATA_ARRAY_SIZE = 6;
@@ -30,12 +30,8 @@ class tl_parser {
 
   static const int32 empty_data[8];
 
-  tl_parser(const tl_parser &other) = delete;
-  tl_parser &operator=(const tl_parser &other) = delete;
-
  public:
-  explicit tl_parser(Slice slice)
-      : data(), data_begin(), data_len(), error(), error_pos(std::numeric_limits<size_t>::max()) {
+  explicit tl_parser(Slice slice) {
     if (slice.size() % sizeof(int32) != 0) {
       set_error("Wrong length");
       return;
@@ -58,6 +54,8 @@ class tl_parser {
     }
     data_begin = data;
   }
+  tl_parser(const tl_parser &other) = delete;
+  tl_parser &operator=(const tl_parser &other) = delete;
 
   void set_error(const string &error_message);
 

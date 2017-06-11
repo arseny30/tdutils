@@ -133,8 +133,7 @@ struct Escaped {
 
 inline StringBuilder &operator<<(StringBuilder &builder, const Escaped &escaped) {
   Slice str = escaped.str;
-  for (size_t i = 0; i < str.size(); i++) {
-    unsigned char c = str[i];
+  for (unsigned char c : str) {
     if (c > 31 && c < 127 && c != '"' && c != '\\') {
       builder << static_cast<char>(c);
     } else {
