@@ -16,7 +16,7 @@ class Timer {
 
 class PerfWarningTimer {
  public:
-  PerfWarningTimer(string name, double max_duration = 0.1);
+  explicit PerfWarningTimer(string name, double max_duration = 0.1);
   PerfWarningTimer(const PerfWarningTimer &) = delete;
   PerfWarningTimer &operator=(const PerfWarningTimer &) = delete;
   PerfWarningTimer(PerfWarningTimer &&other);
