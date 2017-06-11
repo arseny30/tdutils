@@ -23,7 +23,8 @@ class ServerSocketFd {
   ServerSocketFd &operator=(const ServerSocketFd &) = delete;
   ServerSocketFd(ServerSocketFd &&) = default;
   ServerSocketFd &operator=(ServerSocketFd &&) = default;
-  operator FdRef();
+
+  explicit operator FdRef();
 
   static Result<ServerSocketFd> open(int32 port) WARN_UNUSED_RESULT;
 

@@ -13,7 +13,7 @@ class EventFdLinux final : public EventFdBase {
   Fd fd_;
 
  public:
-  operator FdRef() override;
+  explicit operator FdRef() override;
 
   void init() override;
 

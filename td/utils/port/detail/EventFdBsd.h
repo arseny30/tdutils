@@ -16,7 +16,7 @@ class EventFdBsd final : public EventFdBase {
  public:
   EventFdBsd() = default;
 
-  operator FdRef() override;
+  explicit operator FdRef() override;
 
   void init() override;
 
