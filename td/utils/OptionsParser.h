@@ -23,7 +23,7 @@ class OptionsParser {
   };
 
   void set_description(std::string description) {
-    description_ = description;
+    description_ = std::move(description);
   }
 
   void add_option(Option::Type type, char short_key, Slice long_key, Slice description,

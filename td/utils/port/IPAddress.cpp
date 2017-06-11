@@ -90,8 +90,7 @@ Status IPAddress::init_ipv6_port(CSlice ipv6, int port) {
   std::memset(&ipv6_addr_, 0, sizeof(ipv6_addr_));
   ipv6_addr_.sin6_family = AF_INET6;
   ipv6_addr_.sin6_port = htons(static_cast<uint16>(port));
-  // NB: ipv6 must be zero terminated...
-  int err = inet_pton(AF_INET6, ipv6.begin(), &ipv6_addr_.sin6_addr);
+  int err = inet_pton(AF_INET6, ipv6.c_str(), &ipv6_addr_.sin6_addr);
   if (err == 0) {
     return Status::Error(PSLICE() << "Failed inet_pton(AF_INET6, " << ipv6 << ")");
   } else if (err == -1) {
@@ -113,8 +112,7 @@ Status IPAddress::init_ipv4_port(CSlice ipv4, int port) {
   std::memset(&ipv4_addr_, 0, sizeof(ipv4_addr_));
   ipv4_addr_.sin_family = AF_INET;
   ipv4_addr_.sin_port = htons(static_cast<uint16>(port));
-  // NB: ipv4 must be zero terminated...
-  int err = inet_pton(AF_INET, ipv4.begin(), &ipv4_addr_.sin_addr);
+  int err = inet_pton(AF_INET, ipv4.c_str(), &ipv4_addr_.sin_addr);
   if (err == 0) {
     return Status::Error(PSLICE() << "Failed inet_pton(AF_INET, " << ipv4 << ")");
   } else if (err == -1) {
