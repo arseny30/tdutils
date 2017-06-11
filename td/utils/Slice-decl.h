@@ -118,9 +118,6 @@ class Slice {
 bool operator==(const Slice &a, const Slice &b);
 bool operator!=(const Slice &a, const Slice &b);
 
-template <class SliceT>
-SliceT trim(SliceT slice);
-
 class MutableCSlice : public MutableSlice {
   struct private_tag {};
 

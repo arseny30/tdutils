@@ -8,6 +8,8 @@
 #include "td/utils/logging.h"
 #include "td/utils/format.h"
 
+#include <limits>
+
 namespace td {
 // just reads from given reader and writes to given writer
 template <class FdT>
@@ -17,7 +19,7 @@ class BufferedFdBase : public FdT {
   explicit BufferedFdBase(FdT &&fd_);
   // TODO: make move constructor and move assignment safer
 
-  Result<size_t> flush_read(size_t max_size = static_cast<size_t>(-1)) WARN_UNUSED_RESULT;
+  Result<size_t> flush_read(size_t max_read = std::numeric_limits<size_t>::max()) WARN_UNUSED_RESULT;
   Result<size_t> flush_write() WARN_UNUSED_RESULT;
 
   bool need_flush_write(size_t at_least = 0) {
@@ -64,7 +66,7 @@ class BufferedFd : public BufferedFdBase<FdT> {
 
   void close();
 
-  Result<size_t> flush_read(size_t max_size = static_cast<size_t>(-1)) WARN_UNUSED_RESULT;
+  Result<size_t> flush_read(size_t max_read = std::numeric_limits<size_t>::max()) WARN_UNUSED_RESULT;
   Result<size_t> flush_write() WARN_UNUSED_RESULT;
 
   // Yep, direct access to buffers. It is IO interface too.
