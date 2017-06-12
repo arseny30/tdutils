@@ -17,6 +17,14 @@
 
 namespace td {
 
+template <class... Args>
+std::tuple<const Args &...> ctie(const Args &... args) WARN_UNUSED_RESULT;
+
+template <class... Args>
+std::tuple<const Args &...> ctie(const Args &... args) {
+  return std::tie(args...);
+}
+
 class JsonTrue {
  public:
   friend StringBuilder &operator<<(StringBuilder &sb, const JsonTrue &val) {

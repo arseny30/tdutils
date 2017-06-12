@@ -41,7 +41,7 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include <tuple>  // for ctie implementation
+#include <tuple>
 #include <type_traits>
 #include <utility>  // for std::move and std::forward
 #include <vector>
@@ -293,14 +293,6 @@ ToT &as(FromT *from) {
 template <class ToT, class FromT>
 const ToT &as(const FromT *from) {
   return reinterpret_cast<const ToT *>(from)[0];
-}
-
-template <class... Args>
-std::tuple<const Args &...> ctie(const Args &... args) WARN_UNUSED_RESULT;
-
-template <class... Args>
-std::tuple<const Args &...> ctie(const Args &... args) {
-  return std::tie(args...);
 }
 
 template <class FunctionT>
