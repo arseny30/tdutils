@@ -50,14 +50,6 @@ inline MutableSlice &MutableSlice::truncate(size_t size) {
   return *this;
 }
 
-inline MutableSlice &MutableSlice::rtruncate(size_t size) {
-  if (len_ > size) {
-    s_ += len_ - size;
-    len_ = size;
-  }
-  return *this;
-}
-
 inline MutableSlice MutableSlice::copy() const {
   return *this;
 }
@@ -174,13 +166,6 @@ inline Slice &Slice::remove_suffix(size_t suffix_len) {
 
 inline Slice &Slice::truncate(size_t size) {
   if (len_ > size) {
-    len_ = size;
-  }
-  return *this;
-}
-inline Slice &Slice::rtruncate(size_t size) {
-  if (len_ > size) {
-    s_ += len_ - size;
     len_ = size;
   }
   return *this;

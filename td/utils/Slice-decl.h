@@ -35,7 +35,6 @@ class MutableSlice {
   MutableSlice &remove_prefix(size_t prefix_len);
   MutableSlice &remove_suffix(size_t suffix_len);
   MutableSlice &truncate(size_t size);
-  MutableSlice &rtruncate(size_t size);
 
   MutableSlice copy() const;
 
@@ -94,7 +93,6 @@ class Slice {
   Slice &remove_prefix(size_t prefix_len);
   Slice &remove_suffix(size_t suffix_len);
   Slice &truncate(size_t size);
-  Slice &rtruncate(size_t size);
 
   Slice copy() const;
 
