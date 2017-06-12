@@ -29,8 +29,6 @@ class MutableSlice {
   constexpr MutableSlice(char (&a)[N]) : s_(a), len_(N - 1) {
   }
 
-  void clear();
-
   bool empty() const;
   size_t size() const;
 
@@ -89,8 +87,6 @@ class Slice {
   template <size_t N>
   constexpr Slice(const char (&a)[N]) : s_(a), len_(N - 1) {
   }
-
-  void clear();
 
   bool empty() const;
   size_t size() const;

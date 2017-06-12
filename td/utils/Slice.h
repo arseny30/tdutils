@@ -27,11 +27,6 @@ inline MutableSlice::MutableSlice(char *s, char *t) : MutableSlice(s, t - s) {
 inline MutableSlice::MutableSlice(unsigned char *s, unsigned char *t) : MutableSlice(s, t - s) {
 }
 
-inline void MutableSlice::clear() {
-  s_ = const_cast<char *>("");
-  len_ = 0;
-}
-
 inline size_t MutableSlice::size() const {
   return len_;
 }
@@ -158,11 +153,6 @@ inline Slice::Slice(const char *s, const char *t) : Slice(s, t - s) {
 }
 
 inline Slice::Slice(const unsigned char *s, const unsigned char *t) : Slice(s, t - s) {
-}
-
-inline void Slice::clear() {
-  s_ = "";
-  len_ = 0;
 }
 
 inline size_t Slice::size() const {
