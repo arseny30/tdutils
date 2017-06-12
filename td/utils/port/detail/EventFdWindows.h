@@ -15,7 +15,7 @@ class EventFdWindows final : public EventFdBase {
  public:
   EventFdWindows() = default;
 
-  explicit operator FdRef() override;
+  operator FdRef() override;
 
   void init() override;
 

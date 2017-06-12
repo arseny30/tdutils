@@ -24,7 +24,7 @@ class ServerSocketFd {
   ServerSocketFd(ServerSocketFd &&) = default;
   ServerSocketFd &operator=(ServerSocketFd &&) = default;
 
-  explicit operator FdRef();
+  operator FdRef();
 
   static Result<ServerSocketFd> open(int32 port) WARN_UNUSED_RESULT;
 

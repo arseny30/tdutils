@@ -24,7 +24,7 @@ class SocketFd {
   SocketFd(SocketFd &&) = default;
   SocketFd &operator=(SocketFd &&) = default;
 
-  explicit operator FdRef();
+  operator FdRef();
 
   static Result<SocketFd> open(const IPAddress &address) WARN_UNUSED_RESULT;
 

@@ -13,7 +13,7 @@ class FileFd {
  public:
   FileFd() = default;
 
-  explicit operator FdRef();
+  operator FdRef();
 
   enum Flags : int32 { Write = 1, Read = 2, Truncate = 4, Create = 8, Append = 16, CreateNew = 32 };
 
