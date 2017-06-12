@@ -206,7 +206,7 @@ class Logger {
   static TD_THREAD_LOCAL const char *tag2_;
 
  private:
-  StackAllocator<>::Ptr buffer_;
+  decltype(StackAllocator<>::alloc(0)) buffer_;
   LogInterface &log_;
   int log_level_;
   StringBuilder sb_;

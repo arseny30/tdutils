@@ -153,16 +153,16 @@ string serialize(const T &object) {
   size_t length = calc_length.get_length();
 
   string key(length, '\0');
-  MutableSlice data = key;
-  StackAllocator<>::Ptr ptr;
-  if (!is_aligned_pointer<4>(data.begin())) {
-    ptr = StackAllocator<>::alloc(data.size());
-    data = ptr.as_slice();
-  }
-  tl::tl_storer_unsafe storer(data.begin());
-  store(object, storer);
-  if (ptr) {
+  if (!is_aligned_pointer<4>(key.data())) {
+    auto ptr = StackAllocator<>::alloc(length);
+    MutableSlice data = ptr.as_slice();
+    tl::tl_storer_unsafe storer(data.begin());
+    store(object, storer);
     key.assign(data.begin(), data.size());
+  } else {
+    MutableSlice data = key;
+    tl::tl_storer_unsafe storer(data.begin());
+    store(object, storer);
   }
   return key;
 }
