@@ -12,7 +12,6 @@ namespace td {
 #if !TD_WINDOWS
 using size_t = std::size_t;
 #endif
-using ssize_t = std::make_signed_t<size_t>;
 
 using int8 = std::int8_t;
 using int16 = std::int16_t;

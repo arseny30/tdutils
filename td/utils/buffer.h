@@ -438,25 +438,28 @@ class ChainBufferIterator {
     reader_.confirm_read(size);
   }
 
-  size_t advance_till_end() {
-    return advance(-1);
+  void advance_till_end() {
+    while (true) {
+      auto ready = prepare_read();
+      if (ready.empty()) {
+        break;
+      }
+      confirm_read(ready.size());
+    }
   }
 
-  // -1 means till the end
-  size_t advance(ssize_t offset, MutableSlice dest = MutableSlice()) {
+  size_t advance(size_t offset, MutableSlice dest = MutableSlice()) {
     size_t skipped = 0;
     while (offset != 0) {
       auto ready = prepare_read();
       if (ready.empty()) {
-        return skipped;
+        break;
       }
 
       // read no more than offset
-      if (offset >= 0) {
-        ready.truncate(offset);
-        offset -= ready.size();
-        skipped += ready.size();
-      }
+      ready.truncate(offset);
+      offset -= ready.size();
+      skipped += ready.size();
 
       // copy to dest if possible
       auto to_dest_size = std::min(ready.size(), dest.size());
@@ -521,8 +524,8 @@ class ChainBufferReader {
     begin_.confirm_read(size);
   }
 
-  size_t advance(ssize_t offset, MutableSlice dest = MutableSlice()) {
-    CHECK(offset <= static_cast<ssize_t>(size()));
+  size_t advance(size_t offset, MutableSlice dest = MutableSlice()) {
+    CHECK(offset <= size());
     return begin_.advance(offset, dest);
   }
 
@@ -535,7 +538,7 @@ class ChainBufferReader {
 
   void sync_with_writer() {
     if (sync_flag_) {
-      end_.advance(-1);
+      end_.advance_till_end();
     }
   }
   void advance_end(size_t size) {
