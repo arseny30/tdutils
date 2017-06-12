@@ -1,5 +1,7 @@
 #pragma once
+
 #include "td/utils/common.h"
+#include "td/utils/MovableValue.h"
 #include "td/utils/Slice-decl.h"
 
 #include <array>

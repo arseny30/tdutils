@@ -102,6 +102,7 @@ set(TDUTILS_SOURCE
   td/utils/MemoryLog.h
   td/utils/MimeType.h
   td/utils/misc.h
+  td/utils/MovableValue.h
   td/utils/ObjectPool.h
   td/utils/Observer.h
   td/utils/optional.h

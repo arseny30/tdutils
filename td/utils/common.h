@@ -85,35 +85,6 @@ using weak_ptr = std::weak_ptr<ValueT>;
 using std::make_shared;
 using std::make_unique;
 
-template <class T, T empty_val = T()>
-class MovableValue {
- public:
-  MovableValue() = default;
-  MovableValue(T val) : val_(val) {
-  }
-  MovableValue(MovableValue &&other) : val_(other.val_) {
-    other.clear();
-  }
-  MovableValue &operator=(MovableValue &&other) {
-    val_ = other.val_;
-    other.clear();
-    return *this;
-  }
-  MovableValue(const MovableValue &) = delete;
-  MovableValue &operator=(const MovableValue &) = delete;
-  ~MovableValue() = default;
-
-  void clear() {
-    val_ = empty_val;
-  }
-  const T &get() const {
-    return val_;
-  }
-
- private:
-  T val_ = empty_val;
-};
-
 struct Unit {
   template <class... ArgsT>
   void operator()(ArgsT &&... args) {
