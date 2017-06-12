@@ -236,7 +236,7 @@ int pq_factorize(Slice pq_str, string *p_str, string *q_str) {
 }
 
 /*** AES ***/
-ssize_t aes_ige_xcrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag) {
+void aes_ige_xcrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag) {
   AES_KEY key;
   if (encrypt_flag) {
     AES_set_encrypt_key(aes_key.raw, 256, &key);
@@ -245,15 +245,14 @@ ssize_t aes_ige_xcrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, Muta
   }
   CHECK(from.size() <= to.size());
   AES_ige_encrypt(from.ubegin(), to.ubegin(), from.size(), &key, aes_iv->raw, encrypt_flag);
-  return from.size();
 }
 
-ssize_t aes_ige_encrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to) {
-  return aes_ige_xcrypt(aes_key, aes_iv, from, to, true);
+void aes_ige_encrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to) {
+  aes_ige_xcrypt(aes_key, aes_iv, from, to, true);
 }
 
-ssize_t aes_ige_decrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to) {
-  return aes_ige_xcrypt(aes_key, aes_iv, from, to, false);
+void aes_ige_decrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to) {
+  aes_ige_xcrypt(aes_key, aes_iv, from, to, false);
 }
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
@@ -306,22 +305,21 @@ void init_aes_ctr_state(const UInt256 &key, const UInt128 &iv, AesCtrState *stat
   CHECK(error);
 }
 
-ssize_t aes_ctr_xcrypt(AesCtrState *state, Slice from, MutableSlice to, bool encrypt_flag) {
+void aes_ctr_xcrypt(AesCtrState *state, Slice from, MutableSlice to, bool encrypt_flag) {
   int from_size = narrow_cast<int>(from.size());
   int to_size = narrow_cast<int>(to.size());
   auto error = EVP_EncryptUpdate(state->ctx_->get(), to.ubegin(), &to_size, from.ubegin(), from_size);
   CHECK(error);
   CHECK(to_size == from_size);
-  return 0;
 }
-ssize_t aes_ctr_encrypt(AesCtrState *state, Slice from, MutableSlice to) {
-  return aes_ctr_xcrypt(state, from, to, true);
+void aes_ctr_encrypt(AesCtrState *state, Slice from, MutableSlice to) {
+  aes_ctr_xcrypt(state, from, to, true);
 }
-ssize_t aes_ctr_decrypt(AesCtrState *state, Slice from, MutableSlice to) {
-  return aes_ctr_xcrypt(state, from, to, false);
+void aes_ctr_decrypt(AesCtrState *state, Slice from, MutableSlice to) {
+  aes_ctr_xcrypt(state, from, to, false);
 }
 
-ssize_t aes_cbc_xcrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag) {
+void aes_cbc_xcrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag) {
   AES_KEY key;
   if (encrypt_flag) {
     AES_set_encrypt_key(aes_key.raw, 256, &key);
@@ -330,15 +328,14 @@ ssize_t aes_cbc_xcrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, Muta
   }
   CHECK(from.size() <= to.size());
   AES_cbc_encrypt(from.ubegin(), to.ubegin(), from.size(), &key, aes_iv->raw, encrypt_flag);
-  return from.size();
 }
 
-ssize_t aes_cbc_encrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to) {
-  return aes_cbc_xcrypt(aes_key, aes_iv, from, to, true);
+void aes_cbc_encrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to) {
+  aes_cbc_xcrypt(aes_key, aes_iv, from, to, true);
 }
 
-ssize_t aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to) {
-  return aes_cbc_xcrypt(aes_key, aes_iv, from, to, false);
+void aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to) {
+  aes_cbc_xcrypt(aes_key, aes_iv, from, to, false);
 }
 
 /*** SHA-1 ***/

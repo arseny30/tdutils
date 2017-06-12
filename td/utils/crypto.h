@@ -10,9 +10,9 @@ uint64 pq_factorize(uint64 pq);
 int pq_factorize(Slice pq_str, string *p_str, string *q_str);
 
 /*** AES ***/
-ssize_t aes_ige_xcrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag);
-ssize_t aes_ige_encrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to);
-ssize_t aes_ige_decrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to);
+void aes_ige_xcrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag);
+void aes_ige_encrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to);
+void aes_ige_decrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to);
 
 struct AesCtrStateImpl;
 struct AesCtrState {
@@ -24,14 +24,14 @@ struct AesCtrState {
   std::unique_ptr<AesCtrStateImpl> ctx_;
 };
 void init_aes_ctr_state(const UInt256 &key, const UInt128 &iv, AesCtrState *state);
-ssize_t aes_ctr_xcrypt(AesCtrState *state, Slice from, MutableSlice to, bool encrypt_flag);
-ssize_t aes_ctr_encrypt(AesCtrState *state, Slice from, MutableSlice to);
-ssize_t aes_ctr_decrypt(AesCtrState *state, Slice from, MutableSlice to);
+void aes_ctr_xcrypt(AesCtrState *state, Slice from, MutableSlice to, bool encrypt_flag);
+void aes_ctr_encrypt(AesCtrState *state, Slice from, MutableSlice to);
+void aes_ctr_decrypt(AesCtrState *state, Slice from, MutableSlice to);
 
 // cbc
-ssize_t aes_cbc_xcrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag);
-ssize_t aes_cbc_encrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to);
-ssize_t aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to);
+void aes_cbc_xcrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag);
+void aes_cbc_encrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to);
+void aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to);
 
 /*** SHA-1 ***/
 void sha1(Slice data, unsigned char output[20]);
