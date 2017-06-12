@@ -10,7 +10,11 @@ namespace td {
 inline MutableSlice::MutableSlice() : MutableSlice(const_cast<char *>(""), static_cast<size_t>(0)) {
 }
 
-inline MutableSlice::MutableSlice(void *s, size_t len) : s_(static_cast<char *>(s)), len_(len) {
+inline MutableSlice::MutableSlice(char *s, size_t len) : s_(s), len_(len) {
+  CHECK(s_ != nullptr);
+}
+
+inline MutableSlice::MutableSlice(unsigned char *s, size_t len) : s_(reinterpret_cast<char *>(s)), len_(len) {
   CHECK(s_ != nullptr);
 }
 
@@ -20,7 +24,10 @@ inline MutableSlice::MutableSlice(string &s) : MutableSlice(&s[0], s.size()) {
 inline MutableSlice::MutableSlice(const Slice &from) : MutableSlice(const_cast<char *>(from.begin()), from.size()) {
 }
 
-inline MutableSlice::MutableSlice(void *s, void *t) : MutableSlice(s, static_cast<char *>(t) - static_cast<char *>(s)) {
+inline MutableSlice::MutableSlice(char *s, char *t) : MutableSlice(s, t - s) {
+}
+
+inline MutableSlice::MutableSlice(unsigned char *s, unsigned char *t) : MutableSlice(s, t - s) {
 }
 
 inline void MutableSlice::clear() {
@@ -139,15 +146,21 @@ inline Slice::Slice() : Slice("", static_cast<size_t>(0)) {
 inline Slice::Slice(const MutableSlice &other) : Slice(other.begin(), other.size()) {
 }
 
-inline Slice::Slice(const void *s, size_t len) : s_(static_cast<const char *>(s)), len_(len) {
+inline Slice::Slice(const char *s, size_t len) : s_(s), len_(len) {
+  CHECK(s_ != nullptr);
+}
+
+inline Slice::Slice(const unsigned char *s, size_t len) : s_(reinterpret_cast<const char *>(s)), len_(len) {
   CHECK(s_ != nullptr);
 }
 
 inline Slice::Slice(const string &s) : Slice(s.c_str(), s.size()) {
 }
 
-inline Slice::Slice(const void *s, const void *t)
-    : Slice(s, static_cast<const char *>(t) - static_cast<const char *>(s)) {
+inline Slice::Slice(const char *s, const char *t) : Slice(s, t - s) {
+}
+
+inline Slice::Slice(const unsigned char *s, const unsigned char *t) : Slice(s, t - s) {
 }
 
 inline void Slice::clear() {
@@ -262,12 +275,12 @@ inline bool operator!=(const Slice &a, const Slice &b) {
   return !(a == b);
 }
 
-inline MutableCSlice::MutableCSlice(void *s, void *t) : MutableSlice(s, t) {
-  CHECK(*static_cast<char *>(t) == '\0');
+inline MutableCSlice::MutableCSlice(char *s, char *t) : MutableSlice(s, t) {
+  CHECK(*t == '\0');
 }
 
 inline CSlice::CSlice(const char *s, const char *t) : Slice(s, t) {
-  CHECK(*t == 0);
+  CHECK(*t == '\0');
 }
 
 }  // namespace td

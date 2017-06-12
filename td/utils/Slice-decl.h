@@ -16,14 +16,16 @@ class MutableSlice {
 
  public:
   MutableSlice();
-  MutableSlice(void *s, size_t len);
+  MutableSlice(char *s, size_t len);
+  MutableSlice(unsigned char *s, size_t len);
   MutableSlice(string &s);
   template <class T>
   explicit MutableSlice(T s, std::enable_if_t<std::is_same<char *, T>::value, private_tag> = {})
       : MutableSlice(s, std::strlen(s)) {
   }
   explicit MutableSlice(const Slice &from);
-  MutableSlice(void *s, void *t);
+  MutableSlice(char *s, char *t);
+  MutableSlice(unsigned char *s, unsigned char *t);
   template <size_t N>
   constexpr MutableSlice(char (&a)[N]) : s_(a), len_(N - 1) {
   }
@@ -68,7 +70,8 @@ class Slice {
  public:
   Slice();
   Slice(const MutableSlice &other);
-  Slice(const void *s, size_t len);
+  Slice(const char *s, size_t len);
+  Slice(const unsigned char *s, size_t len);
   Slice(const string &s);
   template <class T>
   explicit Slice(T s, std::enable_if_t<std::is_same<char *, std::remove_const_t<T>>::value, private_tag> = {})
@@ -78,7 +81,8 @@ class Slice {
   explicit Slice(T s, std::enable_if_t<std::is_same<const char *, std::remove_const_t<T>>::value, private_tag> = {})
       : Slice(s, std::strlen(s)) {
   }
-  Slice(const void *s, const void *t);
+  Slice(const char *s, const char *t);
+  Slice(const unsigned char *s, const unsigned char *t);
 
   template <size_t N>
   constexpr Slice(char (&a)[N]) = delete;
@@ -128,7 +132,7 @@ class MutableCSlice : public MutableSlice {
   template <class T>
   explicit MutableCSlice(T s, std::enable_if_t<std::is_same<char *, T>::value, private_tag> = {}) : MutableSlice(s) {
   }
-  MutableCSlice(void *s, void *t);
+  MutableCSlice(char *s, char *t);
 
   template <size_t N>
   constexpr MutableCSlice(char (&a)[N]) = delete;

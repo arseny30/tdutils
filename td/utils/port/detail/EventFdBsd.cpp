@@ -64,7 +64,7 @@ Fd &EventFdBsd::get_fd() {
 
 void EventFdBsd::release() {
   int value = 1;
-  auto result = in_.write(Slice(&value, sizeof(value)));
+  auto result = in_.write(Slice(reinterpret_cast<const char *>(&value), sizeof(value)));
   if (result.is_error()) {
     LOG(FATAL) << "EventFdBsd write failed: " << result.error();
   }
