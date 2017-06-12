@@ -85,33 +85,6 @@ using weak_ptr = std::weak_ptr<ValueT>;
 using std::make_shared;
 using std::make_unique;
 
-class ObserverBase {
- public:
-  virtual void notify() = 0;
-  ObserverBase() = default;
-  ObserverBase(const ObserverBase &) = delete;
-  ObserverBase &operator=(const ObserverBase &) = delete;
-  ObserverBase(ObserverBase &&) = delete;
-  ObserverBase &operator=(ObserverBase &&) = delete;
-  virtual ~ObserverBase() = default;
-};
-
-class Observer : ObserverBase {
- public:
-  Observer() = default;
-  explicit Observer(unique_ptr<ObserverBase> &&ptr) : observer_ptr_(std::move(ptr)) {
-  }
-
-  void notify() override {
-    if (observer_ptr_) {
-      observer_ptr_->notify();
-    }
-  }
-
- private:
-  unique_ptr<ObserverBase> observer_ptr_;
-};
-
 template <class T, T empty_val = T()>
 class MovableValue {
  public:

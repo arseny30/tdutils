@@ -103,6 +103,7 @@ set(TDUTILS_SOURCE
   td/utils/MimeType.h
   td/utils/misc.h
   td/utils/ObjectPool.h
+  td/utils/Observer.h
   td/utils/optional.h
   td/utils/OptionsParser.h
   td/utils/Parser.h

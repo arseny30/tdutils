@@ -12,6 +12,9 @@
 #include <atomic>
 
 namespace td {
+
+class ObserverBase;
+
 class Fd {
  public:
   // TODO: Close may be not enough

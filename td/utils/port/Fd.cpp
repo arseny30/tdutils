@@ -2,13 +2,12 @@
 
 #include "td/utils/port/config.h"
 
-#ifdef TD_PORT_POSIX
-
-#include "td/utils/port/Fd.h"
-
 #include "td/utils/common.h"
 #include "td/utils/format.h"
 #include "td/utils/misc.h"
+#include "td/utils/Observer.h"
+
+#ifdef TD_PORT_POSIX
 
 #include <atomic>
 
@@ -21,8 +20,6 @@
 #ifdef TD_PORT_WINDOWS
 
 #include "td/utils/buffer.h"
-#include "td/utils/format.h"
-#include "td/utils/misc.h"
 
 #include <algorithm>
 #include <cstring>
