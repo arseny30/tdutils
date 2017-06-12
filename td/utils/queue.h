@@ -306,7 +306,7 @@ class BackoffQueue : public QueueT {
 template <class T, class QueueT = SPSCChainQueue<T> >
 using InfBackoffQueue = BackoffQueue<T, QueueT, InfBackoff>;
 
-template <class T, class ObserverT = Observer, class QueueT = BackoffQueue<T> >
+template <class T, class QueueT = BackoffQueue<T> >
 class PollQueue : public QueueT {
  public:
   using ValueType = T;

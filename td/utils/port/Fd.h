@@ -35,7 +35,7 @@ class Fd {
   Fd &operator=(Fd &&other);
   ~Fd();
 
-  Fd(int fd, Mode mode, ObserverBase *observer = nullptr);
+  Fd(int fd, Mode mode);
 
   Fd clone();
   static Fd &Stderr();

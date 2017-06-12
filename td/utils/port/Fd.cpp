@@ -53,7 +53,7 @@ Fd Fd::stdin_(0, Mode::Reference);
 Fd::Fd() = default;
 
 // TODO: separate class for FdRef!
-Fd::Fd(int fd, Mode mode, ObserverBase *observer) : fd_(fd), mode_(mode) {
+Fd::Fd(int fd, Mode mode) : fd_(fd), mode_(mode) {
   auto *info = get_info();
   int old_ref_cnt = info->refcnt.load(std::memory_order_relaxed);
   if (old_ref_cnt == 0) {
@@ -70,7 +70,7 @@ Fd::Fd(int fd, Mode mode, ObserverBase *observer) : fd_(fd), mode_(mode) {
     CHECK(!is_ref());
     CHECK(info->observer == nullptr);
     info->flags = 0;
-    info->observer = observer;
+    info->observer = nullptr;
   } else {
     CHECK(mode_ == Mode::Reference) << tag("fd", fd_);
     auto fcntl_res = fcntl(fd_, F_GETFD);
@@ -78,7 +78,6 @@ Fd::Fd(int fd, Mode mode, ObserverBase *observer) : fd_(fd), mode_(mode) {
     LOG_IF(FATAL, fcntl_res == -1) << Status::PosixError(fcntl_errno, "fcntl F_GET_FD failed");
 
     CHECK(is_ref());
-    CHECK(observer == nullptr);
     // VLOG(fd) << "FdRef created [fd:" << fd_ << "]";
     info->refcnt.fetch_add(1, std::memory_order_relaxed);
   }
