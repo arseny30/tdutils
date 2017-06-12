@@ -85,11 +85,7 @@ using weak_ptr = std::weak_ptr<ValueT>;
 using std::make_shared;
 using std::make_unique;
 
-struct Unit {
-  template <class... ArgsT>
-  void operator()(ArgsT &&... args) {
-  }
-};
+struct Unit {};
 
 struct Auto {
   template <class ToT>
