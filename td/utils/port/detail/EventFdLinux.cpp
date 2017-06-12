@@ -40,9 +40,9 @@ Fd &EventFdLinux::get_fd() {
 }
 
 void EventFdLinux::release() {
-  uint64 value = 1;
-  // NB: write_unsafe is used, because release will be call from multible threads.
-  auto result = fd_.write_unsafe(Slice(&value, sizeof(value)));
+  const uint64 value = 1;
+  // NB: write_unsafe is used, because release will be called from multible threads.
+  auto result = fd_.write_unsafe(Slice(reinterpret_cast<const char *>(&value), sizeof(value)));
   if (result.is_error()) {
     LOG(FATAL) << "EventFdLinux write failed: " << result.error();
   }
@@ -54,10 +54,9 @@ void EventFdLinux::release() {
 
 void EventFdLinux::acquire() {
   uint64 res;
-  auto result = fd_.read(MutableSlice(&res, sizeof(res)));
+  auto result = fd_.read(MutableSlice(reinterpret_cast<char *>(&res), sizeof(res)));
   if (result.is_error()) {
-    if (result.error().code() == EAGAIN || result.error().code() == EWOULDBLOCK) {
-    } else {
+    if (result.error().code() != EAGAIN && result.error().code() != EWOULDBLOCK) {
       LOG(FATAL) << "EventFdLinux read failed: " << result.error();
     }
   }
