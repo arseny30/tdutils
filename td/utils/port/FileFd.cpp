@@ -76,12 +76,11 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
 
 Result<size_t> FileFd::write(Slice slice) {
   CHECK(!fd_.empty());
-  ssize_t ssize;
   int native_fd = get_native_fd();
   while (true) {
-    ssize = ::write(native_fd, slice.begin(), slice.size());
+    auto write_res = ::write(native_fd, slice.begin(), slice.size());
     auto write_errno = errno;
-    if (ssize < 0) {
+    if (write_res < 0) {
       if (write_errno == EINTR) {
         continue;
       }
@@ -92,19 +91,17 @@ Result<size_t> FileFd::write(Slice slice) {
       }
       return std::move(error);
     }
-    break;
+    return static_cast<size_t>(write_res);
   }
-  return static_cast<size_t>(ssize);
 }
 
 Result<size_t> FileFd::read(MutableSlice slice) {
   CHECK(!fd_.empty());
-  ssize_t ssize;
   int native_fd = get_native_fd();
   while (true) {
-    ssize = ::read(native_fd, slice.begin(), slice.size());
+    auto read_res = ::read(native_fd, slice.begin(), slice.size());
     auto read_errno = errno;
-    if (ssize < 0) {
+    if (read_res < 0) {
       if (read_errno == EINTR) {
         continue;
       }
@@ -115,22 +112,20 @@ Result<size_t> FileFd::read(MutableSlice slice) {
       }
       return std::move(error);
     }
-    break;
+    if (static_cast<size_t>(read_res) < slice.size()) {
+      fd_.clear_flags(Read);
+    }
+    return static_cast<size_t>(read_res);
   }
-  if (static_cast<size_t>(ssize) < slice.size()) {
-    fd_.clear_flags(Read);
-  }
-  return static_cast<size_t>(ssize);
 }
 
 Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
   CHECK(!fd_.empty());
-  ssize_t ssize;
   int native_fd = get_native_fd();
   while (true) {
-    ssize = ::pwrite(native_fd, slice.begin(), slice.size(), offset);
+    auto pwrite_res = ::pwrite(native_fd, slice.begin(), slice.size(), offset);
     auto pwrite_errno = errno;
-    if (ssize < 0) {
+    if (pwrite_res < 0) {
       if (pwrite_errno == EINTR) {
         continue;
       }
@@ -142,19 +137,17 @@ Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
       }
       return std::move(error);
     }
-    break;
+    return static_cast<size_t>(pwrite_res);
   }
-  return static_cast<size_t>(ssize);
 }
 
 Result<size_t> FileFd::pread(MutableSlice slice, off_t offset) {
   CHECK(!fd_.empty());
-  ssize_t ssize;
   int native_fd = get_native_fd();
   while (true) {
-    ssize = ::pread(native_fd, slice.begin(), slice.size(), offset);
+    auto pread_res = ::pread(native_fd, slice.begin(), slice.size(), offset);
     auto pread_errno = errno;
-    if (ssize < 0) {
+    if (pread_res < 0) {
       if (pread_errno == EINTR) {
         continue;
       }
@@ -166,9 +159,8 @@ Result<size_t> FileFd::pread(MutableSlice slice, off_t offset) {
       }
       return std::move(error);
     }
-    break;
+    return static_cast<size_t>(pread_res);
   }
-  return static_cast<size_t>(ssize);
 }
 
 Status FileFd::lock(FileFd::LockFlags flags) {

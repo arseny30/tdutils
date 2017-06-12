@@ -268,29 +268,26 @@ Status Fd::get_pending_error() {
 }
 
 Result<size_t> Fd::write_unsafe(Slice slice) {
-  ssize_t ssize;
   int native_fd = get_native_fd();
   while (true) {
-    ssize = ::write(native_fd, slice.begin(), slice.size());
+    auto write_res = ::write(native_fd, slice.begin(), slice.size());
     auto write_errno = errno;
-    if (ssize < 0) {
+    if (write_res < 0) {
       if (write_errno == EINTR) {
         continue;
       }
       return Status::PosixError(write_errno, PSLICE("Write to [fd=%d] has failed", native_fd));
     }
-    break;
+    return static_cast<size_t>(write_res);
   }
-  return static_cast<size_t>(ssize);
 }
 
 Result<size_t> Fd::write(Slice slice) {
-  ssize_t ssize;
   int native_fd = get_native_fd();
   while (true) {
-    ssize = ::write(native_fd, slice.begin(), slice.size());
+    auto write_res = ::write(native_fd, slice.begin(), slice.size());
     auto write_errno = errno;
-    if (ssize < 0) {
+    if (write_res < 0) {
       if (write_errno == EINTR) {
         continue;
       }
@@ -326,19 +323,17 @@ Result<size_t> Fd::write(Slice slice) {
           return std::move(error);
       }
     }
-    break;
+    return static_cast<size_t>(write_res);
   }
-  return static_cast<size_t>(ssize);
 }
 
 Result<size_t> Fd::read(MutableSlice slice) {
-  ssize_t ssize;
   int native_fd = get_native_fd();
   while (true) {
     CHECK(slice.size() > 0);
-    ssize = ::read(native_fd, slice.begin(), slice.size());
+    auto read_res = ::read(native_fd, slice.begin(), slice.size());
     auto read_errno = errno;
-    if (ssize < 0) {
+    if (read_res < 0) {
       if (read_errno == EINTR) {
         continue;
       }
@@ -374,14 +369,13 @@ Result<size_t> Fd::read(MutableSlice slice) {
           return std::move(error);
       }
     }
-    break;
+    if (read_res == 0) {
+      errno = 0;
+      clear_flags(Read);
+      update_flags(Close);
+    }
+    return static_cast<size_t>(read_res);
   }
-  if (ssize == 0) {
-    errno = 0;
-    clear_flags(Read);
-    update_flags(Close);
-  }
-  return static_cast<size_t>(ssize);
 }
 
 Stat Fd::stat() const {
