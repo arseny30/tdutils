@@ -58,7 +58,7 @@ inline MutableSlice &MutableSlice::rtruncate(size_t size) {
   return *this;
 }
 
-inline MutableSlice MutableSlice::copy() {
+inline MutableSlice MutableSlice::copy() const {
   return *this;
 }
 
@@ -186,7 +186,7 @@ inline Slice &Slice::rtruncate(size_t size) {
   return *this;
 }
 
-inline Slice Slice::copy() {
+inline Slice Slice::copy() const {
   return *this;
 }
 

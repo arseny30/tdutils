@@ -37,7 +37,7 @@ class MutableSlice {
   MutableSlice &truncate(size_t size);
   MutableSlice &rtruncate(size_t size);
 
-  MutableSlice copy();
+  MutableSlice copy() const;
 
   char *data() const;
   char *begin() const;
@@ -96,7 +96,7 @@ class Slice {
   Slice &truncate(size_t size);
   Slice &rtruncate(size_t size);
 
-  Slice copy();
+  Slice copy() const;
 
   const char *data() const;
   const char *begin() const;
