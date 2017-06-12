@@ -21,9 +21,6 @@ inline MutableSlice::MutableSlice(unsigned char *s, size_t len) : s_(reinterpret
 inline MutableSlice::MutableSlice(string &s) : MutableSlice(&s[0], s.size()) {
 }
 
-inline MutableSlice::MutableSlice(const Slice &from) : MutableSlice(const_cast<char *>(from.begin()), from.size()) {
-}
-
 inline MutableSlice::MutableSlice(char *s, char *t) : MutableSlice(s, t - s) {
 }
 

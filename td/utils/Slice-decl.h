@@ -23,7 +23,6 @@ class MutableSlice {
   explicit MutableSlice(T s, std::enable_if_t<std::is_same<char *, T>::value, private_tag> = {})
       : MutableSlice(s, std::strlen(s)) {
   }
-  explicit MutableSlice(const Slice &from);
   MutableSlice(char *s, char *t);
   MutableSlice(unsigned char *s, unsigned char *t);
   template <size_t N>
