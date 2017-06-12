@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cstring>
+#include <limits>
 
 namespace td {
 
@@ -420,12 +421,10 @@ class ChainBufferIterator {
   }
 
   // returns only head
-  BufferSlice read_as_buffer_slice(ssize_t limit = -1) {
+  BufferSlice read_as_buffer_slice(size_t limit) {
     prepare_read();
     auto res = reader_.clone();
-    if (limit >= 0) {
-      res.truncate(static_cast<size_t>(limit));
-    }
+    res.truncate(limit);
     confirm_read(res.size());
     return res;
   }
@@ -577,12 +576,8 @@ class ChainBufferReader {
     return res;
   }
 
-  BufferSlice read_as_buffer_slice(ssize_t limit = -1) {
-    auto sz = size();
-    if (limit < 0 || static_cast<size_t>(limit) > sz) {
-      limit = sz;
-    }
-    return begin_.read_as_buffer_slice(limit);
+  BufferSlice read_as_buffer_slice(size_t limit = std::numeric_limits<size_t>::max()) {
+    return begin_.read_as_buffer_slice(std::min(limit, size()));
   }
 
  private:
