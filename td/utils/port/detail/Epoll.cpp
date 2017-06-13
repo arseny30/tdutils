@@ -53,7 +53,8 @@ void Epoll::unsubscribe(const Fd &fd) {
 }
 
 void Epoll::unsubscribe_before_close(const Fd &fd) {
-  // empty
+  // May be proper unsubscribe is necessary to guarantee that epoll_wait won't return closed file descriptor
+  unsubscribe(fd);
 }
 
 void Epoll::run(int timeout_ms) {
