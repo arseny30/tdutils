@@ -140,6 +140,9 @@ using FdRef = Fd &;
 #include "td/utils/port/IPAddress.h"
 
 namespace td {
+
+class ObserverBase;
+
 namespace detail {
 class EventFdWindows;
 class FdImpl;
