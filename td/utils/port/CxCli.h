@@ -1,9 +1,11 @@
 #pragma once
 
 #include "td/utils/common.h"
+#undef small
 
 #if TD_WINRT
 
+#include "td/utils/misc.h"    // for narrow_cast
 #include "td/utils/Status.h"  // for td::to_string and td::to_wstring
 
 #include "collection.h"
@@ -66,7 +68,7 @@ inline std::string string_to_unmanaged(String^ string) {
 }
 inline String^ string_from_unmanaged(const std::string &from) {
   auto tmp = td::to_wstring(from).ok();
-  return REF_NEW String(tmp.c_str(), tmp.size());
+  return REF_NEW String(tmp.c_str(), td::narrow_cast<unsigned>(tmp.size()));
 }
 } // namespace CxCli
 #elif TD_CLI
