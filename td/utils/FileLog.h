@@ -67,9 +67,7 @@ class FileLog : public LogInterface {
     auto r_fd = FileFd::open(path_, FileFd::Create | FileFd::Write | FileFd::Append);
     LOG_IF(FATAL, r_fd.is_error()) << "Can't open log: " << r_fd.error();
     fd_ = r_fd.move_as_ok().move_as_fd();
-#ifdef TD_PORT_POSIX
-    dup2(fd_.get_native_fd(), 2);  // TODO: move to port
-#endif
+    Fd::duplicate(fd_, Fd::Stderr());
     auto stat = fd_.stat();
     size_ = stat.size_;
     rotate_threshold_ = rotate_threshold;
@@ -89,7 +87,6 @@ class FileLog : public LogInterface {
   off_t rotate_threshold_;
 
   void do_rotate() {
-#ifdef TD_PORT_POSIX
     auto save_verbosity = GET_VERBOSITY_LEVEL();
     SET_VERBOSITY_LEVEL(VERBOSITY_NAME(FATAL) - 1);  // to ensure that nothing will be printed to the closed log
     CHECK(!path_.empty());
@@ -99,10 +96,9 @@ class FileLog : public LogInterface {
       std::abort();
     }
     fd_ = r_fd.move_as_ok().move_as_fd();
-    dup2(fd_.get_native_fd(), 2);  // TODO: move to port
+    Fd::duplicate(fd_, Fd::Stderr());
     size_ = 0;
     SET_VERBOSITY_LEVEL(save_verbosity);
-#endif
   }
 };
 }  // namespace td

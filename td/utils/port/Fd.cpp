@@ -120,6 +120,17 @@ Fd &Fd::Stdin() {
   return stdin_;
 }
 
+Status Fd::duplicate(const Fd &from, Fd &to) {
+  CHECK(!from.empty());
+  CHECK(!to.empty());
+  int status = dup2(from.get_native_fd(), to.get_native_fd());
+  if (status == -1) {
+    auto dup2_errno = errno;
+    return Status::PosixError(dup2_errno, "dup2 ");
+  }
+  return Status::OK();
+}
+
 bool Fd::empty() const {
   return fd_ == -1;
 }
@@ -726,6 +737,14 @@ class FdImpl {
     return Status::OsError("Sync failed");
   }
 
+  static Status duplicate(const FdImpl &from, FdImpl &to) {
+    int status = DuplicateHandle(from.get_io_handle(), to.get_io_handle());
+    if (status == STATUS_SUCCESS) {
+      return Status::Error(PSTR() << "DuplicateHandle " << tag("NTSTATUS", status));
+    }
+    return Status::OK();
+  }
+
  private:
   Fd::Type type_;
   HANDLE handle_ = INVALID_HANDLE_VALUE;
@@ -1069,6 +1088,12 @@ Fd Fd::Stdout() {
   return Fd();
 }
 #endif
+
+Status Fd::duplicate(const Fd &from, Fd &to) {
+  CHECK(!from.empty());
+  CHECK(!to.empty());
+  return detail::FdImpl::duplicate(*from.impl, *to.impl);
+}
 
 Fd::Fd(Type type, Mode mode, HANDLE handle) : mode_(mode), impl_(make_shared<detail::FdImpl>(type, handle)) {
 }

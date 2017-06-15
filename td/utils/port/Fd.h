@@ -44,6 +44,7 @@ class Fd {
   static Fd &Stderr();
   static Fd &Stdout();
   static Fd &Stdin();
+  static Status duplicate(const Fd &from, Fd &to);
 
   bool empty() const;
   bool is_ref() const {
@@ -202,6 +203,7 @@ class Fd {
   static Fd Stderr();
   static Fd Stdin();
   static Fd Stdout();
+  static Status duplicate(const Fd &from, Fd &to);
 
  private:
   enum class Type {

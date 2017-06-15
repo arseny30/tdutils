@@ -96,9 +96,13 @@ TsCerr::~TsCerr() {
   exitCritical();
 }
 TsCerr &TsCerr::operator<<(Slice slice) {
+  auto &fd = Fd::Stderr();
+  if (fd.empty()) {
+    return *this;
+  }
   double end_time = 0;
   while (!slice.empty()) {
-    auto res = Fd::Stderr().write(slice);
+    auto res = fd.write(slice);
     if (res.is_error()) {
       if (res.error().code() == EPIPE) {
         break;
