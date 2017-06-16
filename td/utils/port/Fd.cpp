@@ -737,14 +737,6 @@ class FdImpl {
     return Status::OsError("Sync failed");
   }
 
-  static Status duplicate(const FdImpl &from, FdImpl &to) {
-    int status = DuplicateHandle(from.get_io_handle(), to.get_io_handle());
-    if (status == STATUS_SUCCESS) {
-      return Status::Error(PSTR() << "DuplicateHandle " << tag("NTSTATUS", status));
-    }
-    return Status::OK();
-  }
-
  private:
   Fd::Type type_;
   HANDLE handle_ = INVALID_HANDLE_VALUE;
@@ -1090,9 +1082,7 @@ Fd Fd::Stdout() {
 #endif
 
 Status Fd::duplicate(const Fd &from, Fd &to) {
-  CHECK(!from.empty());
-  CHECK(!to.empty());
-  return detail::FdImpl::duplicate(*from.impl, *to.impl);
+  return Status::Error("Not supported");
 }
 
 Fd::Fd(Type type, Mode mode, HANDLE handle) : mode_(mode), impl_(make_shared<detail::FdImpl>(type, handle)) {
