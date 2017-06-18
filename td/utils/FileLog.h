@@ -67,7 +67,7 @@ class FileLog : public LogInterface {
     auto r_fd = FileFd::open(path_, FileFd::Create | FileFd::Write | FileFd::Append);
     LOG_IF(FATAL, r_fd.is_error()) << "Can't open log: " << r_fd.error();
     fd_ = r_fd.move_as_ok().move_as_fd();
-    Fd::duplicate(fd_, Fd::Stderr());
+    Fd::duplicate(fd_, Fd::Stderr()).ignore();
     auto stat = fd_.stat();
     size_ = stat.size_;
     rotate_threshold_ = rotate_threshold;
@@ -96,7 +96,7 @@ class FileLog : public LogInterface {
       std::abort();
     }
     fd_ = r_fd.move_as_ok().move_as_fd();
-    Fd::duplicate(fd_, Fd::Stderr());
+    Fd::duplicate(fd_, Fd::Stderr()).ignore();
     size_ = 0;
     SET_VERBOSITY_LEVEL(save_verbosity);
   }
