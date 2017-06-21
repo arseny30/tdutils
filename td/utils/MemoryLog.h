@@ -14,8 +14,6 @@ class MemoryLog : public LogInterface {
   static constexpr size_t MAX_OUTPUT_SIZE = buffer_size / 16 < (8 << 10) ? buffer_size / 16 : (8 << 10);
 
  public:
-  enum { BufferSize = buffer_size };
-
   MemoryLog() {
     std::memset(buffer_, ' ', sizeof(buffer_));
   }
@@ -48,13 +46,16 @@ class MemoryLog : public LogInterface {
 
     std::snprintf(&buffer_[start_pos], 16, "\nLOG:%08x:  ", real_pos);
   }
-  Slice get_buffer() {
+
+  void rotate() override {
+  }
+
+  Slice get_buffer() const {
     return Slice(buffer_, sizeof(buffer_));
   }
-  size_t get_pos() {
+
+  size_t get_pos() const {
     return pos_ & (buffer_size - 1);
-  }
-  void rotate() override {
   }
 
  private:
