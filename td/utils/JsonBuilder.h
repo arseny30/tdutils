@@ -683,6 +683,18 @@ class VirtuallyJsonableLong : public VirtuallyJsonable {
   int64 value_;
 };
 
+class VirtuallyJsonableString : public VirtuallyJsonable {
+ public:
+  explicit VirtuallyJsonableString(Slice value) : value_(value) {
+  }
+  void store(JsonValueScope *scope) const override {
+    *scope << JsonString(value_);
+  }
+
+ private:
+  Slice value_;
+};
+
 Result<MutableSlice> json_string_decode(Parser &parser) WARN_UNUSED_RESULT;
 Status json_string_skip(Parser &parser) WARN_UNUSED_RESULT;
 Result<JsonValue> do_json_decode(Parser &parser) WARN_UNUSED_RESULT;
