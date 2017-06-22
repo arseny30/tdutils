@@ -50,8 +50,15 @@ bool IPAddress::is_ipv4() const {
 
 uint32 IPAddress::get_ipv4() const {
   CHECK(is_valid());
-  CHECK(get_address_family() == AF_INET);
+  CHECK(is_ipv4());
   return ipv4_addr_.sin_addr.s_addr;
+}
+
+Slice IPAddress::get_ipv6() const {
+  static_assert(sizeof(ipv6_addr_.sin6_addr) == 16, "ipv6 size == 16");
+  CHECK(is_valid());
+  CHECK(!is_ipv4());
+  return Slice(ipv6_addr_.sin6_addr.s6_addr, 16);
 }
 
 IPAddress IPAddress::get_any_addr() const {

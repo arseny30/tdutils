@@ -23,6 +23,7 @@ class IPAddress {
   Slice get_ip_str() const;
   bool is_ipv4() const;
   uint32 get_ipv4() const;
+  Slice get_ipv6() const;
   int get_port() const;
   void set_port(int port);
 
