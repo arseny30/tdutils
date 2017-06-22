@@ -21,6 +21,7 @@
 #include <utility>
 
 namespace td {
+
 static string BN_to_string(const BIGNUM *bn, int size = 0) {
   int num_size = BN_num_bytes(bn);
   if (size == 0) {

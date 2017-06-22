@@ -62,10 +62,6 @@
 #endif
 // clang-format on
 
-namespace {
-char no_empty_obj_ TD_UNUSED;  // to disable linker warning about empty files
-}  // namespace
-
 namespace td {
 
 using string = std::string;

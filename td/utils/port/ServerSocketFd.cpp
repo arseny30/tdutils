@@ -1,4 +1,7 @@
 #include "td/utils/port/config.h"
+
+char disable_linker_warning_about_empty_file_server_socket_fd_cpp TD_UNUSED;
+
 #ifdef TD_PORT_POSIX
 
 #include "td/utils/port/ServerSocketFd.h"

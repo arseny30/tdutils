@@ -51,6 +51,7 @@ bool check_utf8(CSlice str) {
   } while (true);
 
   UNREACHABLE();
+  return false;
 }
 
 void append_utf8_character(string &str, uint32 ch) {
@@ -95,6 +96,7 @@ const unsigned char *next_utf8_unsafe(const unsigned char *ptr, uint32 *code) {
     return ptr + 4;
   }
   UNREACHABLE();
+  return ptr;
 }
 
 }  // namespace td

@@ -1,5 +1,7 @@
 #include "td/utils/port/config.h"
 
+char disable_linker_warning_about_empty_file_file_fd_cpp TD_UNUSED;
+
 #ifdef TD_PORT_POSIX
 
 #include "td/utils/format.h"
@@ -16,6 +18,7 @@
 #include <cstring>
 
 namespace td {
+
 FileFd::operator FdRef() {
   return fd_;
 }
@@ -234,4 +237,5 @@ Status FileFd::sync() {
 }
 
 }  // namespace td
+
 #endif  // TD_PORT_POSIX

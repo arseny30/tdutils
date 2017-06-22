@@ -17,6 +17,7 @@
 #include <cstring>
 
 namespace td {
+
 IPAddress::IPAddress() : is_valid_(false) {
 }
 
@@ -203,6 +204,7 @@ Slice IPAddress::get_ip_str() const {
       break;
     default:
       UNREACHABLE();
+      return Slice();
   }
 
   const char *res = inet_ntop(get_address_family(),
@@ -231,6 +233,7 @@ int IPAddress::get_port() const {
       return ntohs(ipv4_addr_.sin_port);
     default:
       UNREACHABLE();
+      return 0;
   }
 }
 
@@ -266,7 +269,9 @@ bool operator==(const IPAddress &a, const IPAddress &b) {
   }
 
   UNREACHABLE("Unknown address family");
+  return false;
 }
+
 bool operator<(const IPAddress &a, const IPAddress &b) {
   if (a.is_valid() != b.is_valid()) {
     return a.is_valid() < b.is_valid();
@@ -288,6 +293,7 @@ bool operator<(const IPAddress &a, const IPAddress &b) {
   }
 
   UNREACHABLE("Unknown address family");
+  return false;
 }
 
 StringBuilder &operator<<(StringBuilder &builder, const IPAddress &address) {
