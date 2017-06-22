@@ -132,6 +132,7 @@ Status IPAddress::init_host_port(CSlice host, int port) {
   auto str_port = to_string(port);
   return init_host_port(host, str_port);
 }
+
 Status IPAddress::init_host_port(CSlice host, CSlice port) {
   struct addrinfo hints;
   struct addrinfo *info = nullptr;
