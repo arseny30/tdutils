@@ -1,6 +1,7 @@
 #pragma once
 
 #include "td/utils/common.h"
+#include "td/utils/invoke.h"
 #include "td/utils/misc.h"
 
 #include <tuple>

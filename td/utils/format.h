@@ -1,5 +1,7 @@
 #pragma once
+
 #include "td/utils/common.h"
+#include "td/utils/invoke.h"  // for tuple_for_each
 #include "td/utils/StringBuilder.h"
 
 #include <tuple>
@@ -285,6 +287,7 @@ auto concat(const ArgsT &... args) {
 }
 
 }  // namespace format
+
 using format::tag;
 
 template <class A, class B>

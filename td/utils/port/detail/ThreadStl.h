@@ -4,6 +4,7 @@
 #ifdef TD_THREAD_STL
 
 #include "td/utils/common.h"
+#include "td/utils/invoke.h"
 
 #include <thread>
 #include <tuple>

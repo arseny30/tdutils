@@ -97,6 +97,7 @@ set(TDUTILS_SOURCE
   td/utils/Heap.h
   td/utils/Hints.h
   td/utils/int_types.h
+  td/utils/invoke.h
   td/utils/JsonBuilder.h
   td/utils/logging.h
   td/utils/MemoryLog.h
