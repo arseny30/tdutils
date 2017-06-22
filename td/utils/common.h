@@ -44,10 +44,6 @@
 #include <utility>  // for std::move and std::forward
 #include <vector>
 
-#include <cassert>  // TODO remove this header
-
-#define ASSERT_CHECK assert
-
 #define TD_DEBUG
 
 #define TD_CONCAT_IMPL(x, y) x##y

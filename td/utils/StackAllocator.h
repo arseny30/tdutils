@@ -5,6 +5,7 @@
 #include "td/utils/Slice-decl.h"
 
 #include <array>
+#include <cstdlib>
 
 namespace td {
 
@@ -52,13 +53,16 @@ class StackAllocator {
       char *res = mem.data() + pos;
       size = (size + 7) & -8;
       pos += size;
-      ASSERT_CHECK(pos < MEM_SIZE);
+      if (pos > MEM_SIZE) {
+        std::abort();  // memory is over
+      }
       return res;
     }
     void free_ptr(char *ptr) {
       size_t new_pos = ptr - mem.data();
-      ASSERT_CHECK(new_pos < MEM_SIZE);
-      ASSERT_CHECK(new_pos < pos);
+      if (new_pos >= pos) {
+        std::abort();  // shouldn't happen
+      }
       pos = new_pos;
     }
   };

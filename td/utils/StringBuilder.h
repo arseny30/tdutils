@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdarg>
+#include <cstdlib>
 #include <cstdio>
 #include <cstring>
 #include <type_traits>
@@ -16,7 +17,9 @@ class StringBuilder {
  public:
   explicit StringBuilder(MutableSlice slice)
       : begin_ptr_(slice.begin()), current_ptr_(begin_ptr_), end_ptr_(slice.end() - reserved_size) {
-    ASSERT_CHECK(slice.size() > reserved_size);
+    if (slice.size() <= reserved_size) {
+      std::abort();  // shouldn't happen
+    }
   }
 
   void clear() {
@@ -24,7 +27,9 @@ class StringBuilder {
     error_flag_ = false;
   }
   MutableCSlice as_cslice() {
-    ASSERT_CHECK(current_ptr_ < end_ptr_ + reserved_size);
+    if (current_ptr_ >= end_ptr_ + reserved_size) {
+      std::abort();  // shouldn't happen
+    }
     *current_ptr_ = 0;
     return MutableCSlice(begin_ptr_, current_ptr_);
   }
