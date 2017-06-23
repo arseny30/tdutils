@@ -15,7 +15,7 @@ set(TDMIME_AUTO
 
 add_custom_target(tdmime_auto DEPENDS ${TDMIME_SOURCE})
 
-if (${GENERATE_SOURCE})
+if (NOT CMAKE_CROSSCOMPILING)
   set(GPERF_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/auto/mime_type_to_extension.gperf
     ${CMAKE_CURRENT_SOURCE_DIR}/auto/extension_to_mime_type.gperf

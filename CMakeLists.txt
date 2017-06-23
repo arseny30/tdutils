@@ -137,7 +137,7 @@ target_include_directories(tdutils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOUR
 if (WIN32)
   target_link_libraries(tdutils PUBLIC ws2_32 Mswsock)
 endif()
-if (${GENERATE_SOURCE})
+if (NOT CMAKE_CROSSCOMPILING)
   add_dependencies(tdutils tdmime_auto)
 endif()
 target_link_libraries(tdutils PUBLIC ${ZLIB_LIBRARIES} ${OPENSSL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
