@@ -11,7 +11,7 @@
   class name##Bench : public ::td::Benchmark { \
    public:                                     \
     std::string get_description() override {   \
-      return desc;                             \
+      return (desc);                           \
     }                                          \
     void run(int n) override;                  \
   };                                           \
@@ -36,7 +36,13 @@ void do_not_optimize_away(T &&datum) {
 
 class Benchmark {
  public:
+  Benchmark() = default;
+  Benchmark(const Benchmark &) = delete;
+  Benchmark &operator=(const Benchmark &) = delete;
+  Benchmark(Benchmark &&) = delete;
+  Benchmark &operator=(Benchmark &&) = delete;
   virtual ~Benchmark() = default;
+
   virtual std::string get_description() {
     return "";
   }
