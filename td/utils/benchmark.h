@@ -7,14 +7,14 @@
 #include <cmath>
 #include <tuple>
 
-#define BENCH(name, desc)                      \
-  class name##Bench : public ::td::Benchmark { \
-   public:                                     \
-    std::string get_description() override {   \
-      return (desc);                           \
-    }                                          \
-    void run(int n) override;                  \
-  };                                           \
+#define BENCH(name, desc)                          \
+  class name##Bench : public ::td::Benchmark {     \
+   public:                                         \
+    std::string get_description() const override { \
+      return (desc);                               \
+    }                                              \
+    void run(int n) override;                      \
+  };                                               \
   void name##Bench::run(int n)
 
 namespace td {
@@ -43,9 +43,7 @@ class Benchmark {
   Benchmark &operator=(Benchmark &&) = delete;
   virtual ~Benchmark() = default;
 
-  virtual std::string get_description() {
-    return "";
-  }
+  virtual std::string get_description() const = 0;
 
   virtual void start_up() {
   }
