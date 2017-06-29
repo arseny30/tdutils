@@ -2,7 +2,6 @@
 
 /***
 * Simple logging.
-* Interface is almost the same as in Google Logging library.
 *
 * FATAL, ERROR, WARNING, INFO, DEBUG
 *

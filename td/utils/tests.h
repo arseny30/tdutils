@@ -5,20 +5,6 @@
 #include "td/utils/misc.h"
 #include "td/utils/Slice.h"
 
-#if TD_USE_GTEST
-#if TD_GCC
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif  // TD_GCC
-#include "gtest/gtest.h"
-#if TD_GCC
-#pragma GCC diagnostic pop
-#endif  // TD_GCC
-#define REGISTER_TESTS(x)
-#define DESC_TESTS(x)
-#define LOAD_TESTS(x)
-#else  // TD_USE_GTEST
-
 #define REGISTER_TESTS(x)                \
   void TD_CONCAT(register_tests_, x)() { \
   }
@@ -76,4 +62,3 @@ class Test : private ListNode {
 #define ASSERT_TRUE(a) CHECK(a)
 #define EXPECT_STREQ(a, b) EXPECT_EQ(Slice(a), Slice(b))
 #define ASSERT_STREQ(a, b) ASSERT_EQ(Slice(a), Slice(b))
-#endif
