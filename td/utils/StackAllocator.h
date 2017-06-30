@@ -10,7 +10,6 @@
 namespace td {
 
 struct DefaultStackAllocatorTag {};
-template <class Tag = DefaultStackAllocatorTag>
 class StackAllocator {
   class Deleter {
    public:
@@ -67,11 +66,8 @@ class StackAllocator {
     }
   };
 
-  static Impl &impl() {
-    static TD_THREAD_LOCAL Impl *impl_;  // static zero initialized
-    init_thread_local<Impl>(impl_);
-    return *impl_;
-  }
+  static TD_THREAD_LOCAL Impl *impl_;  // static zero initialized
+  static Impl &impl();
 
  public:
   static Ptr alloc(size_t size) {

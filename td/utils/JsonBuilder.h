@@ -712,7 +712,7 @@ inline Result<JsonValue> json_decode(MutableSlice from) {
 template <class StrT, class ValT>
 StrT json_encode(const ValT &val) {
   auto buf_len = 1 << 19;
-  auto buf = StackAllocator<>::alloc(buf_len);
+  auto buf = StackAllocator::alloc(buf_len);
   JsonBuilder jb(StringBuilder(buf.as_slice()));
   jb.enter_value() << val;
   LOG_IF(ERROR, jb.string_builder().is_error()) << "Json buffer overflow";

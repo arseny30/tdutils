@@ -9,7 +9,9 @@
 namespace td {
 
 // clang-format off
-#if TD_GCC || TD_CLANG
+#if TD_INTEL
+  #define TD_THREAD_LOCAL thread_local
+#elif TD_GCC || TD_CLANG 
   #define TD_THREAD_LOCAL __thread
 #else
   #define TD_THREAD_LOCAL thread_local
@@ -28,7 +30,6 @@ void set_thread_id(int32 id);
 int32 get_thread_id();
 
 namespace detail {
-extern TD_THREAD_LOCAL int32 thread_id_;
 
 class Destructor {
  public:
@@ -85,12 +86,7 @@ bool init_thread_local(P &raw_ptr, ArgsT &&... args) {
   return true;
 }
 
-inline void set_thread_id(int32 id) {
-  detail::thread_id_ = id;
-}
-
-inline int32 get_thread_id() {
-  return detail::thread_id_;
-}
+void set_thread_id(int32 id);
+int32 get_thread_id();
 
 }  // namespace td

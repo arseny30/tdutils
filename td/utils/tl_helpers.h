@@ -154,7 +154,7 @@ string serialize(const T &object) {
 
   string key(length, '\0');
   if (!is_aligned_pointer<4>(key.data())) {
-    auto ptr = StackAllocator<>::alloc(length);
+    auto ptr = StackAllocator::alloc(length);
     MutableSlice data = ptr.as_slice();
     tl::tl_storer_unsafe storer(data.begin());
     store(object, storer);

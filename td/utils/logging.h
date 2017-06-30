@@ -168,7 +168,7 @@ class Logger {
  public:
   static const int BUFFER_SIZE = 128 * 1024;
   Logger(LogInterface &log, int log_level, bool simple_mode = false)
-      : buffer_(StackAllocator<>::alloc(BUFFER_SIZE))
+      : buffer_(StackAllocator::alloc(BUFFER_SIZE))
       , log_(log)
       , log_level_(log_level)
       , sb_(buffer_.as_slice())
@@ -205,7 +205,7 @@ class Logger {
   static TD_THREAD_LOCAL const char *tag2_;
 
  private:
-  decltype(StackAllocator<>::alloc(0)) buffer_;
+  decltype(StackAllocator::alloc(0)) buffer_;
   LogInterface &log_;
   int log_level_;
   StringBuilder sb_;

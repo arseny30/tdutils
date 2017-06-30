@@ -49,6 +49,8 @@ set(TDUTILS_SOURCE
   td/utils/tl_parser.cpp
   td/utils/unicode.cpp
   td/utils/utf8.cpp
+  td/utils/StackAllocator.cpp
+  td/utils/Status.cpp
 
 
   td/utils/port/Clocks.h

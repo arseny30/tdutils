@@ -45,10 +45,10 @@
   #error "Probably unsupported platform. Feel free to remove the error and try to recompile"
 #endif
 
-#if defined(__clang__)
-  #define TD_CLANG 1
-#elif defined(__ICC) || defined(__INTEL_COMPILER)
+#if defined(__ICC) || defined(__INTEL_COMPILER)
   #define TD_INTEL 1
+#elif defined(__clang__)
+  #define TD_CLANG 1
 #elif defined(__GNUC__) || defined(__GNUG__)
   #define TD_GCC 1
 #elif defined(_MSC_VER)
@@ -57,7 +57,7 @@
   #error "Probably unsupported compiler. Feel free to remove the error and try to recompile"
 #endif
 
-#if TD_GCC || TD_CLANG
+#if TD_GCC || TD_CLANG || TD_INTEL
   #define WARN_UNUSED_RESULT __attribute__((warn_unused_result))
   #define ATTRIBUTE_FORMAT_PRINTF(from, to) __attribute__((format(printf, from, to)))
 #else
@@ -65,7 +65,7 @@
   #define ATTRIBUTE_FORMAT_PRINTF(from, to)
 #endif
 
-#if TD_CLANG || TD_GCC
+#if TD_CLANG || TD_GCC || TD_INTEL
   #define likely(x) __builtin_expect(x, 1)
   #define unlikely(x) __builtin_expect(x, 0)
 #else
@@ -75,7 +75,7 @@
 
 #if TD_MSVC
   #define TD_UNUSED __pragma(warning(suppress : 4100))
-#elif TD_CLANG || TD_GCC
+#elif TD_CLANG || TD_GCC || TD_INTEL
   #define TD_UNUSED __attribute__((unused))
 #else
   #define TD_UNUSED

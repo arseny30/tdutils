@@ -41,7 +41,7 @@
   }
 
 namespace td {
-inline CSlice strerror_safe(int code);
+CSlice strerror_safe(int code);
 #if TD_WINDOWS
 string winerror_to_string(int code);
 #endif
@@ -156,7 +156,7 @@ class Status {
   }
 
   string to_string() const {
-    auto buf = StackAllocator<>::alloc(4096);
+    auto buf = StackAllocator::alloc(4096);
     StringBuilder sb(buf.as_slice());
     print(sb);
     return sb.as_cslice().str();
@@ -427,25 +427,6 @@ inline Result<Unit>::Result(Status &&status) : status_(std::move(status)) {
 
 inline StringBuilder &operator<<(StringBuilder &string_builder, const Status &status) {
   return status.print(string_builder);
-}
-
-inline CSlice strerror_safe(int code) {
-  const size_t size = 1000;
-
-  static TD_THREAD_LOCAL char *buf;  // static zero initialized
-  init_thread_local<char[]>(buf, size);
-
-#if TD_WINDOWS
-  strerror_s(buf, size, code);
-  return CSlice(buf, buf + std::strlen(buf));
-#else
-#if !defined(__GLIBC__) || ((_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && !_GNU_SOURCE)
-  strerror_r(code, buf, size);
-  return CSlice(buf, buf + std::strlen(buf));
-#else
-  return CSlice(strerror_r(code, buf, size));
-#endif
-#endif
 }
 
 // TODO move to_string somewhere else
