@@ -9,11 +9,12 @@
 namespace td {
 
 // clang-format off
-#if TD_INTEL
-  #define TD_THREAD_LOCAL thread_local
-#elif TD_GCC || TD_CLANG 
+#if TD_GCC || TD_CLANG
   #define TD_THREAD_LOCAL __thread
-#else
+#elif TD_INTEL || TD_MSVC
+  #define TD_THREAD_LOCAL thread_local
+#elif
+  #warning "TD_THREAD_LOCAL is not defined, trying 'thread_local'"
   #define TD_THREAD_LOCAL thread_local
 #endif
 // clang-format on

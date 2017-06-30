@@ -10,7 +10,7 @@
 #include "td/utils/port/Clocks.h"
 #include "td/utils/ScopeGuard.h"
 
-#if TD_MAC
+#if TD_DARWIN
 #include <mach/mach.h>
 #include <sys/time.h>
 #endif
@@ -37,7 +37,10 @@ namespace td {
 namespace detail {
 Stat from_native_stat(const struct ::stat &buf) {
   Stat res;
-#if TD_ANDROID || TD_LINUX || TD_TIZEN || TD_CYGWIN
+#if TD_DARWIN
+  res.mtime_nsec_ = buf.st_mtimespec.tv_sec * 1000000000ll + buf.st_mtimespec.tv_nsec;  // khm
+  res.atime_nsec_ = buf.st_atimespec.tv_sec * 1000000000ll + buf.st_atimespec.tv_nsec;
+#else
 #if defined(_BSD_SOURCE) || defined(_SVID_SOURCE) || _POSIX_C_SOURCE >= 200809L || _XOPEN_SOURCE >= 700
   res.mtime_nsec_ = buf.st_mtime * 1000000000ll + buf.st_mtim.tv_nsec;
   res.atime_nsec_ = buf.st_atime * 1000000000ll + buf.st_atim.tv_nsec;
@@ -45,11 +48,6 @@ Stat from_native_stat(const struct ::stat &buf) {
   res.mtime_nsec_ = buf.st_mtime * 1000000000ll + buf.st_mtimensec;
   res.atime_nsec_ = buf.st_atime * 1000000000ll + buf.st_atimensec;
 #endif
-#elif TD_MAC
-  res.mtime_nsec_ = buf.st_mtimespec.tv_sec * 1000000000ll + buf.st_mtimespec.tv_nsec;  // khm
-  res.atime_nsec_ = buf.st_atimespec.tv_sec * 1000000000ll + buf.st_atimespec.tv_nsec;
-#else
-#error "Unsupported OS"
 #endif
   // TODO check for max size
   // sometimes stat.st_size is greater than off_t
@@ -86,7 +84,7 @@ Status update_atime(int native_fd) {
     return status;
   }
   return Status::OK();
-#elif TD_MAC
+#elif TD_DARWIN
   auto info = fstat(native_fd);
   struct timeval upd[2];
   auto now = Clocks::system();
@@ -104,7 +102,7 @@ Status update_atime(int native_fd) {
     return status;
   }
   return Status::OK();
-#elif TD_ANDROID || TD_TIZEN || TD_CYGWIN
+#else
   return Status::Error();
 // NOT SUPPORTED...
 // struct timespec times[2];
@@ -121,8 +119,6 @@ Status update_atime(int native_fd) {
 // return status;
 //}
 // return Status::OK();
-#else
-#error "Unsupported OS"
 #endif
 }
 }  // namespace detail
@@ -146,7 +142,7 @@ Result<Stat> stat(CSlice path) {
 }
 
 Result<MemStat> mem_stat() {
-#if TD_MAC
+#if TD_DARWIN
   struct task_basic_info t_info;
   mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
 
@@ -160,7 +156,7 @@ Result<MemStat> mem_stat() {
   res.resident_size_peak_ = 0;
   res.virtual_size_peak_ = 0;
   return res;
-#endif  // TD_MAC
+#endif  // TD_DARWIN
 
 #if TD_LINUX || TD_ANDROID || TD_TIZEN
   TRY_RESULT(fd, FileFd::open("/proc/self/status", FileFd::Read));

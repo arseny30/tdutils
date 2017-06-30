@@ -9,7 +9,6 @@
 
 namespace td {
 
-struct DefaultStackAllocatorTag {};
 class StackAllocator {
   class Deleter {
    public:
