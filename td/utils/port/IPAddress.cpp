@@ -186,14 +186,35 @@ Status IPAddress::init_sockaddr(struct sockaddr *addr, socklen_t len) {
   return Status::OK();
 }
 
+static Slice get_ip_str(int family, const void *addr) {
+  const int buf_size = INET6_ADDRSTRLEN;  //, INET_ADDRSTRLEN;
+  static TD_THREAD_LOCAL char *buf;
+  init_thread_local<char[]>(buf, buf_size);
+
+  const char *res = inet_ntop(family,
+#if TD_WINDOWS
+                              const_cast<PVOID>(addr),
+#else
+                              addr,
+#endif
+                              buf, buf_size);
+  if (res == nullptr) {
+    return Slice();
+  } else {
+    return Slice(res);
+  }
+}
+
+Slice IPAddress::ipv4_to_str(int32 ipv4) {
+  auto tmp_ipv4 = ntohl(ipv4);
+  return ::td::get_ip_str(AF_INET, &tmp_ipv4);
+}
+
 Slice IPAddress::get_ip_str() const {
   if (!is_valid()) {
     return Slice("0.0.0.0");
   }
 
-  const int buf_size = INET6_ADDRSTRLEN;  //, INET_ADDRSTRLEN;
-  static TD_THREAD_LOCAL char *buf;
-  init_thread_local<char[]>(buf, buf_size);
   const void *addr;
   switch (get_address_family()) {
     case AF_INET6:
@@ -206,19 +227,7 @@ Slice IPAddress::get_ip_str() const {
       UNREACHABLE();
       return Slice();
   }
-
-  const char *res = inet_ntop(get_address_family(),
-#if TD_WINDOWS
-                              const_cast<PVOID>(addr),
-#else
-                              addr,
-#endif
-                              buf, buf_size);
-  if (res == nullptr) {
-    return Slice();
-  } else {
-    return Slice(res);
-  }
+  return ::td::get_ip_str(get_address_family(), addr);
 }
 
 int IPAddress::get_port() const {
