@@ -40,7 +40,7 @@ static_assert(static_cast<char>(-256) == 0, "Unexpected cast to char implementat
 template <size_t size>
 struct UInt {
   static_assert(size % 8 == 0, "size should be divisible by 8");
-  alignas(64) uint8 raw[size / 8];
+  uint8 raw[size / 8];
 };
 
 template <size_t size>
