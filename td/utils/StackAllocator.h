@@ -65,7 +65,6 @@ class StackAllocator {
     }
   };
 
-  static TD_THREAD_LOCAL Impl *impl_;  // static zero initialized
   static Impl &impl();
 
  public:

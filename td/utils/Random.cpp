@@ -15,7 +15,7 @@ void Random::secure_bytes(MutableSlice dest) {
 
 void Random::secure_bytes(unsigned char *ptr, size_t size) {
   constexpr size_t buf_size = 512;
-  static TD_THREAD_LOCAL unsigned char *buf;  // static zero initialized
+  static TD_THREAD_LOCAL unsigned char *buf;  // static zero-initialized
   static TD_THREAD_LOCAL size_t buf_pos;
   if (init_thread_local<unsigned char[]>(buf, buf_size)) {
     buf_pos = buf_size;

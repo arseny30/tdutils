@@ -5,7 +5,7 @@
 
 namespace td {
 
-TD_THREAD_LOCAL BufferAllocator::BufferRawTls *BufferAllocator::buffer_raw_tls;  // static zero initialized
+TD_THREAD_LOCAL BufferAllocator::BufferRawTls *BufferAllocator::buffer_raw_tls;  // static zero-initialized
 
 std::atomic<size_t> BufferAllocator::buffer_mem;
 
