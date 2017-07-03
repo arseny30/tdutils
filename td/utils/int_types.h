@@ -42,13 +42,7 @@ struct UInt96 {
 };
 
 struct UInt128 {
-  union {
-    struct {
-      int64 low;
-      int64 high;
-    };
-    uint8 raw[128 / 8];
-  };
+  uint8 raw[128 / 8];
 };
 
 struct UInt160 {
@@ -56,13 +50,7 @@ struct UInt160 {
 };
 
 struct UInt256 {
-  union {
-    struct {
-      UInt128 low;
-      UInt128 high;
-    };
-    uint8 raw[256 / 8];
-  };
+  uint8 raw[256 / 8];
 };
 
 struct UInt2048 {

@@ -147,6 +147,19 @@ class tl_storer_to_string {
     result += (PSLICE() << value).c_str();
   }
 
+  void store_binary(Slice data) {
+    static const char *hex = "0123456789ABCDEF";
+
+    result.append("{ ");
+    for (auto c : data) {
+      unsigned char byte = c;
+      result += hex[byte >> 4];
+      result += hex[byte & 15];
+      result += ' ';
+    }
+    result.append("}");
+  }
+
  public:
   tl_storer_to_string() = default;
   tl_storer_to_string(const tl_storer_to_string &other) = delete;
@@ -213,21 +226,13 @@ class tl_storer_to_string {
 
   void store_field(const char *name, const UInt128 &value) {
     store_field_begin(name);
-    store_long(value.low);
-    result += " ";
-    store_long(value.high);
+    store_binary(Slice(reinterpret_cast<const unsigned char *>(&value), sizeof(value)));
     store_field_end();
   }
 
   void store_field(const char *name, const UInt256 &value) {
     store_field_begin(name);
-    store_long(value.low.low);
-    result += " ";
-    store_long(value.low.high);
-    result += " ";
-    store_long(value.high.low);
-    result += " ";
-    store_long(value.high.high);
+    store_binary(Slice(reinterpret_cast<const unsigned char *>(&value), sizeof(value)));
     store_field_end();
   }
 
