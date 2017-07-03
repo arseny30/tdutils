@@ -176,10 +176,6 @@ class tl_parser {
   size_t get_left_len() const {
     return left_len;
   }
-
-  const char *get_buf() const {
-    return reinterpret_cast<const char *>(data);
-  }
 };
 
 class tl_buffer_parser : public tl_parser {
