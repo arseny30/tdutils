@@ -95,7 +95,8 @@ class tl_parser {
   }
 
   int64 fetch_long_unsafe() {
-    int64 result = *reinterpret_cast<const int64 *>(data);
+    int64 result;
+    std::memcpy(reinterpret_cast<unsigned char *>(&result), data, sizeof(int64));
     data += 2;
     return result;
   }
@@ -106,7 +107,8 @@ class tl_parser {
   }
 
   double fetch_double_unsafe() {
-    double result = *reinterpret_cast<const double *>(data);
+    double result;
+    std::memcpy(reinterpret_cast<unsigned char *>(&result), data, sizeof(double));
     data += 2;
     return result;
   }
@@ -121,7 +123,8 @@ class tl_parser {
     static_assert(sizeof(T) <= sizeof(empty_data), "too big fetch_binary");
     static_assert(sizeof(T) % 4 == 0, "wrong call to fetch_binary");
     check_len(sizeof(T) / 4);
-    T result = *reinterpret_cast<const T *>(data);
+    T result;
+    std::memcpy(reinterpret_cast<unsigned char *>(&result), data, sizeof(T));
     data += sizeof(T) / 4;
     return result;
   }

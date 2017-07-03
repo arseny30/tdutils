@@ -23,13 +23,15 @@ class tl_storer_unsafe {
 
   template <class T>
   void store_binary(const T &x) {
-    *reinterpret_cast<T *>(buf) = x;
-    buf += sizeof(x);
+    std::memcpy(buf, reinterpret_cast<const unsigned char *>(&x), sizeof(T));
+    buf += sizeof(T);
   }
 
   void store_int(int32 x) {
-    store_binary<int32>(x);
+    *reinterpret_cast<int32 *>(buf) = x;
+    buf += sizeof(int32);
   }
+
   void store_long(int64 x) {
     store_binary<int64>(x);
   }
@@ -39,7 +41,7 @@ class tl_storer_unsafe {
     buf += slice.size();
   }
   void store_storer(const Storer &storer) {
-    size_t size = storer.store(reinterpret_cast<uint8 *>(buf));
+    size_t size = storer.store(reinterpret_cast<unsigned char *>(buf));
     buf += size;
   }
 
@@ -87,7 +89,7 @@ class tl_storer_calc_length {
 
   template <class T>
   void store_binary(const T &x) {
-    length += sizeof(x);
+    length += sizeof(T);
   }
 
   void store_int(int32 x) {
