@@ -37,48 +37,23 @@ static_assert(static_cast<char>(-256) == 0, "Unexpected cast to char implementat
 #pragma warning(pop)
 #endif
 
-struct UInt96 {
-  uint8 raw[96 / 8];
+template <size_t size>
+struct UInt {
+  static_assert(size % 8 == 0, "size should be divisible by 8");
+  alignas(64) uint8 raw[size / 8];
 };
 
-struct UInt128 {
-  uint8 raw[128 / 8];
-};
-
-struct UInt160 {
-  uint8 raw[160 / 8];
-};
-
-struct UInt256 {
-  uint8 raw[256 / 8];
-};
-
-struct UInt2048 {
-  uint8 raw[2048 / 8];
-};
-
-inline bool operator==(const UInt128 &a, const UInt128 &b) {
+template <size_t size>
+inline bool operator==(const UInt<size> &a, const UInt<size> &b) {
   return std::memcmp(a.raw, b.raw, sizeof(a)) == 0;
 }
 
-inline bool operator!=(const UInt128 &a, const UInt128 &b) {
-  return std::memcmp(a.raw, b.raw, sizeof(a)) != 0;
+template <size_t size>
+inline bool operator!=(const UInt<size> &a, const UInt<size> &b) {
+  return !(a == b);
 }
 
-inline bool operator==(const UInt160 &a, const UInt160 &b) {
-  return std::memcmp(a.raw, b.raw, sizeof(a)) == 0;
-}
-
-inline bool operator!=(const UInt160 &a, const UInt160 &b) {
-  return std::memcmp(a.raw, b.raw, sizeof(a)) != 0;
-}
-
-inline bool operator==(const UInt256 &a, const UInt256 &b) {
-  return std::memcmp(a.raw, b.raw, sizeof(a)) == 0;
-}
-
-inline bool operator!=(const UInt256 &a, const UInt256 &b) {
-  return std::memcmp(a.raw, b.raw, sizeof(a)) != 0;
-}
+using UInt128 = UInt<128>;
+using UInt256 = UInt<256>;
 
 }  // namespace td
