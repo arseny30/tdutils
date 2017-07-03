@@ -116,7 +116,7 @@ void store(const vector<T> &vec, Storer &storer) {
 template <class T, class Parser>
 void parse(vector<T> &vec, Parser &parser) {
   uint32 size = parser.fetch_int();
-  if (parser.get_data_len() < size) {
+  if (parser.get_left_len() < size) {
     parser.set_error("Wrong vector length");
     return;
   }

@@ -18,17 +18,17 @@ namespace td {
 namespace tl {
 
 class tl_parser {
-  const int32 *data = nullptr;
-  const int32 *data_begin = nullptr;
+  const unsigned char *data = nullptr;
   size_t data_len = 0;
-  std::string error;
+  size_t left_len = 0;
   size_t error_pos = std::numeric_limits<size_t>::max();
+  std::string error;
 
   unique_ptr<int32[]> data_buf;
   static constexpr size_t SMALL_DATA_ARRAY_SIZE = 6;
   std::array<int32, SMALL_DATA_ARRAY_SIZE> small_data_array;
 
-  static const int32 empty_data[8];
+  static const unsigned char empty_data[sizeof(UInt256)];
 
  public:
   explicit tl_parser(Slice slice) {
@@ -37,23 +37,23 @@ class tl_parser {
       return;
     }
 
-    data_len = slice.size() / sizeof(int32);
+    data_len = left_len = slice.size();
     if (is_aligned_pointer<4>(slice.begin())) {
-      data = reinterpret_cast<const int32 *>(slice.begin());
+      data = slice.ubegin();
     } else {
       int32 *buf;
-      if (data_len <= small_data_array.size()) {
+      if (data_len <= small_data_array.size() * sizeof(int32)) {
         buf = &small_data_array[0];
       } else {
         LOG(ERROR) << "Unexpected big unaligned data pointer of length " << slice.size() << " at " << slice.begin();
-        data_buf = make_unique<int32[]>(data_len);
+        data_buf = make_unique<int32[]>(data_len / sizeof(int32));
         buf = data_buf.get();
       }
       std::memcpy(static_cast<void *>(buf), static_cast<const void *>(slice.begin()), slice.size());
-      data = buf;
+      data = reinterpret_cast<unsigned char *>(buf);
     }
-    data_begin = data;
   }
+
   tl_parser(const tl_parser &other) = delete;
   tl_parser &operator=(const tl_parser &other) = delete;
 
@@ -66,6 +66,10 @@ class tl_parser {
     return error.c_str();
   }
 
+  size_t get_error_pos() const {
+    return error_pos;
+  }
+
   Status get_status() const {
     if (error.empty()) {
       return Status::OK();
@@ -73,108 +77,104 @@ class tl_parser {
     return Status::Error(PSLICE() << error << " at: " << error_pos);
   }
 
-  size_t get_error_pos() const {
-    return error_pos;
-  }
-
   void check_len(const size_t len) {
-    if (unlikely(data_len < len)) {
+    if (unlikely(left_len < len)) {
       set_error("Not enough data to read");
     } else {
-      data_len -= len;
+      left_len -= len;
     }
   }
 
   int32 fetch_int_unsafe() {
-    return *data++;
+    int32 result = *reinterpret_cast<const int32 *>(data);
+    data += sizeof(int32);
+    return result;
   }
 
   int32 fetch_int() {
-    check_len(1);
+    check_len(sizeof(int32));
     return fetch_int_unsafe();
   }
 
   int64 fetch_long_unsafe() {
     int64 result;
     std::memcpy(reinterpret_cast<unsigned char *>(&result), data, sizeof(int64));
-    data += 2;
+    data += sizeof(int64);
     return result;
   }
 
   int64 fetch_long() {
-    check_len(2);
+    check_len(sizeof(int64));
     return fetch_long_unsafe();
   }
 
   double fetch_double_unsafe() {
     double result;
     std::memcpy(reinterpret_cast<unsigned char *>(&result), data, sizeof(double));
-    data += 2;
+    data += sizeof(double);
     return result;
   }
 
   double fetch_double() {
-    check_len(2);
+    check_len(sizeof(double));
     return fetch_double_unsafe();
+  }
+
+  template <class T>
+  T fetch_binary_unsafe() {
+    T result;
+    std::memcpy(reinterpret_cast<unsigned char *>(&result), data, sizeof(T));
+    data += sizeof(T);
+    return result;
   }
 
   template <class T>
   T fetch_binary() {
     static_assert(sizeof(T) <= sizeof(empty_data), "too big fetch_binary");
-    static_assert(sizeof(T) % 4 == 0, "wrong call to fetch_binary");
-    check_len(sizeof(T) / 4);
-    T result;
-    std::memcpy(reinterpret_cast<unsigned char *>(&result), data, sizeof(T));
-    data += sizeof(T) / 4;
-    return result;
-  }
-
-  void fetch_skip_unsafe(const size_t len) {
-    data += len;
-  }
-
-  void fetch_skip(const size_t len) {
-    check_len(len);
-    fetch_skip_unsafe(len);
+    static_assert(sizeof(T) % sizeof(int32) == 0, "wrong call to fetch_binary");
+    check_len(sizeof(T));
+    return fetch_binary_unsafe<T>();
   }
 
   template <class T>
   T fetch_string() {
-    check_len(1);
-    const unsigned char *str = reinterpret_cast<const unsigned char *>(data);
-    size_t result_len = *str;
+    check_len(sizeof(int32));
+    size_t result_len = *data;
+    const char *result_begin;
+    size_t result_aligned_len;
     if (result_len < 254) {
-      check_len(result_len >> 2);
-      data += (result_len >> 2) + 1;
-      return T(reinterpret_cast<const char *>(str + 1), result_len);
+      result_begin = reinterpret_cast<const char *>(data + 1);
+      result_aligned_len = (result_len >> 2) << 2;
     } else if (result_len == 254) {
-      result_len = str[1] + (str[2] << 8) + (str[3] << 16);
-      check_len((result_len + 3) >> 2);
-      data += ((result_len + 7) >> 2);
-      return T(reinterpret_cast<const char *>(str + 4), result_len);
+      result_len = data[1] + (data[2] << 8) + (data[3] << 16);
+      result_begin = reinterpret_cast<const char *>(data + 4);
+      result_aligned_len = ((result_len + 3) >> 2) << 2;
     } else {
       set_error("Can't fetch string, 255 found");
       return T();
     }
+    check_len(result_aligned_len);
+    data += result_aligned_len + sizeof(int32);
+    return T(result_begin, result_len);
   }
 
   template <class T>
   T fetch_string_raw(const size_t size) {
+    CHECK(size % sizeof(int32) == 0);
+    check_len(size);
     const char *result = reinterpret_cast<const char *>(data);
-    CHECK(size % 4 == 0);
-    check_len(size >> 2);
-    data += size >> 2;
+    data += size;
     return T(result, size);
   }
 
   void fetch_end() {
-    if (data_len) {
+    if (left_len) {
       set_error("Too much data to fetch");
     }
   }
 
-  size_t get_data_len() const {
-    return data_len;
+  size_t get_left_len() const {
+    return left_len;
   }
 
   const char *get_buf() const {
