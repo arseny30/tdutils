@@ -25,9 +25,23 @@ class Test : private ListNode {
   Test &operator=(Test &&) = delete;
   virtual ~Test() = default;
 
+  static void add_substr_filter(std::string str) {
+    get_substr_filters()->push_back(std::move(str));
+  }
   static void run_all() {
     for (auto end = get_tests_list(), cur = end->next; cur != end; cur = cur->next) {
       auto test = static_cast<td::Test *>(cur);
+      bool ok = true;
+      for (const auto &filter : *get_substr_filters()) {
+        if (test->name_.str().find(filter) == std::string::npos) {
+          ok = false;
+          break;
+        }
+      }
+      if (!ok) {
+        continue;
+      }
+
       LOG(ERROR) << "Run test " << tag("name", test->name_);
       test->run();
     }
@@ -35,6 +49,11 @@ class Test : private ListNode {
 
  private:
   CSlice name_;
+  static std::vector<std::string> *get_substr_filters() {
+    static std::vector<std::string> substr_filters_;
+    return &substr_filters_;
+  }
+
   static ListNode *get_tests_list() {
     static ListNode root;
     return &root;
