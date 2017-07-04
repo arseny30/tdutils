@@ -27,7 +27,7 @@ class LogicAndImpl {};
 template <bool Res, bool X, bool... Args>
 class LogicAndImpl<Res, X, Args...> {
  public:
-  static constexpr bool value = LogicAndImpl < Res && X, Args... > ::value;
+  static constexpr bool value = LogicAndImpl<(Res && X), Args...>::value;
 };
 
 template <bool Res>
