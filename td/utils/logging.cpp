@@ -20,7 +20,7 @@
 
 namespace td {
 int VERBOSITY_NAME(level) = 1;
-int VERBOSITY_NAME(net_query) = 1;
+int VERBOSITY_NAME(net_query) = -1;
 int VERBOSITY_NAME(td_requests) = 1;
 int VERBOSITY_NAME(dc) = 2;
 int VERBOSITY_NAME(files) = 2;
