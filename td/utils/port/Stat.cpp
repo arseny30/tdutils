@@ -103,8 +103,7 @@ Status update_atime(int native_fd) {
   }
   return Status::OK();
 #else
-  return Status::Error();
-// NOT SUPPORTED...
+  return Status::Error("Not supported");
 // struct timespec times[2];
 //// access time
 // times[0].tv_nsec = UTIME_NOW;
@@ -156,9 +155,7 @@ Result<MemStat> mem_stat() {
   res.resident_size_peak_ = 0;
   res.virtual_size_peak_ = 0;
   return res;
-#endif  // TD_DARWIN
-
-#if TD_LINUX || TD_ANDROID || TD_TIZEN
+#elif TD_LINUX || TD_ANDROID || TD_TIZEN
   TRY_RESULT(fd, FileFd::open("/proc/self/status", FileFd::Read));
   SCOPE_EXIT {
     fd.close();
@@ -215,10 +212,8 @@ Result<MemStat> mem_stat() {
   }
 
   return res;
-#endif
-
-#if TD_CYGWIN
-  return Status::Error();
+#else
+  return Status::Error("Not supported");
 #endif
 }
 }  // namespace td

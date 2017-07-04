@@ -446,7 +446,7 @@ inline Result<wstring> to_wstring(Slice slice) {
   std::wstring_convert<usable_facet<std::codecvt_utf8_utf16<wchar_t>>> converter;
   auto res = converter.from_bytes(slice.begin(), slice.end());
   if (converter.converted() != slice.size()) {
-    return Status::Error();
+    return Status::Error("Wrong encoding");
   }
   return res;
 }
@@ -455,7 +455,7 @@ inline Result<string> to_string(const wchar_t *begin, size_t size) {
   std::wstring_convert<usable_facet<std::codecvt_utf8_utf16<wchar_t>>> converter;
   auto res = converter.to_bytes(begin, begin + size);
   if (converter.converted() != size) {
-    return Status::Error();
+    return Status::Error("Wrong encoding");
   }
   return res;
 }
@@ -492,7 +492,7 @@ class SlicifySafe {
  public:
   Result<CSlice> operator&(Logger &logger) {
     if (logger.is_error()) {
-      return Status::Error();
+      return Status::Error("Buffer overflow");
     }
     return logger.as_cslice();
   }
@@ -501,7 +501,7 @@ class StringifySafe {
  public:
   Result<string> operator&(Logger &logger) {
     if (logger.is_error()) {
-      return Status::Error();
+      return Status::Error("Buffer overflow");
     }
     return logger.as_cslice().str();
   }
