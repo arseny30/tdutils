@@ -24,6 +24,7 @@
 
 #include <atomic>
 #include <cstdlib>
+#include <type_traits>
 
 #define PSTR_IMPL(...) ::td::Logger(::td::NullLog().ref(), 0).printf(__VA_ARGS__)
 #define PSLICE(...) ::td::detail::Slicify() & PSTR_IMPL(__VA_ARGS__)
@@ -39,7 +40,8 @@
 #ifndef STRIP_LOG
 #define STRIP_LOG VERBOSITY_NAME(DEBUG)
 #endif
-#define LOG_IS_STRIPPED(strip_level) (VERBOSITY_NAME(strip_level) > STRIP_LOG)
+#define LOG_IS_STRIPPED(strip_level) \
+  (std::integral_constant<int, VERBOSITY_NAME(strip_level)>() > std::integral_constant<int, STRIP_LOG>())
 
 #define LOGGER(level, comment)                                                           \
   ::td::Logger(*::td::log_interface, VERBOSITY_NAME(level), __FILE__, __LINE__, comment, \
