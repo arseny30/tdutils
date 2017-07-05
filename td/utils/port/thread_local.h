@@ -13,7 +13,7 @@ namespace td {
   #define TD_THREAD_LOCAL __thread
 #elif TD_INTEL || TD_MSVC
   #define TD_THREAD_LOCAL thread_local
-#elif
+#else
   #warning "TD_THREAD_LOCAL is not defined, trying 'thread_local'"
   #define TD_THREAD_LOCAL thread_local
 #endif
