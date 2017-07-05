@@ -89,4 +89,8 @@
   #endif
 #endif
 
+#ifdef TD_HAS_ATOMIC_SHARED_PTR // unfortunately we can't check for __GLIBCXX__ here, it is not defined yet
+  #undef TD_HAS_ATOMIC_SHARED_PTR
+#endif
+
 // clang-format on
