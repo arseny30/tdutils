@@ -149,7 +149,6 @@ class DefaultLog : public LogInterface {
         __android_log_write(ANDROID_LOG_INFO, ALOG_TAG, slice.c_str());
         break;
       case VERBOSITY_NAME(DEBUG):
-      case VERBOSITY_NAME(CUSTOM):
       default:
         __android_log_write(ANDROID_LOG_DEBUG, ALOG_TAG, slice.c_str());
         break;
@@ -169,7 +168,6 @@ class DefaultLog : public LogInterface {
         dlog_print(DLOG_INFO, DLOG_TAG, slice.c_str());
         break;
       case VERBOSITY_NAME(DEBUG):
-      case VERBOSITY_NAME(CUSTOM):
       default:
         dlog_print(DLOG_DEBUG, DLOG_TAG, slice.c_str());
         break;

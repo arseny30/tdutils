@@ -1,26 +1,21 @@
 #pragma once
 
-/***
-* Simple logging.
-*
-* FATAL, ERROR, WARNING, INFO, DEBUG
-*
-* LOG(WARNING) << "Hello world";
-* LOG(INFO, "Hello %d", 1234) << "world";
-* LOG_IF(INFO, condition) << "Hello world if condition";
-*
-* VLOG(x) <===> LOG_IF(DEBUG, VERBOSITY_NAME(x) <= verbosity);
-*
-* LOG(FATAL, "power is off");
-* CHECK(condition) <===> LOG_IF(FATAL, !(condition)
-*
-*
-* - LOG_EVERY_N(INFO, 20) << "Hello world";
-* - LOG_IF_EVERY_N(INFO, cond(), 20) << "Hello world";
-*
-* - LOG_FIRST_N(INFO, 20) << "Hello world";
-* - LOG_IF_FIRST_N(INFO, cond(), 20) << "Hello world";
-*/
+/**
+ * Simple logging.
+ *
+ * Predefined log levels: FATAL, ERROR, WARNING, INFO, DEBUG
+ *
+ * LOG(WARNING) << "Hello world!";
+ * LOG(INFO, "Hello %d", 1234) << " world!";
+ * LOG_IF(INFO, condition) << "Hello world if condition!";
+ *
+ * Custom log levels may be defined and used using VLOG:
+ * int VERBOSITY_NAME(custom) = VERBOSITY_NAME(WARNING);
+ * VLOG(custom) << "Hello custom world!"
+ *
+ * LOG(FATAL, "power is off");
+ * CHECK(condition) <===> LOG_IF(FATAL, !(condition))
+ */
 
 #include "td/utils/common.h"
 #include "td/utils/Slice-decl.h"
@@ -35,31 +30,36 @@
 #define PSTRING(...) ::td::detail::Stringify() & PSTR_IMPL(__VA_ARGS__)
 #define PSLICE_SAFE(...) ::td::detail::SlicifySafe() & PSTR_IMPL(__VA_ARGS__)
 #define PSTRING_SAFE(...) ::td::detail::StringifySafe() & PSTR_IMPL(__VA_ARGS__)
-#define LOG_PREFIX
-#define LOG(level, ...) LOG_IF_INTERNAL(level, true, ::td::Slice(), __VA_ARGS__)
-#define LOG_IF(level, condition, ...) LOG_IF_INTERNAL(level, condition, #condition, __VA_ARGS__)
+
 #define VERBOSITY_NAME(x) verbosity_##x
-#define STRIP_LOG VERBOSITY_NAME(DEBUG)
-#define LOG_IS_NOT_STRIPPED(level) (VERBOSITY_NAME(level) <= STRIP_LOG)
-#define LOG_IS_ON(level) (LOG_IS_NOT_STRIPPED(DEBUG) && VERBOSITY_NAME(level) <= GET_VERBOSITY_LEVEL())
-#define LOG_IF_INTERNAL(level, condition, msg, ...) \
-  LOG_IF_IMPL(level, LOG_IS_ON(level) && (condition), msg, __VA_ARGS__)
-#define LOG_IF_IMPL(level, condition, msg, ...) \
-  !(condition) ? (void)0 : ::td::Voidify() & LOGGER(level, msg).printf(__VA_ARGS__) LOG_PREFIX
-#define VLOG_IS_ON_INNER(verbosity) (VERBOSITY_NAME(verbosity) <= GET_VERBOSITY_LEVEL())
-#define VLOG_IS_ON(verbosity) LOG_IS_NOT_STRIPPED(DEBUG) && VLOG_IS_ON_INNER(verbosity)
-#define VLOG(verbosity, ...) LOG_IF_INTERNAL(CUSTOM, VLOG_IS_ON_INNER(verbosity), #verbosity, __VA_ARGS__)
-#define VLOG_IF(verbosity, cond, ...) \
-  LOG_IF_INTERNAL(DEBUG, VLOG_IS_ON_INNER(verbosity) && (cond), #verbosity, __VA_ARGS__)
-#define LOGGER(level, msg)                                                           \
-  ::td::Logger(*::td::log_interface, VERBOSITY_NAME(level), __FILE__, __LINE__, msg, \
-               VERBOSITY_NAME(level) == VERBOSITY_NAME(PLAIN))
-#define LOG_ROTATE() ::td::log_interface->rotate()
-#define LOG_TAG ::td::Logger::tag_
-#define LOG_TAG2 ::td::Logger::tag2_
 
 #define GET_VERBOSITY_LEVEL() (::td::VERBOSITY_NAME(level))
 #define SET_VERBOSITY_LEVEL(new_level) (::td::VERBOSITY_NAME(level) = (new_level))
+
+#ifndef STRIP_LOG
+#define STRIP_LOG VERBOSITY_NAME(DEBUG)
+#endif
+#define LOG_IS_STRIPPED(strip_level) (VERBOSITY_NAME(strip_level) > STRIP_LOG)
+
+#define LOGGER(level, msg)                                                           \
+  ::td::Logger(*::td::log_interface, VERBOSITY_NAME(level), __FILE__, __LINE__, msg, \
+               VERBOSITY_NAME(level) == VERBOSITY_NAME(PLAIN))
+
+#define LOG_IMPL(strip_level, level, condition, msg, ...)                                       \
+  LOG_IS_STRIPPED(strip_level) || VERBOSITY_NAME(level) > GET_VERBOSITY_LEVEL() || !(condition) \
+      ? (void)0                                                                                 \
+      : ::td::detail::Voidify() & LOGGER(level, msg).printf(__VA_ARGS__)
+
+#define LOG(level, ...) LOG_IMPL(level, level, true, ::td::Slice(), __VA_ARGS__)
+#define LOG_IF(level, condition, ...) LOG_IMPL(level, level, condition, #condition, __VA_ARGS__)
+
+#define VLOG(level, ...) LOG_IMPL(DEBUG, level, true, #level, __VA_ARGS__)
+#define VLOG_IF(level, condition, ...) LOG_IMPL(DEBUG, level, condition, #level " " #condition, __VA_ARGS__)
+
+#define LOG_ROTATE() ::td::log_interface->rotate()
+
+#define LOG_TAG ::td::Logger::tag_
+#define LOG_TAG2 ::td::Logger::tag2_
 
 #if TD_CLANG
 bool no_return_func() __attribute__((analyzer_noreturn));
@@ -76,9 +76,9 @@ inline bool no_return_func() {
   #if TD_MSVC
     #define CHECK(condition, ...)       \
       __analysis_assume(!!(condition)); \
-      LOG_IF(FATAL, !(condition), __VA_ARGS__)
+      LOG_IMPL(FATAL, FATAL, !(condition), #condition, __VA_ARGS__)
   #else
-    #define CHECK(condition, ...) LOG_IF(FATAL, !(condition) && no_return_func(), __VA_ARGS__)
+    #define CHECK(condition, ...) LOG_IMPL(FATAL, FATAL, !(condition) && no_return_func(), #condition, __VA_ARGS__)
   #endif
 #else
   #define CHECK(condition, ...) LOG_IF(NEVER, !(condition), __VA_ARGS__)
@@ -89,7 +89,6 @@ inline bool no_return_func() {
   LOG(FATAL, __VA_ARGS__); \
   std::abort()
 
-constexpr int VERBOSITY_NAME(CUSTOM) = -6;
 constexpr int VERBOSITY_NAME(PLAIN) = -5;
 constexpr int VERBOSITY_NAME(FATAL) = -4;
 constexpr int VERBOSITY_NAME(ERROR) = -3;
@@ -212,6 +211,7 @@ class Logger {
   bool simple_mode_;
 };
 
+namespace detail {
 class Voidify {
  public:
   template <class T>
@@ -219,13 +219,13 @@ class Voidify {
   }
 };
 
-namespace detail {
 class Slicify {
  public:
   CSlice operator&(Logger &logger) {
     return logger.as_cslice();
   }
 };
+
 class Stringify {
  public:
   string operator&(Logger &logger) {
