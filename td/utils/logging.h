@@ -89,12 +89,12 @@ inline bool no_return_func() {
   LOG(FATAL, __VA_ARGS__); \
   std::abort()
 
-constexpr int VERBOSITY_NAME(PLAIN) = -5;
-constexpr int VERBOSITY_NAME(FATAL) = -4;
-constexpr int VERBOSITY_NAME(ERROR) = -3;
-constexpr int VERBOSITY_NAME(WARNING) = -2;
-constexpr int VERBOSITY_NAME(INFO) = -1;
-constexpr int VERBOSITY_NAME(DEBUG) = 0;
+constexpr int VERBOSITY_NAME(PLAIN) = -1;
+constexpr int VERBOSITY_NAME(FATAL) = 0;
+constexpr int VERBOSITY_NAME(ERROR) = 1;
+constexpr int VERBOSITY_NAME(WARNING) = 2;
+constexpr int VERBOSITY_NAME(INFO) = 3;
+constexpr int VERBOSITY_NAME(DEBUG) = 4;
 constexpr int VERBOSITY_NAME(NEVER) = 1024;
 
 namespace td {

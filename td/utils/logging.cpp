@@ -19,18 +19,18 @@
 #endif
 
 namespace td {
-int VERBOSITY_NAME(level) = 1;
-int VERBOSITY_NAME(net_query) = -1;
-int VERBOSITY_NAME(td_requests) = 1;
-int VERBOSITY_NAME(dc) = 2;
-int VERBOSITY_NAME(files) = 2;
-int VERBOSITY_NAME(mtproto) = 7;
-int VERBOSITY_NAME(connections) = 8;
-int VERBOSITY_NAME(raw_mtproto) = 10;
-int VERBOSITY_NAME(fd) = 9;
-int VERBOSITY_NAME(actor) = 10;
-int VERBOSITY_NAME(buffer) = 10;
-int VERBOSITY_NAME(sqlite) = 10;
+int VERBOSITY_NAME(level) = VERBOSITY_NAME(DEBUG) + 1;
+int VERBOSITY_NAME(net_query) = VERBOSITY_NAME(INFO);
+int VERBOSITY_NAME(td_requests) = VERBOSITY_NAME(DEBUG) + 1;
+int VERBOSITY_NAME(dc) = VERBOSITY_NAME(DEBUG) + 2;
+int VERBOSITY_NAME(files) = VERBOSITY_NAME(DEBUG) + 2;
+int VERBOSITY_NAME(mtproto) = VERBOSITY_NAME(DEBUG) + 7;
+int VERBOSITY_NAME(connections) = VERBOSITY_NAME(DEBUG) + 8;
+int VERBOSITY_NAME(raw_mtproto) = VERBOSITY_NAME(DEBUG) + 10;
+int VERBOSITY_NAME(fd) = VERBOSITY_NAME(DEBUG) + 9;
+int VERBOSITY_NAME(actor) = VERBOSITY_NAME(DEBUG) + 10;
+int VERBOSITY_NAME(buffer) = VERBOSITY_NAME(DEBUG) + 10;
+int VERBOSITY_NAME(sqlite) = VERBOSITY_NAME(DEBUG) + 10;
 
 TD_THREAD_LOCAL const char *Logger::tag_ = nullptr;
 TD_THREAD_LOCAL const char *Logger::tag2_ = nullptr;
@@ -148,7 +148,6 @@ class DefaultLog : public LogInterface {
       case VERBOSITY_NAME(INFO):
         __android_log_write(ANDROID_LOG_INFO, ALOG_TAG, slice.c_str());
         break;
-      case VERBOSITY_NAME(DEBUG):
       default:
         __android_log_write(ANDROID_LOG_DEBUG, ALOG_TAG, slice.c_str());
         break;
@@ -167,7 +166,6 @@ class DefaultLog : public LogInterface {
       case VERBOSITY_NAME(INFO):
         dlog_print(DLOG_INFO, DLOG_TAG, slice.c_str());
         break;
-      case VERBOSITY_NAME(DEBUG):
       default:
         dlog_print(DLOG_DEBUG, DLOG_TAG, slice.c_str());
         break;
