@@ -78,15 +78,15 @@
 
 // No atomic operations on shared_ptr in libstdc++ before 5.0
 // see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57250
-#if __GLIBCXX__
-#undef TD_HAS_ATOMIC_SHARED_PTR
+#ifdef __GLIBCXX__
+  #undef TD_HAS_ATOMIC_SHARED_PTR
 #endif
 
 // Also no atomic operations on shared_ptr when clang __has_feature(cxx_atomic) is defined and zero
 #if defined(__has_feature)
-#if !__has_feature(cxx_atomic)
-#undef TD_HAS_ATOMIC_SHARED_PTR
-#endif
+  #if !__has_feature(cxx_atomic)
+    #undef TD_HAS_ATOMIC_SHARED_PTR
+  #endif
 #endif
 
 // clang-format on
