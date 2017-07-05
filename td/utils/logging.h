@@ -41,14 +41,14 @@
 #endif
 #define LOG_IS_STRIPPED(strip_level) (VERBOSITY_NAME(strip_level) > STRIP_LOG)
 
-#define LOGGER(level, msg)                                                           \
-  ::td::Logger(*::td::log_interface, VERBOSITY_NAME(level), __FILE__, __LINE__, msg, \
+#define LOGGER(level, comment)                                                           \
+  ::td::Logger(*::td::log_interface, VERBOSITY_NAME(level), __FILE__, __LINE__, comment, \
                VERBOSITY_NAME(level) == VERBOSITY_NAME(PLAIN))
 
-#define LOG_IMPL(strip_level, level, condition, msg, ...)                                       \
+#define LOG_IMPL(strip_level, level, condition, comment, ...)                                   \
   LOG_IS_STRIPPED(strip_level) || VERBOSITY_NAME(level) > GET_VERBOSITY_LEVEL() || !(condition) \
       ? (void)0                                                                                 \
-      : ::td::detail::Voidify() & LOGGER(level, msg).printf(__VA_ARGS__)
+      : ::td::detail::Voidify() & LOGGER(level, comment).printf(__VA_ARGS__)
 
 #define LOG(level, ...) LOG_IMPL(level, level, true, ::td::Slice(), __VA_ARGS__)
 #define LOG_IF(level, condition, ...) LOG_IMPL(level, level, condition, #condition, __VA_ARGS__)
@@ -174,7 +174,7 @@ class Logger {
       , simple_mode_(simple_mode) {
   }
 
-  Logger(LogInterface &log, int log_level, Slice file_name, int line_num, Slice msg, bool simple_mode);
+  Logger(LogInterface &log, int log_level, Slice file_name, int line_num, Slice comment, bool simple_mode);
 
   template <class T>
   Logger &operator<<(const T &other) {

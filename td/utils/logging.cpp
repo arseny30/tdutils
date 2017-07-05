@@ -35,7 +35,7 @@ int VERBOSITY_NAME(sqlite) = VERBOSITY_NAME(DEBUG) + 10;
 TD_THREAD_LOCAL const char *Logger::tag_ = nullptr;
 TD_THREAD_LOCAL const char *Logger::tag2_ = nullptr;
 
-Logger::Logger(LogInterface &log, int log_level, Slice file_name, int line_num, Slice msg, bool simple_mode)
+Logger::Logger(LogInterface &log, int log_level, Slice file_name, int line_num, Slice comment, bool simple_mode)
     : Logger(log, log_level, simple_mode) {
   if (simple_mode) {
     return;
@@ -60,8 +60,8 @@ Logger::Logger(LogInterface &log, int log_level, Slice file_name, int line_num, 
   if (tag2_ != nullptr && *tag2_) {
     (*this) << "[!" << Slice(tag2_) << "]";
   }
-  if (!msg.empty()) {
-    (*this) << "[&" << msg << "]";
+  if (!comment.empty()) {
+    (*this) << "[&" << comment << "]";
   }
   (*this) << "\t";
 }

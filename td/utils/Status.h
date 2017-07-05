@@ -75,29 +75,29 @@ class Status {
     return Status();
   }
 
-  static Status Error(int err, Slice msg = Slice()) WARN_UNUSED_RESULT {
-    return Status(false, ErrorType::general, err, msg);
+  static Status Error(int err, Slice message = Slice()) WARN_UNUSED_RESULT {
+    return Status(false, ErrorType::general, err, message);
   }
 
-  static Status Error(Slice msg) WARN_UNUSED_RESULT {
-    return Error(0, msg);
+  static Status Error(Slice message) WARN_UNUSED_RESULT {
+    return Error(0, message);
   }
 
-  static Status PosixError(int32 code, Slice msg = Slice()) WARN_UNUSED_RESULT {
-    return Status(false, ErrorType::posix, code, msg);
+  static Status PosixError(int32 code, Slice message = Slice()) WARN_UNUSED_RESULT {
+    return Status(false, ErrorType::posix, code, message);
   }
 
 #if TD_WINDOWS
-  static Status WsaError(Slice msg) WARN_UNUSED_RESULT {
-    return Status(false, ErrorType::os, WSAGetLastError(), msg);
+  static Status WsaError(Slice message) WARN_UNUSED_RESULT {
+    return Status(false, ErrorType::os, WSAGetLastError(), message);
   }
 
-  static Status OsError(Slice msg) WARN_UNUSED_RESULT {
-    return Status(false, ErrorType::os, GetLastError(), msg);
+  static Status OsError(Slice message) WARN_UNUSED_RESULT {
+    return Status(false, ErrorType::os, GetLastError(), message);
   }
 #else
-  static Status OsError(Slice msg) WARN_UNUSED_RESULT {
-    return Status(false, ErrorType::os, errno, msg);
+  static Status OsError(Slice message) WARN_UNUSED_RESULT {
+    return Status(false, ErrorType::os, errno, message);
   }
 #endif
 
@@ -257,19 +257,19 @@ class Status {
   };
   std::unique_ptr<char[], Deleter> ptr_;
 
-  Status(Info info, Slice msg) {
-    size_t size = sizeof(Info) + msg.size() + 1;
+  Status(Info info, Slice message) {
+    size_t size = sizeof(Info) + message.size() + 1;
     ptr_ = std::unique_ptr<char[], Deleter>(new char[size]);
     char *ptr = ptr_.get();
     reinterpret_cast<Info *>(ptr)[0] = info;
     ptr += sizeof(Info);
-    std::memcpy(ptr, msg.begin(), msg.size());
-    ptr += msg.size();
+    std::memcpy(ptr, message.begin(), message.size());
+    ptr += message.size();
     *ptr = 0;
   }
 
-  Status(bool static_flag, ErrorType error_type, int error_code, Slice msg)
-      : Status(to_info(static_flag, error_type, error_code), msg) {
+  Status(bool static_flag, ErrorType error_type, int error_code, Slice message)
+      : Status(to_info(static_flag, error_type, error_code), message) {
   }
 
   Status clone_static() const WARN_UNUSED_RESULT {
