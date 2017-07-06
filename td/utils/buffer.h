@@ -324,7 +324,7 @@ struct ChainBufferNode {
   // reader
   // There are two options
   // 1. Fixed slice of Buffer
-  // 2. Slice  with non-fixed right end
+  // 2. Slice with non-fixed right end
   // In each case slice_ is const. Reader should read it and use sync_with_writer on its own copy.
   const BufferSlice slice_;
   const bool sync_flag_{false};  // should we call slice_.sync_with_writer or not.

@@ -100,12 +100,10 @@ struct UnreachableDeleter {
   }
 };
 
-// 1. Allocate all objects in vector. (but vector never shrinks)
+// 1. Allocates all objects in vector. (but vector never shrinks)
 // 2. Id is safe way to reach this object.
 // 3. All ids are unique.
 // 4. All ids are non-zero.
-//
-//
 template <class DataT>
 class Container {
  public:
