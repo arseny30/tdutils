@@ -60,12 +60,12 @@ class DefaultStorer : public Storer {
   }
   size_t size() const override {
     if (size_ == std::numeric_limits<size_t>::max()) {
-      size_ = tl::calc_length(object_);
+      size_ = tl_calc_length(object_);
     }
     return size_;
   }
   size_t store(uint8 *ptr) const override {
-    return tl::store_unsafe(object_, ptr);
+    return tl_store_unsafe(object_, ptr);
   }
 
  private:

@@ -8,18 +8,17 @@
 #include "td/utils/StorerBase.h"
 
 namespace td {
-namespace tl {
 
-class tl_storer_unsafe {
+class TlStorerUnsafe {
   char *buf;
 
  public:
-  explicit tl_storer_unsafe(char *buf) : buf(buf) {
+  explicit TlStorerUnsafe(char *buf) : buf(buf) {
     CHECK(is_aligned_pointer<4>(buf));
   }
 
-  tl_storer_unsafe(const tl_storer_unsafe &other) = delete;
-  tl_storer_unsafe &operator=(const tl_storer_unsafe &other) = delete;
+  TlStorerUnsafe(const TlStorerUnsafe &other) = delete;
+  TlStorerUnsafe &operator=(const TlStorerUnsafe &other) = delete;
 
   template <class T>
   void store_binary(const T &x) {
@@ -79,13 +78,13 @@ class tl_storer_unsafe {
   }
 };
 
-class tl_storer_calc_length {
+class TlStorerCalcLength {
   size_t length = 0;
 
  public:
-  tl_storer_calc_length() = default;
-  tl_storer_calc_length(const tl_storer_calc_length &other) = delete;
-  tl_storer_calc_length &operator=(const tl_storer_calc_length &other) = delete;
+  TlStorerCalcLength() = default;
+  TlStorerCalcLength(const TlStorerCalcLength &other) = delete;
+  TlStorerCalcLength &operator=(const TlStorerCalcLength &other) = delete;
 
   template <class T>
   void store_binary(const T &x) {
@@ -125,7 +124,7 @@ class tl_storer_calc_length {
   }
 };
 
-class tl_storer_to_string {
+class TlStorerToString {
   std::string result;
   int shift = 0;
 
@@ -161,9 +160,9 @@ class tl_storer_to_string {
   }
 
  public:
-  tl_storer_to_string() = default;
-  tl_storer_to_string(const tl_storer_to_string &other) = delete;
-  tl_storer_to_string &operator=(const tl_storer_to_string &other) = delete;
+  TlStorerToString() = default;
+  TlStorerToString(const TlStorerToString &other) = delete;
+  TlStorerToString &operator=(const TlStorerToString &other) = delete;
 
   void store_field(const char *name, bool value) {
     store_field_begin(name);
@@ -258,19 +257,18 @@ class tl_storer_to_string {
 };
 
 template <class T>
-size_t calc_length(const T &data) {
-  tl_storer_calc_length storer_calc_length;
+size_t tl_calc_length(const T &data) {
+  TlStorerCalcLength storer_calc_length;
   data.store(storer_calc_length);
   return storer_calc_length.get_length();
 }
 
 template <class T, class CharT>
-size_t store_unsafe(const T &data, CharT *dst) {
+size_t tl_store_unsafe(const T &data, CharT *dst) {
   char *start = reinterpret_cast<char *>(dst);
-  tl_storer_unsafe storer_unsafe(start);
+  TlStorerUnsafe storer_unsafe(start);
   data.store(storer_unsafe);
   return storer_unsafe.get_buf() - start;
 }
 
-}  // namespace tl
 }  // namespace td

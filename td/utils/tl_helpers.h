@@ -148,7 +148,7 @@ std::enable_if_t<!std::is_enum<T>::value> parse(T &val, Parser &parser) {
 
 template <class T>
 string serialize(const T &object) {
-  tl::tl_storer_calc_length calc_length;
+  TlStorerCalcLength calc_length;
   store(object, calc_length);
   size_t length = calc_length.get_length();
 
@@ -156,12 +156,12 @@ string serialize(const T &object) {
   if (!is_aligned_pointer<4>(key.data())) {
     auto ptr = StackAllocator::alloc(length);
     MutableSlice data = ptr.as_slice();
-    tl::tl_storer_unsafe storer(data.begin());
+    TlStorerUnsafe storer(data.begin());
     store(object, storer);
     key.assign(data.begin(), data.size());
   } else {
     MutableSlice data = key;
-    tl::tl_storer_unsafe storer(data.begin());
+    TlStorerUnsafe storer(data.begin());
     store(object, storer);
   }
   return key;
