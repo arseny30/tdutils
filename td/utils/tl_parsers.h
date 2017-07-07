@@ -179,8 +179,7 @@ class TlParser {
 
 class TlBufferParser : public TlParser {
  public:
-  explicit TlBufferParser(const BufferSlice *buffer_slice)
-      : TlParser(buffer_slice->as_slice()), parent_(buffer_slice) {
+  explicit TlBufferParser(const BufferSlice *buffer_slice) : TlParser(buffer_slice->as_slice()), parent_(buffer_slice) {
   }
   template <class T>
   T fetch_string() {
