@@ -47,7 +47,7 @@ set(TDUTILS_SOURCE
   td/utils/Random.cpp
   td/utils/Time.cpp
   td/utils/Timer.cpp
-  td/utils/tl_parser.cpp
+  td/utils/tl_parsers.cpp
   td/utils/unicode.cpp
   td/utils/utf8.cpp
   td/utils/StackAllocator.cpp
@@ -127,8 +127,8 @@ set(TDUTILS_SOURCE
   td/utils/Time.h
   td/utils/Timer.h
   td/utils/tl_helpers.h
-  td/utils/tl_parser.h
-  td/utils/tl_storer.h
+  td/utils/tl_parsers.h
+  td/utils/tl_storers.h
   td/utils/unicode.h
   td/utils/utf8.h
   td/utils/Variant.h

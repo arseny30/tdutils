@@ -6,8 +6,8 @@
 #include "td/utils/Slice.h"
 #include "td/utils/StackAllocator.h"
 #include "td/utils/Status.h"
-#include "td/utils/tl_parser.h"
-#include "td/utils/tl_storer.h"
+#include "td/utils/tl_parsers.h"
+#include "td/utils/tl_storers.h"
 
 #include <type_traits>
 
