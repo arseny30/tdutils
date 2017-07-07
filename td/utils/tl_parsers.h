@@ -15,9 +15,8 @@
 #include <string>
 
 namespace td {
-namespace tl {
 
-class tl_parser {
+class TlParser {
   const unsigned char *data = nullptr;
   size_t data_len = 0;
   size_t left_len = 0;
@@ -31,7 +30,7 @@ class tl_parser {
   static const unsigned char empty_data[sizeof(UInt256)];
 
  public:
-  explicit tl_parser(Slice slice) {
+  explicit TlParser(Slice slice) {
     if (slice.size() % sizeof(int32) != 0) {
       set_error("Wrong length");
       return;
@@ -54,8 +53,8 @@ class tl_parser {
     }
   }
 
-  tl_parser(const tl_parser &other) = delete;
-  tl_parser &operator=(const tl_parser &other) = delete;
+  TlParser(const TlParser &other) = delete;
+  TlParser &operator=(const TlParser &other) = delete;
 
   void set_error(const string &error_message);
 
@@ -178,14 +177,14 @@ class tl_parser {
   }
 };
 
-class tl_buffer_parser : public tl_parser {
+class TlBufferParser : public TlParser {
  public:
-  explicit tl_buffer_parser(const BufferSlice *buffer_slice)
-      : tl_parser(buffer_slice->as_slice()), parent_(buffer_slice) {
+  explicit TlBufferParser(const BufferSlice *buffer_slice)
+      : TlParser(buffer_slice->as_slice()), parent_(buffer_slice) {
   }
   template <class T>
   T fetch_string() {
-    auto result = tl_parser::fetch_string<T>();
+    auto result = TlParser::fetch_string<T>();
     for (auto &c : result) {
       if (c == '\0') {
         c = ' ';
@@ -211,7 +210,7 @@ class tl_buffer_parser : public tl_parser {
   }
   template <class T>
   T fetch_string_raw(const size_t size) {
-    return tl_parser::fetch_string_raw<T>(size);
+    return TlParser::fetch_string_raw<T>(size);
   }
 
  private:
@@ -226,14 +225,13 @@ class tl_buffer_parser : public tl_parser {
 };
 
 template <>
-inline BufferSlice tl_buffer_parser::fetch_string<BufferSlice>() {
-  return as_buffer_slice(tl_parser::fetch_string<Slice>());
+inline BufferSlice TlBufferParser::fetch_string<BufferSlice>() {
+  return as_buffer_slice(TlParser::fetch_string<Slice>());
 }
 
 template <>
-inline BufferSlice tl_buffer_parser::fetch_string_raw<BufferSlice>(const size_t size) {
-  return as_buffer_slice(tl_parser::fetch_string_raw<Slice>(size));
+inline BufferSlice TlBufferParser::fetch_string_raw<BufferSlice>(const size_t size) {
+  return as_buffer_slice(TlParser::fetch_string_raw<Slice>(size));
 }
 
-}  // namespace tl
 }  // namespace td

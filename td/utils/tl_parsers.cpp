@@ -1,11 +1,10 @@
 #include "tl_parsers.h"
 
 namespace td {
-namespace tl {
 
-const unsigned char tl_parser::empty_data[sizeof(UInt256)] = {};  // static zero-initialized
+const unsigned char TlParser::empty_data[sizeof(UInt256)] = {};  // static zero-initialized
 
-void tl_parser::set_error(const string &error_message) {
+void TlParser::set_error(const string &error_message) {
   if (error.empty()) {
     CHECK(!error_message.empty());
     error = error_message;
@@ -21,5 +20,4 @@ void tl_parser::set_error(const string &error_message) {
   }
 }
 
-}  // namespace tl
 }  // namespace td
