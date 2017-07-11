@@ -68,7 +68,6 @@ class ObjectPool {
     }
 
    private:
-    // TODO(now): generation_ must be atomic,
     int32 generation_;
     Storage *storage_;
   };
