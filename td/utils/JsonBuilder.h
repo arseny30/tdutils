@@ -697,12 +697,14 @@ class VirtuallyJsonableString : public VirtuallyJsonable {
 
 Result<MutableSlice> json_string_decode(Parser &parser) WARN_UNUSED_RESULT;
 Status json_string_skip(Parser &parser) WARN_UNUSED_RESULT;
-Result<JsonValue> do_json_decode(Parser &parser) WARN_UNUSED_RESULT;
-Status do_json_skip(Parser &parser) WARN_UNUSED_RESULT;
+
+Result<JsonValue> do_json_decode(Parser &parser, int32 max_depth) WARN_UNUSED_RESULT;
+Status do_json_skip(Parser &parser, int32 max_depth) WARN_UNUSED_RESULT;
 
 inline Result<JsonValue> json_decode(MutableSlice from) {
   Parser parser(from);
-  auto result = do_json_decode(parser);
+  const int32 DEFAULT_MAX_DEPTH = 100;
+  auto result = do_json_decode(parser, DEFAULT_MAX_DEPTH);
   if (result.is_ok() && !parser.empty()) {
     return Status::Error("Expected string end");
   }

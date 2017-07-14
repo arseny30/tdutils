@@ -326,7 +326,11 @@ Status json_string_skip(Parser &parser) {
   return Status::OK();
 }
 
-Result<JsonValue> do_json_decode(Parser &parser) {
+Result<JsonValue> do_json_decode(Parser &parser, int32 max_depth) {
+  if (max_depth < 0) {
+    return Status::Error("Too big object depth");
+  }
+
   parser.skip_whitespaces();
   switch (parser.peek_char()) {
     case 'f':
@@ -359,7 +363,7 @@ Result<JsonValue> do_json_decode(Parser &parser) {
         if (parser.empty()) {
           return Status::Error("Unexpected end");
         }
-        TRY_RESULT(value, do_json_decode(parser));
+        TRY_RESULT(value, do_json_decode(parser, max_depth - 1));
         res.emplace_back(std::move(value));
 
         parser.skip_whitespaces();
@@ -390,7 +394,7 @@ Result<JsonValue> do_json_decode(Parser &parser) {
         if (!parser.try_skip(':')) {
           return Status::Error("':' expected");
         }
-        TRY_RESULT(value, do_json_decode(parser));
+        TRY_RESULT(value, do_json_decode(parser, max_depth - 1));
         res.emplace_back(std::move(key), std::move(value));
 
         parser.skip_whitespaces();
@@ -436,7 +440,11 @@ Result<JsonValue> do_json_decode(Parser &parser) {
   UNREACHABLE();
 }
 
-Status do_json_skip(Parser &parser) {
+Status do_json_skip(Parser &parser, int32 max_depth) {
+  if (max_depth < 0) {
+    return Status::Error("Too big object depth");
+  }
+
   parser.skip_whitespaces();
   switch (parser.peek_char()) {
     case 'f':
@@ -467,7 +475,7 @@ Status do_json_skip(Parser &parser) {
         if (parser.empty()) {
           return Status::Error("Unexpected end");
         }
-        TRY_STATUS(do_json_skip(parser));
+        TRY_STATUS(do_json_skip(parser, max_depth - 1));
 
         parser.skip_whitespaces();
         if (parser.try_skip(']')) {
@@ -496,7 +504,7 @@ Status do_json_skip(Parser &parser) {
         if (!parser.try_skip(':')) {
           return Status::Error("':' expected");
         }
-        TRY_STATUS(do_json_skip(parser));
+        TRY_STATUS(do_json_skip(parser, max_depth - 1));
 
         parser.skip_whitespaces();
         if (parser.try_skip('}')) {
