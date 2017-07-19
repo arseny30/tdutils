@@ -89,7 +89,11 @@ Result<size_t> FileFd::write(Slice slice) {
       }
 
       auto error = Status::PosixError(write_errno, PSLICE() << "Write to [fd = " << native_fd << "] has failed");
-      if (write_errno != EAGAIN && write_errno != EWOULDBLOCK && write_errno != EIO) {
+      if (write_errno != EAGAIN
+#if EAGAIN != EWOULDBLOCK
+          && write_errno != EWOULDBLOCK
+#endif
+          && write_errno != EIO) {
         LOG(ERROR) << error;
       }
       return std::move(error);
@@ -110,7 +114,11 @@ Result<size_t> FileFd::read(MutableSlice slice) {
       }
 
       auto error = Status::PosixError(read_errno, PSLICE() << "Read from [fd = " << native_fd << "] has failed");
-      if (read_errno != EAGAIN && read_errno != EWOULDBLOCK && read_errno != EIO) {
+      if (read_errno != EAGAIN
+#if EAGAIN != EWOULDBLOCK
+          && read_errno != EWOULDBLOCK
+#endif
+          && read_errno != EIO) {
         LOG(ERROR) << error;
       }
       return std::move(error);
@@ -135,7 +143,11 @@ Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
 
       auto error = Status::PosixError(
           pwrite_errno, PSLICE() << "Pwrite to [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
-      if (pwrite_errno != EAGAIN && pwrite_errno != EWOULDBLOCK && pwrite_errno != EIO) {
+      if (pwrite_errno != EAGAIN
+#if EAGAIN != EWOULDBLOCK
+          && read_errno != EWOULDBLOCK
+#endif
+          && pwrite_errno != EIO) {
         LOG(ERROR) << error;
       }
       return std::move(error);
@@ -157,7 +169,11 @@ Result<size_t> FileFd::pread(MutableSlice slice, off_t offset) {
 
       auto error = Status::PosixError(
           pread_errno, PSLICE() << "Pread from [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
-      if (pread_errno != EAGAIN && pread_errno != EWOULDBLOCK && pread_errno != EIO) {
+      if (pread_errno != EAGAIN
+#if EAGAIN != EWOULDBLOCK
+          && read_errno != EWOULDBLOCK
+#endif
+          && pread_errno != EIO) {
         LOG(ERROR) << error;
       }
       return std::move(error);

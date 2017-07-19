@@ -18,6 +18,10 @@
 
 #endif
 
+#ifdef TD_DARWIN
+#include <sys/syslimits.h>
+#endif
+
 namespace td {
 
 Status mkdir(CSlice dir, int32 mode = 0700) WARN_UNUSED_RESULT;

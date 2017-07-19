@@ -44,7 +44,8 @@ class MemoryLog : public LogInterface {
       std::memcpy(&buffer_[second], "                            ", pad_size);
     }
 
-    std::snprintf(&buffer_[start_pos], 16, "\nLOG:%08x:  ", real_pos);
+    std::snprintf(&buffer_[start_pos], 16, "\nLOG:%08x: ", real_pos);
+    buffer_[start_pos + magic_size - 1] = ' ';
   }
 
   void rotate() override {

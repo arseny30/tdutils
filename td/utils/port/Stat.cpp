@@ -90,7 +90,7 @@ Status update_atime(int native_fd) {
   auto now = Clocks::system();
   // access time
   upd[0].tv_sec = static_cast<decltype(upd[0].tv_sec)>(now);
-  upd[0].tv_usec = static_cast<decltype(upd[0].tv_usec)>((now - upd[0].tv_sec) * 1000000);
+  upd[0].tv_usec = static_cast<decltype(upd[0].tv_usec)>((now - static_cast<double>(upd[0].tv_sec)) * 1000000);
   // modify time
   upd[1].tv_sec = static_cast<decltype(upd[1].tv_sec)>(info.mtime_nsec_ / 1000000000ll);
   upd[1].tv_usec = static_cast<decltype(upd[1].tv_usec)>(info.mtime_nsec_ % 1000000000ll / 1000);

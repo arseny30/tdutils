@@ -302,7 +302,7 @@ Result<size_t> Fd::write(Slice slice) {
 #if EAGAIN != EWOULDBLOCK
           || write_errno == EWOULDBLOCK
 #endif
-          ) {
+      ) {
         clear_flags(Write);
         return 0;
       }
@@ -314,9 +314,10 @@ Result<size_t> Fd::write(Slice slice) {
         case EFAULT:
         case EINVAL:
           LOG(FATAL) << error;
+          UNREACHABLE();
         default:
           LOG(WARNING) << error;
-        // no break
+        // fallthrough
         case ECONNRESET:
         case EDQUOT:
         case EFBIG:
@@ -349,7 +350,7 @@ Result<size_t> Fd::read(MutableSlice slice) {
 #if EAGAIN != EWOULDBLOCK
           || read_errno == EWOULDBLOCK
 #endif
-          ) {
+      ) {
         clear_flags(Read);
         return 0;
       }
@@ -362,10 +363,10 @@ Result<size_t> Fd::read(MutableSlice slice) {
         case EINVAL:
         case ENOTCONN:
           LOG(FATAL) << error;
-
+          UNREACHABLE();
         default:
           LOG(WARNING) << error;
-        // no break
+        // fallthrough
         case EIO:
         case ENOBUFS:
         case ENOMEM:

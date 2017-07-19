@@ -86,7 +86,7 @@ Result<SocketFd> ServerSocketFd::accept() {
         break;
       default:
         LOG(ERROR) << error;
-      // no break
+      // fallthrough
       case EMFILE:
       case ENFILE:
       case ECONNABORTED:  //???

@@ -66,6 +66,7 @@
 #if TD_CLANG
 bool no_return_func() __attribute__((analyzer_noreturn));
 #endif
+
 inline bool no_return_func() {
   return true;
 }
