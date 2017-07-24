@@ -4,6 +4,7 @@
 #include "td/utils/logging.h"
 #include "td/utils/misc.h"
 #include "td/utils/Slice.h"
+#include "td/utils/Time.h"
 
 #define REGISTER_TESTS(x)                \
   void TD_CONCAT(register_tests_, x)() { \
@@ -43,7 +44,9 @@ class Test : private ListNode {
       }
 
       LOG(ERROR) << "Run test " << tag("name", test->name_);
+      auto start = Time::now();
       test->run();
+      LOG(ERROR) << format::as_time(Time::now() - start);
     }
   }
 
