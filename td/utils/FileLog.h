@@ -87,7 +87,7 @@ class FileLog : public LogInterface {
   off_t rotate_threshold_;
 
   void do_rotate() {
-    auto save_verbosity = GET_VERBOSITY_LEVEL();
+    auto current_verbosity_level = GET_VERBOSITY_LEVEL();
     SET_VERBOSITY_LEVEL(std::numeric_limits<int>::min());  // to ensure that nothing will be printed to the closed log
     CHECK(!path_.empty());
     fd_.close();
@@ -98,7 +98,7 @@ class FileLog : public LogInterface {
     fd_ = r_fd.move_as_ok().move_as_fd();
     Fd::duplicate(fd_, Fd::Stderr()).ignore();
     size_ = 0;
-    SET_VERBOSITY_LEVEL(save_verbosity);
+    SET_VERBOSITY_LEVEL(current_verbosity_level);
   }
 };
 }  // namespace td
