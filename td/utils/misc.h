@@ -109,7 +109,7 @@ class Container {
  public:
   using Id = uint64;
   DataT *get(Id id) {
-    int slot_id = decode_id(id);
+    int32 slot_id = decode_id(id);
     if (slot_id == -1) {
       return nullptr;
     }
@@ -117,7 +117,7 @@ class Container {
   }
 
   void erase(Id id) {
-    int slot_id = decode_id(id);
+    int32 slot_id = decode_id(id);
     if (slot_id == -1) {
       return;
     }
@@ -125,7 +125,7 @@ class Container {
   }
 
   DataT extract(Id id) {
-    int slot_id = decode_id(id);
+    int32 slot_id = decode_id(id);
     CHECK(slot_id != -1);
     auto res = std::move(slots_[slot_id].data);
     release(slot_id);
@@ -133,12 +133,12 @@ class Container {
   }
 
   Id create(DataT &&data = DataT(), uint8 type = 0) {
-    int id = store(std::move(data), type);
+    int32 id = store(std::move(data), type);
     return encode_id(id);
   }
 
   Id reset_id(Id id) {
-    int slot_id = decode_id(id);
+    int32 slot_id = decode_id(id);
     CHECK(slot_id != -1);
     inc_generation(slot_id);
     return encode_id(slot_id);
@@ -156,7 +156,7 @@ class Container {
     std::vector<Id> res;
     for (size_t i = 0, n = slots_.size(); i < n; i++) {
       if (!is_bad[i]) {
-        res.push_back(encode_id(static_cast<int>(i)));
+        res.push_back(encode_id(static_cast<int32>(i)));
       }
     }
     return res;
@@ -187,16 +187,16 @@ class Container {
     DataT data;
   };
   vector<Slot> slots_;
-  vector<int> empty_slots_;
+  vector<int32> empty_slots_;
 
-  Id encode_id(int id) const {
+  Id encode_id(int32 id) const {
     return (static_cast<uint64>(id) << 32) | slots_[id].generation;
   }
 
-  int decode_id(Id id) const {
-    int slot_id = static_cast<int>(id >> 32);
+  int32 decode_id(Id id) const {
+    int32 slot_id = static_cast<int32>(id >> 32);
     uint32 generation = static_cast<uint32>(id);
-    if (slot_id < 0 || slot_id >= static_cast<int>(slots_.size())) {
+    if (slot_id < 0 || slot_id >= static_cast<int32>(slots_.size())) {
       return -1;
     }
     if (generation != slots_[slot_id].generation) {
@@ -205,22 +205,22 @@ class Container {
     return slot_id;
   }
 
-  int store(DataT &&data, uint8 type) {
-    int pos;
+  int32 store(DataT &&data, uint8 type) {
+    int32 pos;
     if (!empty_slots_.empty()) {
       pos = empty_slots_.back();
       empty_slots_.pop_back();
       slots_[pos].data = std::move(data);
       slots_[pos].generation ^= (slots_[pos].generation & TYPE_MASK) ^ type;
     } else {
-      CHECK(slots_.size() <= static_cast<size_t>(std::numeric_limits<int>::max()));
-      pos = static_cast<int>(slots_.size());
+      CHECK(slots_.size() <= static_cast<size_t>(std::numeric_limits<int32>::max()));
+      pos = static_cast<int32>(slots_.size());
       slots_.push_back(Slot{GENERATION_STEP + type, std::move(data)});
     }
     return pos;
   }
 
-  void release(int id) {
+  void release(int32 id) {
     inc_generation(id);
     slots_[id].data = DataT();
     if (slots_[id].generation & ~TYPE_MASK) {  // generation overflow. Can't use this id anymore
@@ -228,7 +228,7 @@ class Container {
     }
   }
 
-  void inc_generation(int id) {
+  void inc_generation(int32 id) {
     slots_[id].generation += GENERATION_STEP;
   }
 };
