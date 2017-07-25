@@ -36,19 +36,33 @@ void KQueue::clear() {
   kq = -1;
 }
 
-int KQueue::update(int nevents, const struct timespec *timeout) {
+int KQueue::update(int nevents, const struct timespec *timeout, bool may_fail) {
   int err = kevent(kq, &events[0], changes_n, &events[0], nevents, timeout);
   auto kevent_errno = errno;
-  LOG_IF(FATAL, err == -1 && kevent_errno != EINTR) << Status::PosixError(kevent_errno, "kevent failed");
+
+  bool is_fatal_error = [&] {
+    if (err != -1) {
+      return false;
+    }
+    if (may_fail) {
+      return kevent_errno != ENOENT;
+    }
+    return kevent_errno != EINTR;
+  }();
+  LOG_IF(FATAL, is_fatal_error) << Status::PosixError(kevent_errno, "kevent failed");
+
   changes_n = 0;
+  if (err < 0) {
+    return 0;
+  }
   return err;
 }
 
-void KQueue::flush_changes() {
+void KQueue::flush_changes(bool may_fail) {
   if (!changes_n) {
     return;
   }
-  int n = update(0, nullptr);
+  int n = update(0, nullptr, may_fail);
   CHECK(n == 0);
 }
 
@@ -83,9 +97,11 @@ void KQueue::invalidate(const Fd &fd) {
 
 void KQueue::unsubscribe(const Fd &fd) {
   // invalidate(fd);
-  add_change(fd.get_native_fd(), EVFILT_READ, EV_DELETE, 0, 0, nullptr);
-  add_change(fd.get_native_fd(), EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
   flush_changes();
+  add_change(fd.get_native_fd(), EVFILT_READ, EV_DELETE, 0, 0, nullptr);
+  flush_changes(true);
+  add_change(fd.get_native_fd(), EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+  flush_changes(true);
 }
 
 void KQueue::unsubscribe_before_close(const Fd &fd) {

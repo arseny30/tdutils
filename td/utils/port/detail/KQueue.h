@@ -20,11 +20,11 @@ class KQueue final : public PollBase {
   int changes_n;
   int kq;
 
-  int update(int nevents, const struct timespec *timeout);
+  int update(int nevents, const struct timespec *timeout, bool may_fail = false);
 
   void invalidate(const Fd &fd);
 
-  void flush_changes();
+  void flush_changes(bool may_fail = false);
 
   void add_change(std::uintptr_t ident, int16 filter, uint16 flags, uint32 fflags, std::intptr_t data, void *udata);
 
