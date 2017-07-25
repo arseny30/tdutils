@@ -1,6 +1,7 @@
 #include "td/utils/utf8.h"
 
 #include "td/utils/logging.h"  // for UNREACHABLE
+#include "td/utils/unicode.h"
 
 namespace td {
 
@@ -97,6 +98,18 @@ const unsigned char *next_utf8_unsafe(const unsigned char *ptr, uint32 *code) {
   }
   UNREACHABLE();
   return ptr;
+}
+
+string utf8_to_lower(Slice str) {
+  string result;
+  auto pos = str.ubegin();
+  auto end = str.uend();
+  while (pos != end) {
+    uint32 code;
+    pos = next_utf8_unsafe(pos, &code);
+    append_utf8_character(result, unicode_to_lower(code));
+  }
+  return result;
 }
 
 }  // namespace td

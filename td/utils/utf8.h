@@ -5,15 +5,15 @@
 
 namespace td {
 
-// checks UTF-8 string for correctness
+/// checks UTF-8 string for correctness
 bool check_utf8(CSlice str);
 
-// checks if a code unit is a first code unit of a UTF-8 character
+/// checks if a code unit is a first code unit of a UTF-8 character
 inline bool is_utf8_character_first_code_unit(unsigned char c) {
   return (c & 0xC0) != 0x80;
 }
 
-// returns length of UTF-8 string in characters
+/// returns length of UTF-8 string in characters
 inline size_t utf8_length(Slice str) {
   size_t result = 0;
   for (auto c : str) {
@@ -22,10 +22,10 @@ inline size_t utf8_length(Slice str) {
   return result;
 }
 
-// appends a Unicode character using UTF-8 encoding
+/// appends a Unicode character using UTF-8 encoding
 void append_utf8_character(string &str, uint32 ch);
 
-// moves pointer one UTF-8 character back
+/// moves pointer one UTF-8 character back
 inline const unsigned char *prev_utf8_unsafe(const unsigned char *ptr) {
   while (!is_utf8_character_first_code_unit(*--ptr)) {
     // pass
@@ -33,10 +33,10 @@ inline const unsigned char *prev_utf8_unsafe(const unsigned char *ptr) {
   return ptr;
 }
 
-// moves pointer one UTF-8 character forward and saves code of the skipped character in *code
+/// moves pointer one UTF-8 character forward and saves code of the skipped character in *code
 const unsigned char *next_utf8_unsafe(const unsigned char *ptr, uint32 *code);
 
-// truncates UTF-8 string to the given length in Unicode characters
+/// truncates UTF-8 string to the given length in Unicode characters
 template <class T>
 T utf8_truncate(T str, size_t length) {
   if (str.size() > length) {
@@ -53,7 +53,7 @@ T utf8_truncate(T str, size_t length) {
   return str;
 }
 
-// truncates UTF-8 string to the given length given in UTF-16 code units
+/// truncates UTF-8 string to the given length given in UTF-16 code units
 template <class T>
 T utf8_utf16_truncate(T str, size_t length) {
   for (size_t i = 0; i < str.size(); i++) {
@@ -93,5 +93,8 @@ template <class T>
 T utf8_utf16_substr(T str, size_t offset, size_t length) {
   return utf8_utf16_truncate(utf8_utf16_substr(str, offset), length);
 }
+
+/// Returns UTF-8 string converted to lower case.
+string utf8_to_lower(Slice str);
 
 }  // namespace td

@@ -558,7 +558,7 @@ uint32 prepare_search_character(uint32 code) {
   }
 }
 
-uint32 unicode_tolower(uint32 code) {
+uint32 unicode_to_lower(uint32 code) {
   if (code < TABLE_SIZE) {
     return to_lower_table[code];
   } else {
