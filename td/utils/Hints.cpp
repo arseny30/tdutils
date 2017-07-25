@@ -1,6 +1,9 @@
 #include "td/utils/Hints.h"
 
 #include "td/utils/misc.h"
+#include "td/utils/Slice.h"
+#include "td/utils/unicode.h"
+#include "td/utils/utf8.h"
 
 #include <algorithm>
 
@@ -10,16 +13,17 @@ vector<string> Hints::get_words(const string &name) {
   bool in_word = false;
   string word;
   vector<string> words;
-  for (auto c : name) {
-    if ((c & 0x7f) == c) {
-      // TODO unicode lowercase
-      if (is_alpha(c) || is_digit(c)) {
-        c = to_lower(c);
-      } else {
-        c = ' ';
-      }
+  auto pos = Slice(name).ubegin();
+  auto end = Slice(name).uend();
+  while (pos != end) {
+    uint32 code;
+    pos = next_utf8_unsafe(pos, &code);
+
+    code = prepare_search_character(code);
+    if (code == 0) {
+      continue;
     }
-    if (c == ' ') {
+    if (code == ' ') {
       if (in_word) {
         words.push_back(std::move(word));
         word.clear();
@@ -27,7 +31,7 @@ vector<string> Hints::get_words(const string &name) {
       }
     } else {
       in_word = true;
-      word.push_back(c);
+      append_utf8_character(word, code);
     }
   }
   if (in_word) {

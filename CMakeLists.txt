@@ -53,7 +53,6 @@ set(TDUTILS_SOURCE
   td/utils/StackAllocator.cpp
   td/utils/Status.cpp
 
-
   td/utils/port/Clocks.h
   td/utils/port/config.h
   td/utils/port/CxCli.h
