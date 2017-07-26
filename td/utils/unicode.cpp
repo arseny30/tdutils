@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <iterator>
-#include <limits>
 
 namespace td {
 

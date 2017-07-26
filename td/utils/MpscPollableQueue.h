@@ -1,11 +1,14 @@
+#pragma once
+
 #include "td/utils/misc.h"
 #include "td/utils/port/EventFd.h"
-#include <mutex>
 
 #if !TD_WINDOWS
 #include <poll.h>  // for pollfd, poll, POLLIN
 #include <sched.h>
 #endif
+
+#include <mutex>
 
 namespace td {
 // interface like in PollableQueue

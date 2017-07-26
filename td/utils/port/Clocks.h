@@ -5,21 +5,19 @@ namespace td {
 class ClocksBase {
  public:
   using Duration = double;
-  // Duration monotonic() = 0;
-  // Duration system() = 0;
 };
 
-// TODO: (may be) write system specific functions.
+// TODO: (maybe) write system specific functions.
 class ClocksDefault {
  public:
   using Duration = ClocksBase::Duration;
   static Duration monotonic() {
-    using namespace std::chrono;
-    return static_cast<double>(duration_cast<nanoseconds>(steady_clock::now().time_since_epoch()).count()) * 1e-9;
+    auto duration = std::chrono::steady_clock::now().time_since_epoch();
+    return static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count()) * 1e-9;
   }
   static Duration system() {
-    using namespace std::chrono;
-    return static_cast<double>(duration_cast<nanoseconds>(system_clock::now().time_since_epoch()).count()) * 1e-9;
+    auto duration = std::chrono::system_clock::now().time_since_epoch();
+    return static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count()) * 1e-9;
   }
 };
 
