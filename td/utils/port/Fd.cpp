@@ -302,7 +302,7 @@ Result<size_t> Fd::write(Slice slice) {
 #if EAGAIN != EWOULDBLOCK
           || write_errno == EWOULDBLOCK
 #endif
-          ) {
+      ) {
         clear_flags(Write);
         return 0;
       }
@@ -350,7 +350,7 @@ Result<size_t> Fd::read(MutableSlice slice) {
 #if EAGAIN != EWOULDBLOCK
           || read_errno == EWOULDBLOCK
 #endif
-          ) {
+      ) {
         clear_flags(Read);
         return 0;
       }
