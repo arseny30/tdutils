@@ -110,9 +110,9 @@ class SocketFd : public Fd {
       return Status::WsaError("Failed to make socket nonblocking");
     }
 
-    int flags = 1;
-    setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char *>(&flags), sizeof(flags));
-    setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<char *>(&flags), sizeof(flags));
+    BOOL flags = TRUE;
+    setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&flags), sizeof(flags));
+    setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&flags), sizeof(flags));
 
     // TODO: SO_REUSEADDR, SO_KEEPALIVE, TCP_NODELAY, SO_SNDBUF, SO_RCVBUF,
     //      TCP_QUICKACK, SO_LINGER

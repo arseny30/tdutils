@@ -113,12 +113,12 @@ class ServerSocketFd : public Fd {
       return Status::WsaError("Failed to make socket nonblocking");
     }
 
-    int flags = 1;
+    BOOL flags = TRUE;
     struct linger ling = {0, 0};
-    setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char *>(&flags), sizeof(flags));
-    setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<char *>(&flags), sizeof(flags));
-    setsockopt(fd, SOL_SOCKET, SO_LINGER, reinterpret_cast<char *>(&ling), sizeof(ling));
-    setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char *>(&flags), sizeof(flags));
+    setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&flags), sizeof(flags));
+    setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&flags), sizeof(flags));
+    setsockopt(fd, SOL_SOCKET, SO_LINGER, reinterpret_cast<const char *>(&ling), sizeof(ling));
+    setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char *>(&flags), sizeof(flags));
 
     return Status::OK();
   }

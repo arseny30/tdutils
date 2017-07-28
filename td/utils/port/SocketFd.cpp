@@ -6,10 +6,10 @@ char disable_linker_warning_about_empty_file_socket_fd_cpp TD_UNUSED;
 
 #include "td/utils/port/SocketFd.h"
 
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 namespace td {
