@@ -397,7 +397,7 @@ Status Fd::set_is_blocking(bool is_blocking) {
     auto fcntl_errno = errno;
     return Status::PosixError(fcntl_errno, "Failed to get socket flags");
   }
-  auto new_flags = is_blocking ? old_flags | O_NONBLOCK : old_flags & ~O_NONBLOCK;
+  auto new_flags = is_blocking ? old_flags & ~O_NONBLOCK : old_flags | O_NONBLOCK;
   if (new_flags != old_flags && fcntl(fd_, F_SETFL, new_flags) == -1) {
     auto fcntl_errno = errno;
     return Status::PosixError(fcntl_errno, "Failed to set socket flags");

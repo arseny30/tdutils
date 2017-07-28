@@ -17,10 +17,14 @@ ServerSocketFd::operator FdRef() {
   return fd_;
 }
 
-Result<ServerSocketFd> ServerSocketFd::open(int32 port) {
+Result<ServerSocketFd> ServerSocketFd::open(int32 port, std::string addr) {
   ServerSocketFd socket;
-  TRY_STATUS(socket.init(port));
+  TRY_STATUS(socket.init(port, addr));
   return std::move(socket);
+}
+
+Result<ServerSocketFd> ServerSocketFd::open(int32 port) {
+  return open (port, "0.0.0.0");
 }
 
 const Fd &ServerSocketFd::get_fd() const {
@@ -108,9 +112,9 @@ bool ServerSocketFd::empty() const {
   return fd_.empty();
 }
 
-Status ServerSocketFd::init(int32 port) {
+Status ServerSocketFd::init(int32 port, std::string addr) {
   IPAddress address;
-  TRY_STATUS(address.init_ipv4_port("0.0.0.0", port));
+  TRY_STATUS(address.init_ipv4_port(addr, port));
   int fd = socket(address.get_address_family(), SOCK_STREAM, 0);
   if (fd == -1) {
     auto socket_errno = errno;
@@ -138,6 +142,10 @@ Status ServerSocketFd::init(int32 port) {
 
   fd_ = Fd(fd, Fd::Mode::Own);
   return Status::OK();
+}
+
+Status ServerSocketFd::init(int32 port) {
+  return init(port ,"0.0.0.0");
 }
 
 Status ServerSocketFd::init_socket(int fd) {
