@@ -26,8 +26,7 @@ class ServerSocketFd {
 
   operator FdRef();
 
-  static Result<ServerSocketFd> open(int32 port) WARN_UNUSED_RESULT;
-  static Result<ServerSocketFd> open(int32 port, std::string addr) WARN_UNUSED_RESULT;
+  static Result<ServerSocketFd> open(int32 port, CSlice addr = "0.0.0.0") WARN_UNUSED_RESULT;
 
   const Fd &get_fd() const;
   int32 get_flags() const;
@@ -40,8 +39,7 @@ class ServerSocketFd {
 
  private:
   Fd fd_;
-  Status init(int32 port) WARN_UNUSED_RESULT;
-  Status init(int32 port, std::string addr) WARN_UNUSED_RESULT;
+  Status init(int32 port, CSlice addr) WARN_UNUSED_RESULT;
   Status init_socket(int fd) WARN_UNUSED_RESULT;
 };
 }  // namespace td
@@ -54,7 +52,7 @@ class ServerSocketFd {
 namespace td {
 class ServerSocketFd : public Fd {
  public:
-  static Result<ServerSocketFd> open(int32 port, std::string addr) {
+  static Result<ServerSocketFd> open(int32 port, CSlice addr = "0.0.0.0") {
     IPAddress address;
     auto status = address.init_ipv4_port(addr, port);
     if (status.is_error()) {
@@ -84,10 +82,6 @@ class ServerSocketFd : public Fd {
     }
 
     return ServerSocketFd(Fd::Type::ServerSocketFd, Fd::Mode::Owner, fd, address.get_address_family());
-  }
-  
-  static Result<ServerSocketFd> open(int32 port) {
-    return open (port, "0.0.0.0");
   }
 
   ServerSocketFd() = default;
