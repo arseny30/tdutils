@@ -182,30 +182,41 @@ Result<size_t> FileFd::pread(MutableSlice slice, off_t offset) {
   }
 }
 
-Status FileFd::lock(FileFd::LockFlags flags) {
-  struct flock L;
-  std::memset(&L, 0, sizeof(L));
-
-  L.l_type = static_cast<short>([&] {
-    switch (flags) {
-      case LockFlags::Read:
-        return F_RDLCK;
-      case LockFlags::Write:
-        return F_WRLCK;
-      case LockFlags::Unlock:
-        return F_UNLCK;
-      default:
-        UNREACHABLE();
-        return F_UNLCK;
-    };
-  }());
-
-  L.l_whence = SEEK_SET;
-  if (fcntl(fd_.get_native_fd(), F_SETLK, &L) == -1) {
-    int fcntl_errno = errno;
-    return Status::PosixError(fcntl_errno, "Can't lock file");
+Status FileFd::lock(FileFd::LockFlags flags, int32 max_tries) {
+  if (max_tries <= 0) {
+    return Status::Error(0, "Can't lock file: wrong max_tries");
   }
-  return Status::OK();
+
+  while (true) {
+    struct flock L;
+    std::memset(&L, 0, sizeof(L));
+
+    L.l_type = static_cast<short>([&] {
+      switch (flags) {
+        case LockFlags::Read:
+          return F_RDLCK;
+        case LockFlags::Write:
+          return F_WRLCK;
+        case LockFlags::Unlock:
+          return F_UNLCK;
+        default:
+          UNREACHABLE();
+          return F_UNLCK;
+      };
+    }());
+
+    L.l_whence = SEEK_SET;
+    if (fcntl(fd_.get_native_fd(), F_SETLK, &L) == -1) {
+      int fcntl_errno = errno;
+      if (fcntl_errno == EAGAIN && --max_tries > 0) {
+        usleep(100000);
+        continue;
+      }
+
+      return Status::PosixError(fcntl_errno, "Can't lock file");
+    }
+    return Status::OK();
+  }
 }
 
 void FileFd::close() {

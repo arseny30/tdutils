@@ -26,7 +26,7 @@ class FileFd {
   Result<size_t> pread(MutableSlice slice, off_t offset) WARN_UNUSED_RESULT;
 
   enum class LockFlags { Write, Read, Unlock };
-  Status lock(LockFlags flags) WARN_UNUSED_RESULT;
+  Status lock(LockFlags flags, int32 max_tries = 1) WARN_UNUSED_RESULT;
 
   void close();
   bool empty() const;
@@ -153,8 +153,8 @@ class FileFd : public Fd {
   using Fd::get_size;
 
   enum class LockFlags { Write, Read, Unlock };
-  Status lock(LockFlags flags) WARN_UNUSED_RESULT {
-    return Status::OK();
+  Status lock(LockFlags flags, int32 max_tries = 1) WARN_UNUSED_RESULT {
+    return Status::OK();  // TODO
   }
 
   Fd move_as_fd() {
