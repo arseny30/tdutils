@@ -154,6 +154,10 @@ vector<Hints::KeyT> Hints::search(const string &query, int32 limit) const {
   return results;
 }
 
+bool Hints::has_key(KeyT key) const {
+  return key_to_name_.find(key) != key_to_name_.end();
+}
+
 string Hints::key_to_string(KeyT key) const {
   auto it = key_to_name_.find(key);
   if (it == key_to_name_.end()) {
