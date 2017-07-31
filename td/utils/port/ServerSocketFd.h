@@ -26,7 +26,7 @@ class ServerSocketFd {
 
   operator FdRef();
 
-  static Result<ServerSocketFd> open(int32 port, CSlice addr = "0.0.0.0") WARN_UNUSED_RESULT;
+  static Result<ServerSocketFd> open(int32 port, CSlice addr = CSlice("0.0.0.0")) WARN_UNUSED_RESULT;
 
   const Fd &get_fd() const;
   int32 get_flags() const;
@@ -52,7 +52,7 @@ class ServerSocketFd {
 namespace td {
 class ServerSocketFd : public Fd {
  public:
-  static Result<ServerSocketFd> open(int32 port, CSlice addr = "0.0.0.0") {
+  static Result<ServerSocketFd> open(int32 port, CSlice addr = CSlice("0.0.0.0")) {
     IPAddress address;
     auto status = address.init_ipv4_port(addr, port);
     if (status.is_error()) {
