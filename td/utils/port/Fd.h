@@ -200,9 +200,9 @@ class Fd {
   void on_read_event();
   void on_write_event();
 
-  static Fd Stderr();
-  static Fd Stdin();
-  static Fd Stdout();
+  static Fd &Stderr();
+  static Fd &Stdin();
+  static Fd &Stdout();
   static Status duplicate(const Fd &from, Fd &to);
 
  private:

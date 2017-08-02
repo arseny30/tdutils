@@ -1051,34 +1051,40 @@ HANDLE Fd::get_write_event() {
   return impl_->get_write_event();
 }
 
-#if !TD_WINDOWS || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-Fd Fd::Stderr() {
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+Fd &Fd::Stderr() {
   static auto handle = GetStdHandle(STD_ERROR_HANDLE);
   LOG_IF(FATAL, handle == INVALID_HANDLE_VALUE) << "Failed to get stderr";
   static auto fd = Fd(Fd::Type::FileFd, Fd::Mode::Reference, handle);
-  return fd.clone();
+  return fd;
 }
-Fd Fd::Stdin() {
+Fd &Fd::Stdin() {
   static auto handle = GetStdHandle(STD_INPUT_HANDLE);
   LOG_IF(FATAL, handle == INVALID_HANDLE_VALUE) << "Failed to get stdin";
   static auto fd = Fd(Fd::Type::FileFd, Fd::Mode::Reference, handle);
-  return fd.clone();
+  return fd;
 }
-Fd Fd::Stdout() {
+Fd &Fd::Stdout() {
   static auto handle = GetStdHandle(STD_OUTPUT_HANDLE);
   LOG_IF(FATAL, handle == INVALID_HANDLE_VALUE) << "Failed to get stdout";
   static auto fd = Fd(Fd::Type::FileFd, Fd::Mode::Reference, handle);
-  return fd.clone();
+  return fd;
 }
 #else
-Fd Fd::Stderr() {
-  return Fd();
+Fd &Fd::Stderr() {
+  static Fd result;
+  result = Fd();
+  return result;
 }
-Fd Fd::Stdin() {
-  return Fd();
+Fd &Fd::Stdin() {
+  static Fd result;
+  result = Fd();
+  return result;
 }
-Fd Fd::Stdout() {
-  return Fd();
+Fd &Fd::Stdout() {
+  static Fd result;
+  result = Fd();
+  return result;
 }
 #endif
 
