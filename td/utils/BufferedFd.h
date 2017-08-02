@@ -120,8 +120,8 @@ void BufferedFd<FdT>::init() {
 
 template <class FdT>
 void BufferedFd<FdT>::init_ptr() {
-  set_input_writer(&input_writer_);
-  set_output_reader(&output_reader_);
+  this->set_input_writer(&input_writer_);
+  this->set_output_reader(&output_reader_);
 }
 
 template <class FdT>
