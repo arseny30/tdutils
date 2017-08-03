@@ -64,11 +64,19 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
                                   << tag("flags", initial_flags));
   }
 
-  int native_fd = ::open(filepath.c_str(), native_flags, static_cast<mode_t>(mode));
-  auto open_errno = errno;
-  if (native_fd == -1) {
-    return Status::PosixError(
-        open_errno, PSLICE() << "Failed to open file: " << tag("path", filepath) << tag("flags", initial_flags));
+  int native_fd;
+  while (true) {
+    native_fd = ::open(filepath.c_str(), native_flags, static_cast<mode_t>(mode));
+    auto open_errno = errno;
+    if (native_fd == -1) {
+      if (open_errno == EINTR) {
+        continue;
+      }
+
+      return Status::PosixError(
+          open_errno, PSLICE() << "Failed to open file: " << tag("path", filepath) << tag("flags", initial_flags));
+    }
+    break;
   }
 
   FileFd result;
