@@ -276,113 +276,98 @@ Status Fd::get_pending_error() {
 
 Result<size_t> Fd::write_unsafe(Slice slice) {
   int native_fd = get_native_fd();
-  while (true) {
-    auto write_res = ::write(native_fd, slice.begin(), slice.size());
-    auto write_errno = errno;
-    if (write_res < 0) {
-      if (write_errno == EINTR) {
-        continue;
-      }
-      return Status::PosixError(write_errno, PSLICE("Write to [fd=%d] has failed", native_fd));
-    }
+  auto write_res = skip_eintr([&] { return ::write(native_fd, slice.begin(), slice.size()); });
+  auto write_errno = errno;
+  if (write_res >= 0) {
     return static_cast<size_t>(write_res);
   }
+  return Status::PosixError(write_errno, PSLICE("Write to [fd=%d] has failed", native_fd));
 }
 
 Result<size_t> Fd::write(Slice slice) {
   int native_fd = get_native_fd();
-  while (true) {
-    auto write_res = ::write(native_fd, slice.begin(), slice.size());
-    auto write_errno = errno;
-    if (write_res < 0) {
-      if (write_errno == EINTR) {
-        continue;
-      }
-      if (write_errno == EAGAIN
-#if EAGAIN != EWOULDBLOCK
-          || write_errno == EWOULDBLOCK
-#endif
-      ) {
-        clear_flags(Write);
-        return 0;
-      }
-
-      auto error = Status::PosixError(write_errno, PSLICE("Write to [fd=%d] has failed", native_fd));
-      switch (write_errno) {
-        case EBADF:
-        case ENXIO:
-        case EFAULT:
-        case EINVAL:
-          LOG(FATAL) << error;
-          UNREACHABLE();
-        default:
-          LOG(WARNING) << error;
-        // fallthrough
-        case ECONNRESET:
-        case EDQUOT:
-        case EFBIG:
-        case EIO:
-        case ENETDOWN:
-        case ENETUNREACH:
-        case ENOSPC:
-        case EPIPE:
-          clear_flags(Write);
-          update_flags(Close);
-          return std::move(error);
-      }
-    }
+  auto write_res = skip_eintr([&] { return ::write(native_fd, slice.begin(), slice.size()); });
+  auto write_errno = errno;
+  if (write_res >= 0) {
     return static_cast<size_t>(write_res);
+  }
+
+  if (write_errno == EAGAIN
+#if EAGAIN != EWOULDBLOCK
+      || write_errno == EWOULDBLOCK
+#endif
+  ) {
+    clear_flags(Write);
+    return 0;
+  }
+
+  auto error = Status::PosixError(write_errno, PSLICE("Write to [fd=%d] has failed", native_fd));
+  switch (write_errno) {
+    case EBADF:
+    case ENXIO:
+    case EFAULT:
+    case EINVAL:
+      LOG(FATAL) << error;
+      UNREACHABLE();
+    default:
+      LOG(WARNING) << error;
+    // fallthrough
+    case ECONNRESET:
+    case EDQUOT:
+    case EFBIG:
+    case EIO:
+    case ENETDOWN:
+    case ENETUNREACH:
+    case ENOSPC:
+    case EPIPE:
+      clear_flags(Write);
+      update_flags(Close);
+      return std::move(error);
   }
 }
 
 Result<size_t> Fd::read(MutableSlice slice) {
   int native_fd = get_native_fd();
-  while (true) {
-    CHECK(slice.size() > 0);
-    auto read_res = ::read(native_fd, slice.begin(), slice.size());
-    auto read_errno = errno;
-    if (read_res < 0) {
-      if (read_errno == EINTR) {
-        continue;
-      }
-
-      if (read_errno == EAGAIN
-#if EAGAIN != EWOULDBLOCK
-          || read_errno == EWOULDBLOCK
-#endif
-      ) {
-        clear_flags(Read);
-        return 0;
-      }
-      auto error = Status::PosixError(read_errno, PSLICE("Read from [fd=%d] has failed", native_fd));
-      switch (read_errno) {
-        case EISDIR:
-        case EBADF:
-        case ENXIO:
-        case EFAULT:
-        case EINVAL:
-        case ENOTCONN:
-          LOG(FATAL) << error;
-          UNREACHABLE();
-        default:
-          LOG(WARNING) << error;
-        // fallthrough
-        case EIO:
-        case ENOBUFS:
-        case ENOMEM:
-        case ECONNRESET:
-        case ETIMEDOUT:
-          clear_flags(Read);
-          update_flags(Close);
-          return std::move(error);
-      }
-    }
+  CHECK(slice.size() > 0);
+  auto read_res = skip_eintr([&] { return ::read(native_fd, slice.begin(), slice.size()); });
+  auto read_errno = errno;
+  if (read_res >= 0) {
     if (read_res == 0) {
       errno = 0;
       clear_flags(Read);
       update_flags(Close);
     }
     return static_cast<size_t>(read_res);
+  }
+  if (read_errno == EAGAIN
+#if EAGAIN != EWOULDBLOCK
+      || read_errno == EWOULDBLOCK
+#endif
+  ) {
+    clear_flags(Read);
+    return 0;
+  }
+  auto error = Status::PosixError(read_errno, PSLICE("Read from [fd=%d] has failed", native_fd));
+  switch (read_errno) {
+    case EISDIR:
+    case EBADF:
+    case ENXIO:
+    case EFAULT:
+    case EINVAL:
+    case ENOTCONN:
+      LOG(FATAL) << error;
+      UNREACHABLE();
+    default:
+      LOG(WARNING) << error;
+    // fallthrough
+    case EIO:
+    case ENOBUFS:
+    case ENOMEM:
+    case ECONNRESET:
+    case ETIMEDOUT:
+      clear_flags(Read);
+      update_flags(Close);
+      return std::move(error);
   }
 }
 

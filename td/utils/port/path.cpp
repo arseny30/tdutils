@@ -53,19 +53,16 @@ Status mkpath(CSlice path, int32 mode) {
 #ifdef TD_PORT_POSIX
 
 Status mkdir(CSlice dir, int32 mode) {
-  while (true) {
-    if (::mkdir(dir.c_str(), static_cast<mode_t>(mode)) == 0) {
-      return Status::OK();
-    }
-    if (errno == EEXIST) {
-      // TODO check that it is a directory
-      return Status::OK();
-    }
-    if (errno != EAGAIN && errno != EWOULDBLOCK && errno != EINTR) {
-      auto mkdir_errno = errno;
-      return Status::PosixError(mkdir_errno, PSLICE() << "Can't create directory \"" << dir << '"');
-    }
+  int mkdir_res = skip_eintr([&] { return ::mkdir(dir.c_str(), static_cast<mode_t>(mode)); });
+  if (mkdir_res == 0) {
+    return Status::OK();
   }
+  auto mkdir_errno = errno;
+  if (mkdir_errno == EEXIST) {
+    // TODO check that it is a directory
+    return Status::OK();
+  }
+  return Status::PosixError(mkdir_errno, PSLICE() << "Can't create directory \"" << dir << '"');
 }
 
 Status rename(CSlice from, CSlice to) {

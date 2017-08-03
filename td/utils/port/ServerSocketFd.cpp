@@ -54,50 +54,43 @@ Result<SocketFd> ServerSocketFd::accept() {
   struct sockaddr_storage addr;
   socklen_t addr_len = sizeof(addr);
   int native_fd = fd_.get_native_fd();
-  int r_fd;
-  while (true) {
-    r_fd = ::accept(native_fd, reinterpret_cast<struct sockaddr *>(&addr), &addr_len);
-    if (r_fd != -1) {
-      break;
-    }
-    auto accept_errno = errno;
-    if (accept_errno == EINTR) {
-      continue;
-    }
-    if (accept_errno == EAGAIN) {
-      fd_.clear_flags(Fd::Read);
-      return Status::PosixError<EAGAIN>();
-    }
+  int r_fd = skip_eintr([&] { return ::accept(native_fd, reinterpret_cast<struct sockaddr *>(&addr), &addr_len); });
+  auto accept_errno = errno;
+  if (r_fd >= 0) {
+    return SocketFd::from_native_fd(r_fd);
+  }
+
+  if (accept_errno == EAGAIN) {
+    fd_.clear_flags(Fd::Read);
+    return Status::PosixError<EAGAIN>();
+  }
 #if EAGAIN != EWOULDBLOCK
-    if (accept_errno == EWOULDBLOCK) {
-      fd_.clear_flags(Fd::Read);
-      return Status::PosixError<EWOULDBLOCK>();
-    }
+  if (accept_errno == EWOULDBLOCK) {
+    fd_.clear_flags(Fd::Read);
+    return Status::PosixError<EWOULDBLOCK>();
+  }
 #endif
 
-    auto error = Status::PosixError(accept_errno, PSLICE() << "Accept from [fd = " << native_fd << "] has failed");
-    switch (accept_errno) {
-      case EBADF:
-      case EFAULT:
-      case EINVAL:
-      case ENOTSOCK:
-      case EOPNOTSUPP:
-        LOG(FATAL) << error;
-        break;
-      default:
-        LOG(ERROR) << error;
-      // fallthrough
-      case EMFILE:
-      case ENFILE:
-      case ECONNABORTED:  //???
-        fd_.clear_flags(Fd::Read);
-        fd_.update_flags(Fd::Close);
-        return std::move(error);
-    }
-    break;
+  auto error = Status::PosixError(accept_errno, PSLICE() << "Accept from [fd = " << native_fd << "] has failed");
+  switch (accept_errno) {
+    case EBADF:
+    case EFAULT:
+    case EINVAL:
+    case ENOTSOCK:
+    case EOPNOTSUPP:
+      LOG(FATAL) << error;
+      UNREACHABLE();
+      break;
+    default:
+      LOG(ERROR) << error;
+    // fallthrough
+    case EMFILE:
+    case ENFILE:
+    case ECONNABORTED:  //???
+      fd_.clear_flags(Fd::Read);
+      fd_.update_flags(Fd::Close);
+      return std::move(error);
   }
-  TRY_RESULT(socket, SocketFd::from_native_fd(r_fd));
-  return std::move(socket);
 }
 
 void ServerSocketFd::close() {

@@ -15,6 +15,15 @@ namespace td {
 
 class ObserverBase;
 
+template <class F>
+auto skip_eintr(F &&f) {
+  decltype(f()) res;
+  do {
+    res = f();
+  } while (res < 0 && errno == EINTR);
+  return res;
+}
+
 class Fd {
  public:
   // TODO: Close may be not enough

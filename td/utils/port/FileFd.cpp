@@ -64,19 +64,11 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
                                   << tag("flags", initial_flags));
   }
 
-  int native_fd;
-  while (true) {
-    native_fd = ::open(filepath.c_str(), native_flags, static_cast<mode_t>(mode));
+  int native_fd = skip_eintr([&] { return ::open(filepath.c_str(), native_flags, static_cast<mode_t>(mode)); });
+  if (native_fd < 0) {
     auto open_errno = errno;
-    if (native_fd == -1) {
-      if (open_errno == EINTR) {
-        continue;
-      }
-
-      return Status::PosixError(
-          open_errno, PSLICE() << "Failed to open file: " << tag("path", filepath) << tag("flags", initial_flags));
-    }
-    break;
+    return Status::PosixError(
+        open_errno, PSLICE() << "Failed to open file: " << tag("path", filepath) << tag("flags", initial_flags));
   }
 
   FileFd result;
@@ -88,106 +80,87 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
 Result<size_t> FileFd::write(Slice slice) {
   CHECK(!fd_.empty());
   int native_fd = get_native_fd();
-  while (true) {
-    auto write_res = ::write(native_fd, slice.begin(), slice.size());
-    auto write_errno = errno;
-    if (write_res < 0) {
-      if (write_errno == EINTR) {
-        continue;
-      }
-
-      auto error = Status::PosixError(write_errno, PSLICE() << "Write to [fd = " << native_fd << "] has failed");
-      if (write_errno != EAGAIN
-#if EAGAIN != EWOULDBLOCK
-          && write_errno != EWOULDBLOCK
-#endif
-          && write_errno != EIO) {
-        LOG(ERROR) << error;
-      }
-      return std::move(error);
-    }
+  auto write_res = skip_eintr([&] { return ::write(native_fd, slice.begin(), slice.size()); });
+  if (write_res >= 0) {
     return static_cast<size_t>(write_res);
   }
+
+  auto write_errno = errno;
+  auto error = Status::PosixError(write_errno, PSLICE() << "Write to [fd = " << native_fd << "] has failed");
+  if (write_errno != EAGAIN
+#if EAGAIN != EWOULDBLOCK
+      && write_errno != EWOULDBLOCK
+#endif
+      && write_errno != EIO) {
+    LOG(ERROR) << error;
+  }
+  return std::move(error);
 }
 
 Result<size_t> FileFd::read(MutableSlice slice) {
   CHECK(!fd_.empty());
   int native_fd = get_native_fd();
-  while (true) {
-    auto read_res = ::read(native_fd, slice.begin(), slice.size());
-    auto read_errno = errno;
-    if (read_res < 0) {
-      if (read_errno == EINTR) {
-        continue;
-      }
+  auto read_res = skip_eintr([&] { return ::read(native_fd, slice.begin(), slice.size()); });
+  auto read_errno = errno;
 
-      auto error = Status::PosixError(read_errno, PSLICE() << "Read from [fd = " << native_fd << "] has failed");
-      if (read_errno != EAGAIN
-#if EAGAIN != EWOULDBLOCK
-          && read_errno != EWOULDBLOCK
-#endif
-          && read_errno != EIO) {
-        LOG(ERROR) << error;
-      }
-      return std::move(error);
-    }
+  if (read_res >= 0) {
     if (static_cast<size_t>(read_res) < slice.size()) {
       fd_.clear_flags(Read);
     }
     return static_cast<size_t>(read_res);
   }
+
+  auto error = Status::PosixError(read_errno, PSLICE() << "Read from [fd = " << native_fd << "] has failed");
+  if (read_errno != EAGAIN
+#if EAGAIN != EWOULDBLOCK
+      && read_errno != EWOULDBLOCK
+#endif
+      && read_errno != EIO) {
+    LOG(ERROR) << error;
+  }
+  return std::move(error);
 }
 
 Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
   CHECK(!fd_.empty());
   int native_fd = get_native_fd();
-  while (true) {
-    auto pwrite_res = ::pwrite(native_fd, slice.begin(), slice.size(), offset);
-    auto pwrite_errno = errno;
-    if (pwrite_res < 0) {
-      if (pwrite_errno == EINTR) {
-        continue;
-      }
-
-      auto error = Status::PosixError(
-          pwrite_errno, PSLICE() << "Pwrite to [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
-      if (pwrite_errno != EAGAIN
-#if EAGAIN != EWOULDBLOCK
-          && read_errno != EWOULDBLOCK
-#endif
-          && pwrite_errno != EIO) {
-        LOG(ERROR) << error;
-      }
-      return std::move(error);
-    }
+  auto pwrite_res = skip_eintr([&] { return ::pwrite(native_fd, slice.begin(), slice.size(), offset); });
+  if (pwrite_res >= 0) {
     return static_cast<size_t>(pwrite_res);
   }
+
+  auto pwrite_errno = errno;
+  auto error = Status::PosixError(
+      pwrite_errno, PSLICE() << "Pwrite to [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
+  if (pwrite_errno != EAGAIN
+#if EAGAIN != EWOULDBLOCK
+      && read_errno != EWOULDBLOCK
+#endif
+      && pwrite_errno != EIO) {
+    LOG(ERROR) << error;
+  }
+  return std::move(error);
 }
 
 Result<size_t> FileFd::pread(MutableSlice slice, off_t offset) {
   CHECK(!fd_.empty());
   int native_fd = get_native_fd();
-  while (true) {
-    auto pread_res = ::pread(native_fd, slice.begin(), slice.size(), offset);
-    auto pread_errno = errno;
-    if (pread_res < 0) {
-      if (pread_errno == EINTR) {
-        continue;
-      }
-
-      auto error = Status::PosixError(
-          pread_errno, PSLICE() << "Pread from [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
-      if (pread_errno != EAGAIN
-#if EAGAIN != EWOULDBLOCK
-          && read_errno != EWOULDBLOCK
-#endif
-          && pread_errno != EIO) {
-        LOG(ERROR) << error;
-      }
-      return std::move(error);
-    }
+  auto pread_res = skip_eintr([&] { return ::pread(native_fd, slice.begin(), slice.size(), offset); });
+  if (pread_res >= 0) {
     return static_cast<size_t>(pread_res);
   }
+
+  auto pread_errno = errno;
+  auto error = Status::PosixError(
+      pread_errno, PSLICE() << "Pread from [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
+  if (pread_errno != EAGAIN
+#if EAGAIN != EWOULDBLOCK
+      && read_errno != EWOULDBLOCK
+#endif
+      && pread_errno != EIO) {
+    LOG(ERROR) << error;
+  }
+  return std::move(error);
 }
 
 Status FileFd::lock(FileFd::LockFlags flags, int32 max_tries) {
