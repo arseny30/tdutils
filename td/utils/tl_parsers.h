@@ -73,7 +73,7 @@ class TlParser {
     if (error.empty()) {
       return Status::OK();
     }
-    return Status::Error(PSLICE() << error << " at: " << error_pos);
+    return Status::Error(PSLICE() << error << " at " << error_pos);
   }
 
   void check_len(const size_t len) {
