@@ -8,6 +8,7 @@
 
 namespace td {
 namespace detail {
+
 class EventFdBsd final : public EventFdBase {
  private:
   Fd in_;
@@ -15,8 +16,6 @@ class EventFdBsd final : public EventFdBase {
 
  public:
   EventFdBsd() = default;
-
-  operator FdRef() override;
 
   void init() override;
 
@@ -33,6 +32,7 @@ class EventFdBsd final : public EventFdBase {
 
   void acquire() override;
 };
+
 }  // namespace detail
 }  // namespace td
 

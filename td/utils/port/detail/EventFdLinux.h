@@ -8,13 +8,12 @@
 
 namespace td {
 namespace detail {
+
 class EventFdLinux final : public EventFdBase {
  private:
   Fd fd_;
 
  public:
-  operator FdRef() override;
-
   void init() override;
 
   bool empty() override;
@@ -30,6 +29,7 @@ class EventFdLinux final : public EventFdBase {
 
   void acquire() override;
 };
+
 }  // namespace detail
 }  // namespace td
 

@@ -8,9 +8,7 @@ char disable_linker_warning_about_empty_file_event_fd_windows_cpp TD_UNUSED;
 
 namespace td {
 namespace detail {
-EventFdWindows::operator FdRef() {
-  return get_fd();
-}
+
 void EventFdWindows::init() {
   fd_ = Fd(Fd::Type::EventFd, Fd::Mode::Owner, INVALID_HANDLE_VALUE);
 }
@@ -42,6 +40,7 @@ void EventFdWindows::release() {
 void EventFdWindows::acquire() {
   fd_.acquire();
 }
+
 }  // namespace detail
 }  // namespace td
 

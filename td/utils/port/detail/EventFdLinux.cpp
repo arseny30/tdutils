@@ -10,9 +10,7 @@ char disable_linker_warning_about_empty_file_event_fd_linux_cpp TD_UNUSED;
 
 namespace td {
 namespace detail {
-EventFdLinux::operator FdRef() {
-  return get_fd();
-}
+
 void EventFdLinux::init() {
   int fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
   auto eventfd_errno = errno;
@@ -64,6 +62,7 @@ void EventFdLinux::acquire() {
   }
   fd_.clear_flags(Fd::Read);
 }
+
 }  // namespace detail
 }  // namespace td
 

@@ -12,7 +12,6 @@ class EventFdBase {
   EventFdBase &operator=(EventFdBase &&) = default;
   virtual ~EventFdBase() = default;
 
-  virtual operator FdRef() = 0;
   virtual void init() = 0;
   virtual bool empty() = 0;
   virtual void close() = 0;

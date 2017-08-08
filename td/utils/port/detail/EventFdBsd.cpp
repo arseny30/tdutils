@@ -12,10 +12,8 @@ char disable_linker_warning_about_empty_file_event_fd_bsd_cpp TD_UNUSED;
 
 namespace td {
 namespace detail {
-EventFdBsd::operator FdRef() {
-  return get_fd();
-}
-// TODO: it is extreemly non optimal on Darwin. kqueue events should be used instead
+
+// TODO: it is extremely non optimal on Darwin. kqueue events should be used instead
 void EventFdBsd::init() {
   int fds[2];
   int err = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
@@ -86,6 +84,7 @@ void EventFdBsd::acquire() {
     }
   }
 }
+
 }  // namespace detail
 }  // namespace td
 
