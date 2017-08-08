@@ -24,11 +24,10 @@ class ServerSocketFd {
   ServerSocketFd(ServerSocketFd &&) = default;
   ServerSocketFd &operator=(ServerSocketFd &&) = default;
 
-  operator FdRef();
-
   static Result<ServerSocketFd> open(int32 port, CSlice addr = CSlice("0.0.0.0")) WARN_UNUSED_RESULT;
 
   const Fd &get_fd() const;
+  Fd &get_fd();
   int32 get_flags() const;
   Status get_pending_error() WARN_UNUSED_RESULT;
 
@@ -98,6 +97,7 @@ class ServerSocketFd : public Fd {
     return SocketFd(r_socket.move_as_ok());
   }
 
+  using Fd::get_fd;
   using Fd::empty;
   using Fd::close;
   using Fd::get_flags;

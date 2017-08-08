@@ -49,7 +49,6 @@ Fd Fd::stdin_(0, Mode::Reference);
 /*** Fd ***/
 Fd::Fd() = default;
 
-// TODO: separate class for FdRef!
 Fd::Fd(int fd, Mode mode) : fd_(fd), mode_(mode) {
   auto *info = get_info();
   int old_ref_cnt = info->refcnt.load(std::memory_order_relaxed);
@@ -75,7 +74,6 @@ Fd::Fd(int fd, Mode mode) : fd_(fd), mode_(mode) {
     LOG_IF(FATAL, fcntl_res == -1) << Status::PosixError(fcntl_errno, "fcntl F_GET_FD failed");
 
     CHECK(is_ref());
-    // VLOG(fd) << "FdRef created [fd:" << fd_ << "]";
     info->refcnt.fetch_add(1, std::memory_order_relaxed);
   }
 }
@@ -954,13 +952,23 @@ class FdImpl {
 
 }  // namespace detail
 
+const Fd &Fd::get_fd() const {
+  return *this;
+}
+
+Fd &Fd::get_fd() {
+  return *this;
+}
+
 Result<size_t> Fd::write(Slice slice) {
   CHECK(!empty());
   return impl_->write(slice);
 }
+
 bool Fd::empty() const {
   return !impl_;
 }
+
 void Fd::close() {
   impl_.reset();
 }

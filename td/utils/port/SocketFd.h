@@ -24,15 +24,11 @@ class SocketFd {
   SocketFd(SocketFd &&) = default;
   SocketFd &operator=(SocketFd &&) = default;
 
-  operator FdRef();
-
   static Result<SocketFd> open(const IPAddress &address) WARN_UNUSED_RESULT;
 
   const Fd &get_fd() const;
   Fd &get_fd();
-  bool can_read() const;
-  bool can_write() const;
-  bool can_close() const;
+
   int32 get_flags() const;
   Status get_pending_error() WARN_UNUSED_RESULT;
 
@@ -92,6 +88,7 @@ class SocketFd : public Fd {
   SocketFd(SocketFd &&) = default;
   SocketFd &operator=(SocketFd &&) = default;
 
+  using Fd::get_fd;
   using Fd::connect;
   using Fd::write;
   using Fd::read;

@@ -14,9 +14,6 @@ char disable_linker_warning_about_empty_file_socket_fd_cpp TD_UNUSED;
 
 namespace td {
 /*** SocketFd ***/
-SocketFd::operator FdRef() {
-  return fd_;
-}
 
 Result<SocketFd> SocketFd::open(const IPAddress &address) {
   //  return Status::Error("Dummy error");

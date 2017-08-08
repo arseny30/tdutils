@@ -13,9 +13,6 @@ char disable_linker_warning_about_empty_file_server_socket_fd_cpp TD_UNUSED;
 #include <unistd.h>
 
 namespace td {
-ServerSocketFd::operator FdRef() {
-  return fd_;
-}
 
 Result<ServerSocketFd> ServerSocketFd::open(int32 port, CSlice addr) {
   ServerSocketFd socket;
@@ -24,6 +21,10 @@ Result<ServerSocketFd> ServerSocketFd::open(int32 port, CSlice addr) {
 }
 
 const Fd &ServerSocketFd::get_fd() const {
+  return fd_;
+}
+
+Fd &ServerSocketFd::get_fd() {
   return fd_;
 }
 

@@ -13,9 +13,10 @@ class FileFd {
  public:
   FileFd() = default;
 
-  operator FdRef();
-
   enum Flags : int32 { Write = 1, Read = 2, Truncate = 4, Create = 8, Append = 16, CreateNew = 32 };
+
+  const Fd &get_fd() const;
+  Fd &get_fd();
 
   static Result<FileFd> open(CSlice filepath, int32 flags, int32 mode = 0600) WARN_UNUSED_RESULT;
 
@@ -34,8 +35,6 @@ class FileFd {
   int get_native_fd() const;
   int32 get_flags() const;
   void update_flags(Fd::Flags mask);
-
-  Status get_pending_error() WARN_UNUSED_RESULT;
 
   off_t get_size();
 
@@ -140,6 +139,7 @@ class FileFd : public Fd {
     return std::move(res);
   }
 
+  using Fd::get_fd;
   using Fd::write;
   using Fd::read;
   using Fd::pwrite;
@@ -147,8 +147,6 @@ class FileFd : public Fd {
   using Fd::close;
   using Fd::empty;
   using Fd::get_flags;
-  using Fd::has_pending_error;
-  using Fd::get_pending_error;
   using Fd::stat;
   using Fd::get_size;
 

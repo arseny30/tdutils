@@ -19,11 +19,15 @@ char disable_linker_warning_about_empty_file_file_fd_cpp TD_UNUSED;
 
 namespace td {
 
-FileFd::operator FdRef() {
+/*** FileFd ***/
+const Fd &FileFd::get_fd() const {
   return fd_;
 }
 
-/*** FileFd ***/
+Fd &FileFd::get_fd() {
+  return fd_;
+}
+
 Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
   int32 initial_flags = flags;
   int native_flags = 0;
@@ -218,10 +222,6 @@ int32 FileFd::get_flags() const {
 
 void FileFd::update_flags(Fd::Flags mask) {
   fd_.update_flags(mask);
-}
-
-Status FileFd::get_pending_error() {
-  return Status::OK();
 }
 
 off_t FileFd::get_size() {

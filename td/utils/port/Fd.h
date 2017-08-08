@@ -62,6 +62,7 @@ class Fd {
 
   const Fd &get_fd() const;
   Fd &get_fd();
+
   int get_native_fd() const;
   int move_as_native_fd();
 
@@ -137,11 +138,6 @@ bool can_close(const FdT &fd) {
   return fd.get_flags() & Fd::Close;
 }
 
-inline bool has_pending_error(const Fd &fd) {
-  return fd.has_pending_error();
-}
-
-using FdRef = Fd &;
 }  // namespace td
 #endif  // TD_PORT_POSIX
 
@@ -160,8 +156,7 @@ class FdImpl;
 // like linux fd.
 // also it handles fd destruction
 // descriptor(handler) itself should be create by some external function
-class Fd;
-using FdRef = Fd &;
+
 class Fd {
  public:
   enum Flag : int32 {
@@ -174,6 +169,9 @@ class Fd {
   };
   using Flags = int32;
   Fd() = default;
+
+  const Fd &get_fd() const;
+  Fd &get_fd();
 
   Result<size_t> write(Slice slice) WARN_UNUSED_RESULT;
   bool empty() const;
@@ -252,14 +250,6 @@ inline bool can_write(const Fd &fd) {
 
 inline bool can_close(const Fd &fd) {
   return (fd.get_flags() & Fd::Close) != 0;
-}
-
-inline bool has_pending_error(const Fd &fd) {
-  return fd.has_pending_error();
-}
-
-inline Status get_pending_error(Fd &fd) {
-  return fd.get_pending_error();
 }
 
 }  // namespace td
