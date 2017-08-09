@@ -13,12 +13,47 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#endif
+
 namespace td {
 
 Result<ServerSocketFd> ServerSocketFd::open(int32 port, CSlice addr) {
-  ServerSocketFd socket;
-  TRY_STATUS(socket.init(port, addr));
-  return std::move(socket);
+  ServerSocketFd result_socket;
+#ifdef TD_PORT_POSIX
+  TRY_STATUS(result_socket.init(port, addr));
+#endif
+#ifdef TD_PORT_WINDOWS
+  IPAddress address;
+  auto status = address.init_ipv4_port(addr, port);
+  if (status.is_error()) {
+    return std::move(status);
+  }
+  auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
+  if (fd == INVALID_SOCKET) {
+    return Status::WsaError("Failed to create a socket");
+  }
+
+  status = init_socket(fd);
+  if (!status.is_ok()) {
+    return std::move(status);
+  }
+
+  int e_bind = bind(fd, address.get_sockaddr(), static_cast<socklen_t>(address.get_sockaddr_len()));
+  if (e_bind != 0) {
+    ::closesocket(fd);
+    return Status::WsaError("Failed to bind socket");
+  }
+
+  // TODO: magic constant
+  int e_listen = listen(fd, 8192);
+  if (e_listen != 0) {
+    ::closesocket(fd);
+    return Status::WsaError("Failed to listen");
+  }
+
+  result_socket.fd_ = Fd(Fd::Type::ServerSocketFd, Fd::Mode::Owner, fd, address.get_address_family());
+#endif
+  return std::move(result_socket);
 }
 
 const Fd &ServerSocketFd::get_fd() const {
@@ -34,6 +69,7 @@ int32 ServerSocketFd::get_flags() const {
 }
 
 Status ServerSocketFd::get_pending_error() {
+#ifdef TD_PORT_POSIX
   if (!(fd_.get_flags() & Fd::Error)) {
     return Status::OK();
   }
@@ -50,9 +86,14 @@ Status ServerSocketFd::get_pending_error() {
   LOG(INFO) << "Can't load errno = " << getsockopt_errno;
   return Status::PosixError(getsockopt_errno,
                             PSLICE() << "Can't load error on socket [fd_ = " << fd_.get_native_fd() << "]");
+#endif
+#ifdef TD_PORT_WINDOWS
+  return fd_.get_pending_error();
+#endif
 }
 
 Result<SocketFd> ServerSocketFd::accept() {
+#ifdef TD_PORT_POSIX
   struct sockaddr_storage addr;
   socklen_t addr_len = sizeof(addr);
   int native_fd = fd_.get_native_fd();
@@ -93,6 +134,14 @@ Result<SocketFd> ServerSocketFd::accept() {
       fd_.update_flags(Fd::Close);
       return std::move(error);
   }
+#endif
+#ifdef TD_PORT_WINDOWS
+  auto r_socket = fd_.accept();
+  if (r_socket.is_error()) {
+    return r_socket.move_as_error();
+  }
+  return SocketFd(r_socket.move_as_ok());
+#endif
 }
 
 void ServerSocketFd::close() {
@@ -103,6 +152,7 @@ bool ServerSocketFd::empty() const {
   return fd_.empty();
 }
 
+#ifdef TD_PORT_POSIX
 Status ServerSocketFd::init(int32 port, CSlice addr) {
   IPAddress address;
   TRY_STATUS(address.init_ipv4_port(addr, port));
@@ -157,54 +207,9 @@ Status ServerSocketFd::init_socket(int fd) {
 
   return Status::OK();
 }
-
-}  // namespace td
-#endif  // TD_PORT_POSIX
+#endif
 
 #ifdef TD_PORT_WINDOWS
-
-namespace td {
-
-Result<ServerSocketFd> ServerSocketFd::open(int32 port, CSlice addr) {
-  IPAddress address;
-  auto status = address.init_ipv4_port(addr, port);
-  if (status.is_error()) {
-    return std::move(status);
-  }
-  auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
-  if (fd == INVALID_SOCKET) {
-    return Status::WsaError("Failed to create a socket");
-  }
-
-  status = init_socket(fd);
-  if (!status.is_ok()) {
-    return std::move(status);
-  }
-
-  int e_bind = bind(fd, address.get_sockaddr(), static_cast<socklen_t>(address.get_sockaddr_len()));
-  if (e_bind != 0) {
-    ::closesocket(fd);
-    return Status::WsaError("Failed to bind socket");
-  }
-
-  // TODO: magic constant
-  int e_listen = listen(fd, 8192);
-  if (e_listen != 0) {
-    ::closesocket(fd);
-    return Status::WsaError("Failed to listen");
-  }
-
-  return ServerSocketFd(Fd::Type::ServerSocketFd, Fd::Mode::Owner, fd, address.get_address_family());
-}
-
-Result<SocketFd> ServerSocketFd::accept() {
-  auto r_socket = Fd::accept();
-  if (r_socket.is_error()) {
-    return r_socket.move_as_error();
-  }
-  return SocketFd(r_socket.move_as_ok());
-}
-
 Status ServerSocketFd::init_socket(SOCKET fd) {
   u_long iMode = 1;
   int err = ioctlsocket(fd, FIONBIO, &iMode);
@@ -222,6 +227,6 @@ Status ServerSocketFd::init_socket(SOCKET fd) {
 
   return Status::OK();
 }
+#endif
 
 }  // namespace td
-#endif  // TD_PORT_WINDOWS
