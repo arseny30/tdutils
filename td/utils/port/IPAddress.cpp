@@ -188,7 +188,7 @@ Status IPAddress::init_sockaddr(struct sockaddr *addr, socklen_t len) {
   return Status::OK();
 }
 
-Status IPAddress::init_socket_address(SocketFd &socket_fd) {
+Status IPAddress::init_socket_address(const SocketFd &socket_fd) {
   is_valid_ = false;
 #if TD_WINDOWS
   auto fd = socket_fd.get_fd().get_native_socket();
@@ -209,7 +209,7 @@ Status IPAddress::init_socket_address(SocketFd &socket_fd) {
   return Status::OK();
 }
 
-Status IPAddress::init_peer_address(SocketFd &socket_fd) {
+Status IPAddress::init_peer_address(const SocketFd &socket_fd) {
   is_valid_ = false;
 #if TD_WINDOWS
   auto fd = socket_fd.get_fd().get_native_socket();

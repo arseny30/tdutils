@@ -46,7 +46,6 @@ Fd Fd::stderr_(2, Mode::Reference);
 Fd Fd::stdout_(1, Mode::Reference);
 Fd Fd::stdin_(0, Mode::Reference);
 
-/*** Fd ***/
 Fd::Fd() = default;
 
 Fd::Fd(int fd, Mode mode) : fd_(fd), mode_(mode) {
@@ -510,7 +509,7 @@ class FdImpl {
     loop();
   }
 
-  SOCKET get_native_socket() {
+  SOCKET get_native_socket() const {
     CHECK(type_ == Fd::Type::SocketFd);
     return socket_;
   }
@@ -1049,7 +1048,7 @@ HANDLE Fd::get_write_event() {
   return impl_->get_write_event();
 }
 
-SOCKET Fd::get_native_socket() {
+SOCKET Fd::get_native_socket() const {
   return impl_->get_native_socket();
 }
 

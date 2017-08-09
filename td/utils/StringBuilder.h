@@ -11,7 +11,6 @@
 #include "td/utils/StackAllocator.h"
 
 namespace td {
-/*** StringBuilder ***/
 
 class StringBuilder {
  public:

@@ -10,7 +10,7 @@ char disable_linker_warning_about_empty_file_kqueue_cpp TD_UNUSED;
 
 namespace td {
 namespace detail {
-/*** KQueue ***/
+
 KQueue::KQueue() {
   kq = -1;
 }

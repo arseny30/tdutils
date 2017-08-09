@@ -191,7 +191,7 @@ class Fd {
   void on_read_event();
   void on_write_event();
 
-  SOCKET get_native_socket();
+  SOCKET get_native_socket() const;
 
   static Fd &Stderr();
   static Fd &Stdin();

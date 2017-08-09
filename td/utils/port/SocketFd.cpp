@@ -1,11 +1,11 @@
 #include "td/utils/port/config.h"
 
-char disable_linker_warning_about_empty_file_socket_fd_cpp TD_UNUSED;
+#include "td/utils/port/SocketFd.h"
 
 #ifdef TD_PORT_POSIX
 
-#include "td/utils/port/SocketFd.h"
-
+#include <arpa/inet.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
@@ -13,10 +13,8 @@ char disable_linker_warning_about_empty_file_socket_fd_cpp TD_UNUSED;
 #include <unistd.h>
 
 namespace td {
-/*** SocketFd ***/
 
 Result<SocketFd> SocketFd::open(const IPAddress &address) {
-  //  return Status::Error("Dummy error");
   SocketFd socket;
   TRY_STATUS(socket.init(address));
   return std::move(socket);
@@ -119,3 +117,51 @@ Result<size_t> SocketFd::read(MutableSlice slice) {
 
 }  // namespace td
 #endif  // TD_PORT_POSIX
+
+#ifdef TD_PORT_WINDOWS
+
+#include "td/utils/misc.h"
+
+namespace td {
+
+Result<SocketFd> SocketFd::open(const IPAddress &address) {
+  auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
+  if (fd == INVALID_SOCKET) {
+    return Status::WsaError("Failed to create a socket");
+  }
+
+  Status res = init_socket(fd);
+  if (!res.is_ok()) {
+    return std::move(res);
+  }
+
+  auto bind_addr = address.get_any_addr();
+  auto e_bind = bind(fd, bind_addr.get_sockaddr(), narrow_cast<int>(bind_addr.get_sockaddr_len()));
+  if (e_bind != 0) {
+    return Status::WsaError("Failed to bind a socket");
+  }
+
+  auto sock = SocketFd(Fd::Type::SocketFd, Fd::Mode::Owner, fd, address.get_address_family());
+  sock.connect(address);
+  return std::move(sock);
+}
+
+Status SocketFd::init_socket(SOCKET fd) {
+  u_long iMode = 1;
+  int err = ioctlsocket(fd, FIONBIO, &iMode);
+  if (err != 0) {
+    ::closesocket(fd);
+    return Status::WsaError("Failed to make socket nonblocking");
+  }
+
+  BOOL flags = TRUE;
+  setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&flags), sizeof(flags));
+  setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&flags), sizeof(flags));
+
+  // TODO: SO_REUSEADDR, SO_KEEPALIVE, TCP_NODELAY, SO_SNDBUF, SO_RCVBUF,
+  //      TCP_QUICKACK, SO_LINGER
+  return Status::OK();
+}
+
+}  // namespace td
+#endif  // TD_PORT_WINDOWS

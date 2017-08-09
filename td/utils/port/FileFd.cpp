@@ -19,7 +19,6 @@ char disable_linker_warning_about_empty_file_file_fd_cpp TD_UNUSED;
 
 namespace td {
 
-/*** FileFd ***/
 const Fd &FileFd::get_fd() const {
   return fd_;
 }
