@@ -1,11 +1,12 @@
 #include "td/utils/port/config.h"
 
-char disable_linker_warning_about_empty_file_server_socket_fd_cpp TD_UNUSED;
+#include "td/utils/port/IPAddress.h"
+#include "td/utils/port/ServerSocketFd.h"
 
 #ifdef TD_PORT_POSIX
 
-#include "td/utils/port/ServerSocketFd.h"
-
+#include <arpa/inet.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
@@ -159,3 +160,68 @@ Status ServerSocketFd::init_socket(int fd) {
 
 }  // namespace td
 #endif  // TD_PORT_POSIX
+
+#ifdef TD_PORT_WINDOWS
+
+namespace td {
+
+Result<ServerSocketFd> ServerSocketFd::open(int32 port, CSlice addr) {
+  IPAddress address;
+  auto status = address.init_ipv4_port(addr, port);
+  if (status.is_error()) {
+    return std::move(status);
+  }
+  auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
+  if (fd == INVALID_SOCKET) {
+    return Status::WsaError("Failed to create a socket");
+  }
+
+  status = init_socket(fd);
+  if (!status.is_ok()) {
+    return std::move(status);
+  }
+
+  int e_bind = bind(fd, address.get_sockaddr(), static_cast<socklen_t>(address.get_sockaddr_len()));
+  if (e_bind != 0) {
+    ::closesocket(fd);
+    return Status::WsaError("Failed to bind socket");
+  }
+
+  // TODO: magic constant
+  int e_listen = listen(fd, 8192);
+  if (e_listen != 0) {
+    ::closesocket(fd);
+    return Status::WsaError("Failed to listen");
+  }
+
+  return ServerSocketFd(Fd::Type::ServerSocketFd, Fd::Mode::Owner, fd, address.get_address_family());
+}
+
+Result<SocketFd> ServerSocketFd::accept() {
+  auto r_socket = Fd::accept();
+  if (r_socket.is_error()) {
+    return r_socket.move_as_error();
+  }
+  return SocketFd(r_socket.move_as_ok());
+}
+
+Status ServerSocketFd::init_socket(SOCKET fd) {
+  u_long iMode = 1;
+  int err = ioctlsocket(fd, FIONBIO, &iMode);
+  if (err != 0) {
+    ::closesocket(fd);
+    return Status::WsaError("Failed to make socket nonblocking");
+  }
+
+  BOOL flags = TRUE;
+  struct linger ling = {0, 0};
+  setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&flags), sizeof(flags));
+  setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&flags), sizeof(flags));
+  setsockopt(fd, SOL_SOCKET, SO_LINGER, reinterpret_cast<const char *>(&ling), sizeof(ling));
+  setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char *>(&flags), sizeof(flags));
+
+  return Status::OK();
+}
+
+}  // namespace td
+#endif  // TD_PORT_WINDOWS
