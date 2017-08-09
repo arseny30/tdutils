@@ -198,8 +198,12 @@ Status IPAddress::init_socket_address(SocketFd &socket_fd) {
   socklen_t len = sizeof(addr_);
   int ret = getsockname(fd, &sockaddr_, &len);
   if (ret != 0) {
+#if TD_WINDOWS
+    return Status::WsaError("Failed to get socket address");
+#else
     auto getsockname_errno = errno;
-    return Status::PosixError(getsockname_errno, "getsockname");
+    return Status::PosixError(getsockname_errno, "Failed to get socket address");
+#endif
   }
   is_valid_ = true;
   return Status::OK();
@@ -215,8 +219,12 @@ Status IPAddress::init_peer_address(SocketFd &socket_fd) {
   socklen_t len = sizeof(addr_);
   int ret = getpeername(fd, &sockaddr_, &len);
   if (ret != 0) {
-    auto getsockname_errno = errno;
-    return Status::PosixError(getsockname_errno, "getsockname");
+#if TD_WINDOWS
+    return Status::WsaError("Failed to get peer socket address");
+#else
+    auto getpeername_errno = errno;
+    return Status::PosixError(getpeername_errno, "Failed to get peer socket address");
+#endif
   }
   is_valid_ = true;
   return Status::OK();
