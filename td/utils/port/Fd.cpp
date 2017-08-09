@@ -1050,7 +1050,7 @@ HANDLE Fd::get_write_event() {
 }
 
 SOCKET Fd::get_native_socket() {
-  return impl_->get_native_fd();
+  return impl_->get_native_socket();
 }
 
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
