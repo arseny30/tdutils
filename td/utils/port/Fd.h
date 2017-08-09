@@ -123,22 +123,6 @@ class Fd {
   void close_own();
 };
 
-template <class FdT>
-bool can_read(const FdT &fd) {
-  return fd.get_flags() & Fd::Read;
-}
-
-template <class FdT>
-bool can_write(const FdT &fd) {
-  return fd.get_flags() & Fd::Write;
-}
-
-template <class FdT>
-bool can_close(const FdT &fd) {
-  return fd.get_flags() & Fd::Close;
-}
-
-}  // namespace td
 #endif  // TD_PORT_POSIX
 
 #ifdef TD_PORT_WINDOWS
@@ -242,17 +226,21 @@ class Fd {
   void release();
 };
 
-inline bool can_read(const Fd &fd) {
+#endif  // TD_PORT_WINDOWS
+
+template <class FdT>
+bool can_read(const FdT &fd) {
   return (fd.get_flags() & Fd::Read) != 0;
 }
 
-inline bool can_write(const Fd &fd) {
+template <class FdT>
+bool can_write(const FdT &fd) {
   return (fd.get_flags() & Fd::Write) != 0;
 }
 
-inline bool can_close(const Fd &fd) {
+template <class FdT>
+bool can_close(const FdT &fd) {
   return (fd.get_flags() & Fd::Close) != 0;
 }
 
 }  // namespace td
-#endif  // TD_PORT_WINDOWS

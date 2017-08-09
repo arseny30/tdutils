@@ -244,13 +244,13 @@ void Fd::update_flags_inner(int32 new_flags, bool notify_flag) {
 }
 
 bool Fd::can_read() const {
-  return get_flags() & Fd::Read;
+  return (get_flags() & Fd::Read) != 0;
 }
 bool Fd::can_write() const {
-  return get_flags() & Fd::Write;
+  return (get_flags() & Fd::Write) != 0;
 }
 bool Fd::can_close() const {
-  return get_flags() & Fd::Close;
+  return (get_flags() & Fd::Close) != 0;
 }
 
 int32 Fd::get_flags() const {
