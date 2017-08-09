@@ -39,7 +39,7 @@ class IPAddress {
   friend bool operator==(const IPAddress &a, const IPAddress &b);
   friend bool operator<(const IPAddress &a, const IPAddress &b);
 
-  static Slice ipv4_to_str(int32 ipv4);
+  static CSlice ipv4_to_str(int32 ipv4);
 
  private:
   union {

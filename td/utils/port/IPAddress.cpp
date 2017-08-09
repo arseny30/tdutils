@@ -186,7 +186,7 @@ Status IPAddress::init_sockaddr(struct sockaddr *addr, socklen_t len) {
   return Status::OK();
 }
 
-static Slice get_ip_str(int family, const void *addr) {
+static CSlice get_ip_str(int family, const void *addr) {
   const int buf_size = INET6_ADDRSTRLEN;  //, INET_ADDRSTRLEN;
   static TD_THREAD_LOCAL char *buf;
   init_thread_local<char[]>(buf, buf_size);
@@ -199,13 +199,13 @@ static Slice get_ip_str(int family, const void *addr) {
 #endif
                               buf, buf_size);
   if (res == nullptr) {
-    return Slice();
+    return CSlice();
   } else {
-    return Slice(res);
+    return CSlice(res);
   }
 }
 
-Slice IPAddress::ipv4_to_str(int32 ipv4) {
+CSlice IPAddress::ipv4_to_str(int32 ipv4) {
   auto tmp_ipv4 = ntohl(ipv4);
   return ::td::get_ip_str(AF_INET, &tmp_ipv4);
 }
