@@ -12,13 +12,11 @@
 #include <utility>
 
 #ifdef TD_PORT_POSIX
-
 #include <sys/types.h>
 #include <dirent.h>
-
 #endif
 
-#ifdef TD_DARWIN
+#if TD_DARWIN
 #include <sys/syslimits.h>
 #endif
 

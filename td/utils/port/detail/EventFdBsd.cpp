@@ -18,7 +18,7 @@ void EventFdBsd::init() {
   int fds[2];
   int err = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
   auto socketpair_errno = errno;
-#ifdef TD_CYGWIN
+#if TD_CYGWIN
   // it looks like CYGWIN bug
   int max_retries = 1000000;
   while (err == -1 && socketpair_errno == EADDRINUSE && max_retries-- > 0) {
