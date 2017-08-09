@@ -510,6 +510,11 @@ class FdImpl {
     loop();
   }
 
+  SOCKET get_native_socket() {
+    CHECK(type_ == Fd::Type::SocketFd);
+    return socket_;
+  }
+
   Result<size_t> write(Slice slice) WARN_UNUSED_RESULT {
     if (async_mode_) {
       return write_async(slice);
@@ -1042,6 +1047,10 @@ HANDLE Fd::get_read_event() {
 }
 HANDLE Fd::get_write_event() {
   return impl_->get_write_event();
+}
+
+SOCKET Fd::get_native_socket() {
+  return impl_->get_native_fd();
 }
 
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)

@@ -2,6 +2,8 @@
 
 #include "td/utils/port/IPAddress.h"
 
+#include "td/utils/port/SocketFd.h"
+
 #include "td/utils/ScopeGuard.h"
 #include "td/utils/format.h"
 #include "td/utils/misc.h"
@@ -182,6 +184,40 @@ Status IPAddress::init_sockaddr(struct sockaddr *addr, socklen_t len) {
     return Status::Error(PSLICE() << "Unknown " << tag("sa_family", addr->sa_family));
   }
 
+  is_valid_ = true;
+  return Status::OK();
+}
+
+Status IPAddress::init_socket_address(SocketFd &socket_fd) {
+  is_valid_ = false;
+#if TD_WINDOWS
+  auto fd = socket_fd.get_fd().get_native_socket();
+#else
+  auto fd = socket_fd.get_fd().get_native_fd();
+#endif
+  socklen_t len = sizeof(addr_);
+  int ret = getsockname(fd, &sockaddr_, &len);
+  if (ret != 0) {
+    auto getsockname_errno = errno;
+    return Status::PosixError(getsockname_errno, "getsockname");
+  }
+  is_valid_ = true;
+  return Status::OK();
+}
+
+Status IPAddress::init_peer_address(SocketFd &socket_fd) {
+  is_valid_ = false;
+#if TD_WINDOWS
+  auto fd = socket_fd.get_fd().get_native_socket();
+#else
+  auto fd = socket_fd.get_fd().get_native_fd();
+#endif
+  socklen_t len = sizeof(addr_);
+  int ret = getpeername(fd, &sockaddr_, &len);
+  if (ret != 0) {
+    auto getsockname_errno = errno;
+    return Status::PosixError(getsockname_errno, "getsockname");
+  }
   is_valid_ = true;
   return Status::OK();
 }

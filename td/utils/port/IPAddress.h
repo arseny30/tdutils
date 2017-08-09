@@ -11,6 +11,7 @@
 
 /*** IPAddress ***/
 namespace td {
+class SocketFd;
 class IPAddress {
  public:
   IPAddress();
@@ -35,6 +36,8 @@ class IPAddress {
   Status init_host_port(CSlice host, int port) WARN_UNUSED_RESULT;
   Status init_host_port(CSlice host, CSlice port) WARN_UNUSED_RESULT;
   Status init_host_port(CSlice host_port) WARN_UNUSED_RESULT;
+  Status init_socket_address(SocketFd &socket_fd) WARN_UNUSED_RESULT;
+  Status init_peer_address(SocketFd &socket_fd) WARN_UNUSED_RESULT;
 
   friend bool operator==(const IPAddress &a, const IPAddress &b);
   friend bool operator<(const IPAddress &a, const IPAddress &b);
