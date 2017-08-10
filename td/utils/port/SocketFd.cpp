@@ -26,7 +26,7 @@ Result<SocketFd> SocketFd::open(const IPAddress &address) {
 
 #ifdef TD_PORT_POSIX
 Result<SocketFd> SocketFd::from_native_fd(int fd) {
-  auto fd_quard = ScopeExit() + [fd]() { ::close(fd); };
+  auto fd_guard = ScopeExit() + [fd]() { ::close(fd); };
 
   int err = fcntl(fd, F_SETFL, O_NONBLOCK);
   if (err == -1) {
