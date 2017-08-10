@@ -77,9 +77,6 @@ class Fd {
   void update_flags(Flags flags);
   void clear_flags(Flags flags);
 
-  bool can_read() const;
-  bool can_write() const;
-  bool can_close() const;
   int32 get_flags() const;
 
   bool has_pending_error() const;
@@ -179,9 +176,6 @@ class Fd {
 
   Flags get_flags() const;
   void update_flags(Flags flags);
-  bool can_read() const;
-  bool can_write() const;
-  bool can_close() const;
 
   bool has_pending_error() const;
   Status get_pending_error() WARN_UNUSED_RESULT;

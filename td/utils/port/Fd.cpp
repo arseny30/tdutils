@@ -242,16 +242,6 @@ void Fd::update_flags_inner(int32 new_flags, bool notify_flag) {
   }
 }
 
-bool Fd::can_read() const {
-  return (get_flags() & Fd::Read) != 0;
-}
-bool Fd::can_write() const {
-  return (get_flags() & Fd::Write) != 0;
-}
-bool Fd::can_close() const {
-  return (get_flags() & Fd::Close) != 0;
-}
-
 int32 Fd::get_flags() const {
   return get_info()->flags;
 }
@@ -1014,15 +1004,6 @@ int32 Fd::get_flags() const {
 }
 void Fd::update_flags(Flags flags) {
   impl_->update_flags(flags);
-}
-bool Fd::can_read() const {
-  return (get_flags() & Flag::Read) != 0;
-}
-bool Fd::can_write() const {
-  return (get_flags() & Flag::Write) != 0;
-}
-bool Fd::can_close() const {
-  return (get_flags() & Flag::Close) != 0;
 }
 // void Fd::update_flags_notify(Flags flags) {
 //  impl_->update_flags_notify(flags);
