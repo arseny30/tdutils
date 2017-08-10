@@ -19,102 +19,108 @@
 namespace td {
 
 Result<SocketFd> SocketFd::open(const IPAddress &address) {
-  SocketFd result_socket;
+  SocketFd socket;
+  TRY_STATUS(socket.init(address));
+  return std::move(socket);
+}
+
 #ifdef TD_PORT_POSIX
-  TRY_STATUS(result_socket.init(address));
+Result<SocketFd> SocketFd::from_native_fd(int fd) {
+  auto fd_quard = ScopeExit() + [fd]() { ::close(fd); };
+
+  int err = fcntl(fd, F_SETFL, O_NONBLOCK);
+  if (err == -1) {
+    auto fcntl_errno = errno;
+    return Status::PosixError(fcntl_errno, "Failed to make socket nonblocking");
+  }
+
+  // TODO remove copypaste
+  int flags = 1;
+  setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&flags), sizeof(flags));
+  setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&flags), sizeof(flags));
+  setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char *>(&flags), sizeof(flags));
+  // TODO: SO_REUSEADDR, SO_KEEPALIVE, TCP_NODELAY, SO_SNDBUF, SO_RCVBUF, TCP_QUICKACK, SO_LINGER
+
+  fd_guard.dismiss();
+
+  SocketFd socket;
+  socket.fd_ = Fd(fd, Fd::Mode::Own);
+  return std::move(socket);
+}
+#endif
+
+Status SocketFd::init(const IPAddress &address) {
+  auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
+#ifdef TD_PORT_POSIX
+  if (fd == -1) {
+    auto socket_errno = errno;
+    return Status::PosixError(socket_errno, "Failed to create a socket");
+  }
 #endif
 #ifdef TD_PORT_WINDOWS
-  auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
   if (fd == INVALID_SOCKET) {
     return Status::WsaError("Failed to create a socket");
   }
+#endif
+  auto fd_quard = ScopeExit() + [fd]() {
+#ifdef TD_PORT_POSIX
+    ::close(fd);
+#endif
+#ifdef TD_PORT_WINDOWS
+    ::closesocket(fd);
+#endif
+  };
 
-  Status res = init_socket(fd);
-  if (!res.is_ok()) {
-    return std::move(res);
+#ifdef TD_PORT_POSIX
+  int err = fcntl(fd, F_SETFL, O_NONBLOCK);
+  if (err == -1) {
+    auto fcntl_errno = errno;
+    return Status::PosixError(fcntl_errno, "Failed to make socket nonblocking");
   }
+#endif
+#ifdef TD_PORT_WINDOWS
+  u_long iMode = 1;
+  int err = ioctlsocket(fd, FIONBIO, &iMode);
+  if (err != 0) {
+    return Status::WsaError("Failed to make socket nonblocking");
+  }
+#endif
 
+#ifdef TD_PORT_POSIX
+  int flags = 1;
+#endif
+#ifdef TD_PORT_WINDOWS
+  BOOL flags = TRUE;
+#endif
+  setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&flags), sizeof(flags));
+  setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&flags), sizeof(flags));
+  setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char *>(&flags), sizeof(flags));
+// TODO: SO_REUSEADDR, SO_KEEPALIVE, TCP_NODELAY, SO_SNDBUF, SO_RCVBUF, TCP_QUICKACK, SO_LINGER
+
+#ifdef TD_PORT_POSIX
+  int e_connect = connect(fd, address.get_sockaddr(), static_cast<socklen_t>(address.get_sockaddr_len()));
+  if (e_connect == -1) {
+    auto connect_errno = errno;
+    if (connect_errno != EINPROGRESS) {
+      return Status::PosixError(connect_errno, PSLICE() << "Failed to connect to " << address);
+    }
+  }
+  fd_ = Fd(fd, Fd::Mode::Own);
+#endif
+#ifdef TD_PORT_WINDOWS
   auto bind_addr = address.get_any_addr();
   auto e_bind = bind(fd, bind_addr.get_sockaddr(), narrow_cast<int>(bind_addr.get_sockaddr_len()));
   if (e_bind != 0) {
     return Status::WsaError("Failed to bind a socket");
   }
 
-  result_socket.fd_ = Fd(Fd::Type::SocketFd, Fd::Mode::Owner, fd, address.get_address_family());
-  result_socket.fd_.connect(address);
-#endif
-  return std::move(result_socket);
-}
-
-#ifdef TD_PORT_POSIX
-Result<SocketFd> SocketFd::from_native_fd(int fd) {
-  SocketFd socket;
-  TRY_STATUS(socket.init_socket(fd));
-  socket.fd_ = Fd(fd, Fd::Mode::Own);
-  return std::move(socket);
-}
-
-Status SocketFd::init_socket(int fd) {
-  int err = fcntl(fd, F_SETFL, O_NONBLOCK);
-  if (err == -1) {
-    // TODO: can be interrupted by signal oO
-    auto fcntl_errno = errno;
-    auto error = Status::PosixError(fcntl_errno, "Failed to make socket nonblocking");
-    ::close(fd);
-    return error;
-  }
-
-  int flags = 1;
-  setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flags, sizeof(flags));
-  setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &flags, sizeof(flags));
-  setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &flags, sizeof(flags));
-
-  // TODO: SO_REUSEADDR, SO_KEEPALIVE, TCP_NODELAY, SO_SNDBUF, SO_RCVBUF,
-  //      TCP_QUICKACK, SO_LINGER
-  return Status::OK();
-}
-
-Status SocketFd::init(const IPAddress &address) {
-  int fd = socket(address.get_address_family(), SOCK_STREAM, 0);
-  if (fd == -1) {
-    auto socket_errno = errno;
-    return Status::PosixError(socket_errno, "Failed to create a socket");
-  }
-
-  TRY_STATUS(init_socket(fd));
-
-  int err = connect(fd, address.get_sockaddr(), static_cast<socklen_t>(address.get_sockaddr_len()));
-  if (err == -1) {
-    auto connect_errno = errno;
-    if (connect_errno != EINPROGRESS) {
-      auto error = Status::PosixError(connect_errno, PSLICE() << "Failed to connect to " << address);
-      ::close(fd);
-      return error;
-    }
-  }
-  fd_ = Fd(fd, Fd::Mode::Own);
-  return Status::OK();
-}
+  fd_ = Fd(Fd::Type::SocketFd, Fd::Mode::Owner, fd, address.get_address_family());
+  fd_.connect(address);
 #endif
 
-#ifdef TD_PORT_WINDOWS
-Status SocketFd::init_socket(SOCKET fd) {
-  u_long iMode = 1;
-  int err = ioctlsocket(fd, FIONBIO, &iMode);
-  if (err != 0) {
-    ::closesocket(fd);
-    return Status::WsaError("Failed to make socket nonblocking");
-  }
-
-  BOOL flags = TRUE;
-  setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&flags), sizeof(flags));
-  setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&flags), sizeof(flags));
-
-  // TODO: SO_REUSEADDR, SO_KEEPALIVE, TCP_NODELAY, SO_SNDBUF, SO_RCVBUF,
-  //      TCP_QUICKACK, SO_LINGER
+  fd_quard.dismiss();
   return Status::OK();
 }
-#endif
 
 const Fd &SocketFd::get_fd() const {
   return fd_;

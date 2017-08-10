@@ -37,15 +37,12 @@ class SocketFd {
 
   friend class ServerSocketFd;
 
-#ifdef TD_PORT_POSIX
   Status init(const IPAddress &address) WARN_UNUSED_RESULT;
 
+#ifdef TD_PORT_POSIX
   static Result<SocketFd> from_native_fd(int fd);
-  Status init_socket(int fd) WARN_UNUSED_RESULT;
 #endif
 #ifdef TD_PORT_WINDOWS
-  static Status init_socket(SOCKET fd) WARN_UNUSED_RESULT;
-
   explicit SocketFd(Fd fd) : fd_(std::move(fd)) {
   }
 #endif

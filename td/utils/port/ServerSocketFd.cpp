@@ -18,9 +18,9 @@
 namespace td {
 
 Result<ServerSocketFd> ServerSocketFd::open(int32 port, CSlice addr) {
-  ServerSocketFd result_socket;
-  TRY_STATUS(result_socket.init(port, addr));
-  return std::move(result_socket);
+  ServerSocketFd socket;
+  TRY_STATUS(socket.init(port, addr));
+  return std::move(socket);
 }
 
 const Fd &ServerSocketFd::get_fd() const {
@@ -103,11 +103,8 @@ Result<SocketFd> ServerSocketFd::accept() {
   }
 #endif
 #ifdef TD_PORT_WINDOWS
-  auto r_socket = fd_.accept();
-  if (r_socket.is_error()) {
-    return r_socket.move_as_error();
-  }
-  return SocketFd(r_socket.move_as_ok());
+  TRY_RESULT(socket_fd, fd_.accept());
+  return SocketFd(std::move(socket_fd));
 #endif
 }
 
@@ -134,14 +131,14 @@ Status ServerSocketFd::init(int32 port, CSlice addr) {
     return Status::WsaError("Failed to create a socket");
   }
 #endif
- auto fd_quard = ScopeExit() + [fd]() {
+  auto fd_quard = ScopeExit() + [fd]() {
 #ifdef TD_PORT_POSIX
     ::close(fd);
 #endif
 #ifdef TD_PORT_WINDOWS
     ::closesocket(fd);
 #endif
- };
+  };
 
 #ifdef TD_PORT_POSIX
   int err = fcntl(fd, F_SETFL, O_NONBLOCK);
