@@ -2,8 +2,11 @@
 
 #include "td/utils/port/SocketFd.h"
 
-#ifdef TD_PORT_POSIX
+#ifdef TD_PORT_WINDOWS
+#include "td/utils/misc.h"
+#endif
 
+#ifdef TD_PORT_POSIX
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netinet/in.h>
@@ -11,15 +14,39 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#endif
 
 namespace td {
 
 Result<SocketFd> SocketFd::open(const IPAddress &address) {
-  SocketFd socket;
-  TRY_STATUS(socket.init(address));
-  return std::move(socket);
+  SocketFd result_socket;
+#ifdef TD_PORT_POSIX
+  TRY_STATUS(result_socket.init(address));
+#endif
+#ifdef TD_PORT_WINDOWS
+  auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
+  if (fd == INVALID_SOCKET) {
+    return Status::WsaError("Failed to create a socket");
+  }
+
+  Status res = init_socket(fd);
+  if (!res.is_ok()) {
+    return std::move(res);
+  }
+
+  auto bind_addr = address.get_any_addr();
+  auto e_bind = bind(fd, bind_addr.get_sockaddr(), narrow_cast<int>(bind_addr.get_sockaddr_len()));
+  if (e_bind != 0) {
+    return Status::WsaError("Failed to bind a socket");
+  }
+
+  result_socket.fd_ = Fd(Fd::Type::SocketFd, Fd::Mode::Owner, fd, address.get_address_family());
+  result_socket.fd_.connect(address);
+#endif
+  return std::move(result_socket);
 }
 
+#ifdef TD_PORT_POSIX
 Result<SocketFd> SocketFd::from_native_fd(int fd) {
   SocketFd socket;
   TRY_STATUS(socket.init_socket(fd));
@@ -68,6 +95,26 @@ Status SocketFd::init(const IPAddress &address) {
   fd_ = Fd(fd, Fd::Mode::Own);
   return Status::OK();
 }
+#endif
+
+#ifdef TD_PORT_WINDOWS
+Status SocketFd::init_socket(SOCKET fd) {
+  u_long iMode = 1;
+  int err = ioctlsocket(fd, FIONBIO, &iMode);
+  if (err != 0) {
+    ::closesocket(fd);
+    return Status::WsaError("Failed to make socket nonblocking");
+  }
+
+  BOOL flags = TRUE;
+  setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&flags), sizeof(flags));
+  setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&flags), sizeof(flags));
+
+  // TODO: SO_REUSEADDR, SO_KEEPALIVE, TCP_NODELAY, SO_SNDBUF, SO_RCVBUF,
+  //      TCP_QUICKACK, SO_LINGER
+  return Status::OK();
+}
+#endif
 
 const Fd &SocketFd::get_fd() const {
   return fd_;
@@ -88,7 +135,9 @@ bool SocketFd::empty() const {
 int32 SocketFd::get_flags() const {
   return fd_.get_flags();
 }
+
 Status SocketFd::get_pending_error() {
+#ifdef TD_PORT_POSIX
   if (!(fd_.get_flags() & Fd::Error)) {
     return Status::OK();
   }
@@ -105,6 +154,10 @@ Status SocketFd::get_pending_error() {
   LOG(INFO) << "Can't load errno = " << getsockopt_errno;
   return Status::PosixError(getsockopt_errno,
                             PSLICE() << "Can't load error on socket [fd_ = " << fd_.get_native_fd() << "]");
+#endif
+#ifdef TD_PORT_WINDOWS
+  return fd_.get_pending_error();
+#endif
 }
 
 Result<size_t> SocketFd::write(Slice slice) {
@@ -116,52 +169,3 @@ Result<size_t> SocketFd::read(MutableSlice slice) {
 }
 
 }  // namespace td
-#endif  // TD_PORT_POSIX
-
-#ifdef TD_PORT_WINDOWS
-
-#include "td/utils/misc.h"
-
-namespace td {
-
-Result<SocketFd> SocketFd::open(const IPAddress &address) {
-  auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
-  if (fd == INVALID_SOCKET) {
-    return Status::WsaError("Failed to create a socket");
-  }
-
-  Status res = init_socket(fd);
-  if (!res.is_ok()) {
-    return std::move(res);
-  }
-
-  auto bind_addr = address.get_any_addr();
-  auto e_bind = bind(fd, bind_addr.get_sockaddr(), narrow_cast<int>(bind_addr.get_sockaddr_len()));
-  if (e_bind != 0) {
-    return Status::WsaError("Failed to bind a socket");
-  }
-
-  auto sock = SocketFd(Fd::Type::SocketFd, Fd::Mode::Owner, fd, address.get_address_family());
-  sock.connect(address);
-  return std::move(sock);
-}
-
-Status SocketFd::init_socket(SOCKET fd) {
-  u_long iMode = 1;
-  int err = ioctlsocket(fd, FIONBIO, &iMode);
-  if (err != 0) {
-    ::closesocket(fd);
-    return Status::WsaError("Failed to make socket nonblocking");
-  }
-
-  BOOL flags = TRUE;
-  setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&flags), sizeof(flags));
-  setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&flags), sizeof(flags));
-
-  // TODO: SO_REUSEADDR, SO_KEEPALIVE, TCP_NODELAY, SO_SNDBUF, SO_RCVBUF,
-  //      TCP_QUICKACK, SO_LINGER
-  return Status::OK();
-}
-
-}  // namespace td
-#endif  // TD_PORT_WINDOWS
