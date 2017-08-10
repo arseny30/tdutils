@@ -5,10 +5,6 @@
 #include "td/utils/port/FileFd.h"
 #include "td/utils/port/path.h"
 
-#ifdef TD_PORT_POSIX
-#include <unistd.h>  // TODO: move to port
-#endif
-
 #include <cstdlib>
 #include <limits>
 

@@ -170,7 +170,7 @@ class DefaultLog : public LogInterface {
         dlog_print(DLOG_DEBUG, DLOG_TAG, slice.c_str());
         break;
     }
-#elif TD_PORT_POSIX
+#elif !TD_WINDOWS
     Slice color;
     switch (log_level) {
       case VERBOSITY_NAME(FATAL):
