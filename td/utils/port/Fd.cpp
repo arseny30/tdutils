@@ -1124,7 +1124,9 @@ class InitWSA {
     WORD wVersionRequested = MAKEWORD(2, 2);
     WSADATA wsaData;
     int err = WSAStartup(wVersionRequested, &wsaData);
-    LOG_IF(FATAL, err != 0) << Status::WsaError("Failed to init WSA");
+    if (err != 0) {
+      LOG(FATAL) << Status::WsaError("Failed to init WSA");
+    }
   }
 };
 static InitWSA init_wsa;
