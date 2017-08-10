@@ -33,8 +33,9 @@ class ServerSocketFd {
  private:
   Fd fd_;
 
-#ifdef TD_PORT_POSIX
   Status init(int32 port, CSlice addr) WARN_UNUSED_RESULT;
+
+#ifdef TD_PORT_POSIX
   static Status init_socket(int fd) WARN_UNUSED_RESULT;
 #endif
 #ifdef TD_PORT_WINDOWS

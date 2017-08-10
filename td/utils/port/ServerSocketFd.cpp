@@ -19,40 +19,7 @@ namespace td {
 
 Result<ServerSocketFd> ServerSocketFd::open(int32 port, CSlice addr) {
   ServerSocketFd result_socket;
-#ifdef TD_PORT_POSIX
   TRY_STATUS(result_socket.init(port, addr));
-#endif
-#ifdef TD_PORT_WINDOWS
-  IPAddress address;
-  auto status = address.init_ipv4_port(addr, port);
-  if (status.is_error()) {
-    return std::move(status);
-  }
-  auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
-  if (fd == INVALID_SOCKET) {
-    return Status::WsaError("Failed to create a socket");
-  }
-
-  status = init_socket(fd);
-  if (!status.is_ok()) {
-    return std::move(status);
-  }
-
-  int e_bind = bind(fd, address.get_sockaddr(), static_cast<socklen_t>(address.get_sockaddr_len()));
-  if (e_bind != 0) {
-    ::closesocket(fd);
-    return Status::WsaError("Failed to bind socket");
-  }
-
-  // TODO: magic constant
-  int e_listen = listen(fd, 8192);
-  if (e_listen != 0) {
-    ::closesocket(fd);
-    return Status::WsaError("Failed to listen");
-  }
-
-  result_socket.fd_ = Fd(Fd::Type::ServerSocketFd, Fd::Mode::Owner, fd, address.get_address_family());
-#endif
   return std::move(result_socket);
 }
 
@@ -152,39 +119,63 @@ bool ServerSocketFd::empty() const {
   return fd_.empty();
 }
 
-#ifdef TD_PORT_POSIX
 Status ServerSocketFd::init(int32 port, CSlice addr) {
   IPAddress address;
   TRY_STATUS(address.init_ipv4_port(addr, port));
-  int fd = socket(address.get_address_family(), SOCK_STREAM, 0);
+  auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
+#ifdef TD_PORT_POSIX
   if (fd == -1) {
     auto socket_errno = errno;
     return Status::PosixError(socket_errno, "Failed to create a socket");
   }
+#endif
+#ifdef TD_PORT_WINDOWS
+  if (fd == INVALID_SOCKET) {
+    return Status::WsaError("Failed to create a socket");
+  }
+#endif
 
   TRY_STATUS(init_socket(fd));
 
   int e_bind = bind(fd, address.get_sockaddr(), static_cast<socklen_t>(address.get_sockaddr_len()));
-  if (e_bind == -1) {
+  if (e_bind != 0) {
+#ifdef TD_PORT_POSIX
     auto bind_errno = errno;
     auto error = Status::PosixError(bind_errno, "Failed to bind socket");
     ::close(fd);
+#endif
+#ifdef TD_PORT_WINDOWS
+    auto error = Status::WsaError("Failed to bind socket");
+    ::closesocket(fd);
+#endif
     return error;
   }
 
   // TODO: magic constant
   int e_listen = listen(fd, 8192);
-  if (e_listen == -1) {
+  if (e_listen != 0) {
+#ifdef TD_PORT_POSIX
     auto listen_errno = errno;
     auto error = Status::PosixError(listen_errno, "Failed to listen");
     ::close(fd);
+#endif
+#ifdef TD_PORT_WINDOWS
+    auto error = Status::WsaError("Failed to listen");
+    ::closesocket(fd);
+#endif
     return error;
   }
 
+#ifdef TD_PORT_POSIX
   fd_ = Fd(fd, Fd::Mode::Own);
+#endif
+#ifdef TD_PORT_WINDOWS
+  fd_ = Fd(Fd::Type::ServerSocketFd, Fd::Mode::Owner, fd, address.get_address_family());
+#endif
   return Status::OK();
 }
 
+#ifdef TD_PORT_POSIX
 Status ServerSocketFd::init_socket(int fd) {
   int err = fcntl(fd, F_SETFL, O_NONBLOCK);
   if (err == -1) {
@@ -197,7 +188,7 @@ Status ServerSocketFd::init_socket(int fd) {
 
   int flags = 1;
   struct linger ling = {0, 0};
-#if !TD_ANDROID && !TD_WINDOWS && !TD_CYGWIN
+#if !TD_ANDROID && !TD_CYGWIN
   setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &flags, sizeof(flags));
 #endif
   setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flags, sizeof(flags));
@@ -214,8 +205,9 @@ Status ServerSocketFd::init_socket(SOCKET fd) {
   u_long iMode = 1;
   int err = ioctlsocket(fd, FIONBIO, &iMode);
   if (err != 0) {
+    auto error = Status::WsaError("Failed to make socket nonblocking");
     ::closesocket(fd);
-    return Status::WsaError("Failed to make socket nonblocking");
+    return error;
   }
 
   BOOL flags = TRUE;
