@@ -134,21 +134,54 @@ Status ServerSocketFd::init(int32 port, CSlice addr) {
     return Status::WsaError("Failed to create a socket");
   }
 #endif
+ auto fd_quard = ScopeExit() + [fd]() {
+#ifdef TD_PORT_POSIX
+    ::close(fd);
+#endif
+#ifdef TD_PORT_WINDOWS
+    ::closesocket(fd);
+#endif
+ };
 
-  TRY_STATUS(init_socket(fd));
+#ifdef TD_PORT_POSIX
+  int err = fcntl(fd, F_SETFL, O_NONBLOCK);
+  if (err == -1) {
+    auto fcntl_errno = errno;
+    return Status::PosixError(fcntl_errno, "Failed to make socket nonblocking");
+  }
+#endif
+#ifdef TD_PORT_WINDOWS
+  u_long iMode = 1;
+  int err = ioctlsocket(fd, FIONBIO, &iMode);
+  if (err != 0) {
+    return Status::WsaError("Failed to make socket nonblocking");
+  }
+#endif
+
+  struct linger ling = {0, 0};
+#ifdef TD_PORT_POSIX
+  int flags = 1;
+#if !TD_ANDROID && !TD_CYGWIN
+  setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &flags, sizeof(flags));
+#endif
+#endif
+#ifdef TD_PORT_WINDOWS
+  BOOL flags = TRUE;
+#endif
+  setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&flags), sizeof(flags));
+  setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&flags), sizeof(flags));
+  setsockopt(fd, SOL_SOCKET, SO_LINGER, reinterpret_cast<const char *>(&ling), sizeof(ling));
+  setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char *>(&flags), sizeof(flags));
 
   int e_bind = bind(fd, address.get_sockaddr(), static_cast<socklen_t>(address.get_sockaddr_len()));
   if (e_bind != 0) {
 #ifdef TD_PORT_POSIX
     auto bind_errno = errno;
-    auto error = Status::PosixError(bind_errno, "Failed to bind socket");
-    ::close(fd);
+    return Status::PosixError(bind_errno, "Failed to bind socket");
 #endif
 #ifdef TD_PORT_WINDOWS
-    auto error = Status::WsaError("Failed to bind socket");
-    ::closesocket(fd);
+    return Status::WsaError("Failed to bind socket");
 #endif
-    return error;
   }
 
   // TODO: magic constant
@@ -156,14 +189,11 @@ Status ServerSocketFd::init(int32 port, CSlice addr) {
   if (e_listen != 0) {
 #ifdef TD_PORT_POSIX
     auto listen_errno = errno;
-    auto error = Status::PosixError(listen_errno, "Failed to listen");
-    ::close(fd);
+    return Status::PosixError(listen_errno, "Failed to listen");
 #endif
 #ifdef TD_PORT_WINDOWS
-    auto error = Status::WsaError("Failed to listen");
-    ::closesocket(fd);
+    return Status::WsaError("Failed to listen");
 #endif
-    return error;
   }
 
 #ifdef TD_PORT_POSIX
@@ -172,53 +202,9 @@ Status ServerSocketFd::init(int32 port, CSlice addr) {
 #ifdef TD_PORT_WINDOWS
   fd_ = Fd(Fd::Type::ServerSocketFd, Fd::Mode::Owner, fd, address.get_address_family());
 #endif
+
+  fd_quard.dismiss();
   return Status::OK();
 }
-
-#ifdef TD_PORT_POSIX
-Status ServerSocketFd::init_socket(int fd) {
-  int err = fcntl(fd, F_SETFL, O_NONBLOCK);
-  if (err == -1) {
-    // TODO: can be interrupted by a signal oO
-    auto fcntl_errno = errno;
-    auto error = Status::PosixError(fcntl_errno, "Failed to make socket nonblocking");
-    ::close(fd);
-    return error;
-  }
-
-  int flags = 1;
-  struct linger ling = {0, 0};
-#if !TD_ANDROID && !TD_CYGWIN
-  setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &flags, sizeof(flags));
-#endif
-  setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flags, sizeof(flags));
-  setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &flags, sizeof(flags));
-  setsockopt(fd, SOL_SOCKET, SO_LINGER, &ling, sizeof(ling));
-  setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &flags, sizeof(flags));
-
-  return Status::OK();
-}
-#endif
-
-#ifdef TD_PORT_WINDOWS
-Status ServerSocketFd::init_socket(SOCKET fd) {
-  u_long iMode = 1;
-  int err = ioctlsocket(fd, FIONBIO, &iMode);
-  if (err != 0) {
-    auto error = Status::WsaError("Failed to make socket nonblocking");
-    ::closesocket(fd);
-    return error;
-  }
-
-  BOOL flags = TRUE;
-  struct linger ling = {0, 0};
-  setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&flags), sizeof(flags));
-  setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&flags), sizeof(flags));
-  setsockopt(fd, SOL_SOCKET, SO_LINGER, reinterpret_cast<const char *>(&ling), sizeof(ling));
-  setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char *>(&flags), sizeof(flags));
-
-  return Status::OK();
-}
-#endif
 
 }  // namespace td
