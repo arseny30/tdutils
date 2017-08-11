@@ -4,6 +4,7 @@
 #include "td/utils/misc.h"
 #include "td/utils/port/Clocks.h"
 #include "td/utils/port/Fd.h"
+#include "td/utils/Slice.h"
 #include "td/utils/Time.h"
 
 #include <atomic>

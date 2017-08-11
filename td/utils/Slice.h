@@ -1,5 +1,7 @@
 #pragma once
+
 #include "td/utils/Slice-decl.h"
+
 #include "td/utils/logging.h"
 
 #include <algorithm>
@@ -253,6 +255,16 @@ inline MutableCSlice::MutableCSlice(char *s, char *t) : MutableSlice(s, t) {
 
 inline CSlice::CSlice(const char *s, const char *t) : Slice(s, t) {
   CHECK(*t == '\0');
+}
+
+inline std::size_t SliceHash::operator()(Slice slice) const {
+  // simple string hash
+  std::size_t result = 0;
+  constexpr std::size_t MUL = 123456789;
+  for (auto c : slice) {
+    result = result * MUL + c;
+  }
+  return result;
 }
 
 }  // namespace td

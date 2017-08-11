@@ -1,4 +1,5 @@
 #pragma once
+
 #include "td/utils/common.h"
 
 #include <cstring>
@@ -168,6 +169,10 @@ class CSlice : public Slice {
   const char *c_str() const {
     return begin();
   }
+};
+
+struct SliceHash {
+  std::size_t operator()(Slice slice) const;
 };
 
 }  // namespace td
