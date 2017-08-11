@@ -271,3 +271,5 @@ class TsLog : public LogInterface {
   }
 };
 }  // namespace td
+
+#include "td/utils/Slice.h"
