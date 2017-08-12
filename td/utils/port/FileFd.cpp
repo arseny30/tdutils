@@ -3,9 +3,6 @@
 #include "td/utils/port/FileFd.h"
 
 #ifdef TD_PORT_POSIX
-
-#include "td/utils/port/Stat.h"
-
 #include <fcntl.h>
 #include <sys/file.h>
 #include <sys/types.h>
@@ -13,6 +10,7 @@
 #include <unistd.h>
 
 #include <cstring>
+#endif
 
 namespace td {
 
@@ -25,6 +23,7 @@ Fd &FileFd::get_fd() {
 }
 
 Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
+#ifdef TD_PORT_POSIX
   int32 initial_flags = flags;
   int native_flags = 0;
 
@@ -74,181 +73,9 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
   result.fd_ = Fd(native_fd, Fd::Mode::Own);
   result.fd_.update_flags(Fd::Flag::Write);
   return std::move(result);
-}
-
-Result<size_t> FileFd::write(Slice slice) {
-  CHECK(!fd_.empty());
-  int native_fd = get_native_fd();
-  auto write_res = skip_eintr([&] { return ::write(native_fd, slice.begin(), slice.size()); });
-  if (write_res >= 0) {
-    return static_cast<size_t>(write_res);
-  }
-
-  auto write_errno = errno;
-  auto error = Status::PosixError(write_errno, PSLICE() << "Write to [fd = " << native_fd << "] has failed");
-  if (write_errno != EAGAIN
-#if EAGAIN != EWOULDBLOCK
-      && write_errno != EWOULDBLOCK
 #endif
-      && write_errno != EIO) {
-    LOG(ERROR) << error;
-  }
-  return std::move(error);
-}
-
-Result<size_t> FileFd::read(MutableSlice slice) {
-  CHECK(!fd_.empty());
-  int native_fd = get_native_fd();
-  auto read_res = skip_eintr([&] { return ::read(native_fd, slice.begin(), slice.size()); });
-  auto read_errno = errno;
-
-  if (read_res >= 0) {
-    if (static_cast<size_t>(read_res) < slice.size()) {
-      fd_.clear_flags(Read);
-    }
-    return static_cast<size_t>(read_res);
-  }
-
-  auto error = Status::PosixError(read_errno, PSLICE() << "Read from [fd = " << native_fd << "] has failed");
-  if (read_errno != EAGAIN
-#if EAGAIN != EWOULDBLOCK
-      && read_errno != EWOULDBLOCK
-#endif
-      && read_errno != EIO) {
-    LOG(ERROR) << error;
-  }
-  return std::move(error);
-}
-
-Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
-  CHECK(!fd_.empty());
-  int native_fd = get_native_fd();
-  auto pwrite_res = skip_eintr([&] { return ::pwrite(native_fd, slice.begin(), slice.size(), offset); });
-  if (pwrite_res >= 0) {
-    return static_cast<size_t>(pwrite_res);
-  }
-
-  auto pwrite_errno = errno;
-  auto error = Status::PosixError(
-      pwrite_errno, PSLICE() << "Pwrite to [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
-  if (pwrite_errno != EAGAIN
-#if EAGAIN != EWOULDBLOCK
-      && read_errno != EWOULDBLOCK
-#endif
-      && pwrite_errno != EIO) {
-    LOG(ERROR) << error;
-  }
-  return std::move(error);
-}
-
-Result<size_t> FileFd::pread(MutableSlice slice, off_t offset) {
-  CHECK(!fd_.empty());
-  int native_fd = get_native_fd();
-  auto pread_res = skip_eintr([&] { return ::pread(native_fd, slice.begin(), slice.size(), offset); });
-  if (pread_res >= 0) {
-    return static_cast<size_t>(pread_res);
-  }
-
-  auto pread_errno = errno;
-  auto error = Status::PosixError(
-      pread_errno, PSLICE() << "Pread from [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
-  if (pread_errno != EAGAIN
-#if EAGAIN != EWOULDBLOCK
-      && read_errno != EWOULDBLOCK
-#endif
-      && pread_errno != EIO) {
-    LOG(ERROR) << error;
-  }
-  return std::move(error);
-}
-
-Status FileFd::lock(FileFd::LockFlags flags, int32 max_tries) {
-  if (max_tries <= 0) {
-    return Status::Error(0, "Can't lock file: wrong max_tries");
-  }
-
-  while (true) {
-    struct flock L;
-    std::memset(&L, 0, sizeof(L));
-
-    L.l_type = static_cast<short>([&] {
-      switch (flags) {
-        case LockFlags::Read:
-          return F_RDLCK;
-        case LockFlags::Write:
-          return F_WRLCK;
-        case LockFlags::Unlock:
-          return F_UNLCK;
-        default:
-          UNREACHABLE();
-          return F_UNLCK;
-      };
-    }());
-
-    L.l_whence = SEEK_SET;
-    if (fcntl(fd_.get_native_fd(), F_SETLK, &L) == -1) {
-      int fcntl_errno = errno;
-      if (fcntl_errno == EAGAIN && --max_tries > 0) {
-        usleep(100000);
-        continue;
-      }
-
-      return Status::PosixError(fcntl_errno, "Can't lock file");
-    }
-    return Status::OK();
-  }
-}
-
-void FileFd::close() {
-  fd_.close();
-}
-
-bool FileFd::empty() const {
-  return fd_.empty();
-}
-
-int FileFd::get_native_fd() const {
-  return fd_.get_native_fd();
-}
-
-int32 FileFd::get_flags() const {
-  return fd_.get_flags();
-}
-
-void FileFd::update_flags(Fd::Flags mask) {
-  fd_.update_flags(mask);
-}
-
-off_t FileFd::get_size() {
-  return detail::fstat(get_native_fd()).size_;
-}
-
-Fd FileFd::move_as_fd() {
-  return std::move(fd_);
-}
-
-Stat FileFd::stat() {
-  return fd_.stat();
-}
-
-Status FileFd::sync() {
-  auto err = fsync(fd_.get_native_fd());
-  if (err < 0) {
-    return Status::OsError("Sync failed");
-  }
-  return Status::OK();
-}
-
-}  // namespace td
-
-#endif  // TD_PORT_POSIX
-
 #ifdef TD_PORT_WINDOWS
-
-namespace td {
-
-// TODO: support modes
-Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 todo) {
+  // TODO: support modes
   auto r_filepath = to_wstring(filepath);
   if (r_filepath.is_error()) {
     return Status::Error(PSLICE() << "Failed to convert file path \" << filepath << \" to UTF-16");
@@ -302,7 +129,7 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 todo) {
   }
 
   if (flags) {
-    return Status::Error(PSLICE() << "Failed to open file \"" << filepath << "\": unknown flags " << flags);
+    return Status::Error(PSLICE() << "Failed to open file \"" << filepath << "\" with unknown flags " << flags);
   }
 
   auto handle = CreateFile2(w_filepath.c_str(), desired_access, share_mode, creation_disposition, nullptr);
@@ -319,20 +146,218 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 todo) {
       return res;
     }
   }
-  auto res = FileFd(Fd::Type::FileFd, Fd::Mode::Owner, handle);
-  res.update_flags(Fd::Flag::Write);
-  return std::move(res);
+  FileFd result;
+  result.fd_ = Fd(Fd::Type::FileFd, Fd::Mode::Owner, handle);
+  result.fd_.update_flags(Fd::Flag::Write);
+  return std::move(result);
+#endif
 }
 
-Status FileFd::lock(LockFlags flags, int32 max_tries) {
-  return Status::OK();
+Result<size_t> FileFd::write(Slice slice) {
+#ifdef TD_PORT_POSIX
+  CHECK(!fd_.empty());
+  int native_fd = get_native_fd();
+  auto write_res = skip_eintr([&] { return ::write(native_fd, slice.begin(), slice.size()); });
+  if (write_res >= 0) {
+    return static_cast<size_t>(write_res);
+  }
+
+  auto write_errno = errno;
+  auto error = Status::PosixError(write_errno, PSLICE() << "Write to [fd = " << native_fd << "] has failed");
+  if (write_errno != EAGAIN
+#if EAGAIN != EWOULDBLOCK
+      && write_errno != EWOULDBLOCK
+#endif
+      && write_errno != EIO) {
+    LOG(ERROR) << error;
+  }
+  return std::move(error);
+#endif
+#ifdef TD_PORT_WINDOWS
+  return fd_.write(slice);
+#endif
+}
+
+Result<size_t> FileFd::read(MutableSlice slice) {
+#ifdef TD_PORT_POSIX
+  CHECK(!fd_.empty());
+  int native_fd = get_native_fd();
+  auto read_res = skip_eintr([&] { return ::read(native_fd, slice.begin(), slice.size()); });
+  auto read_errno = errno;
+
+  if (read_res >= 0) {
+    if (static_cast<size_t>(read_res) < slice.size()) {
+      fd_.clear_flags(Read);
+    }
+    return static_cast<size_t>(read_res);
+  }
+
+  auto error = Status::PosixError(read_errno, PSLICE() << "Read from [fd = " << native_fd << "] has failed");
+  if (read_errno != EAGAIN
+#if EAGAIN != EWOULDBLOCK
+      && read_errno != EWOULDBLOCK
+#endif
+      && read_errno != EIO) {
+    LOG(ERROR) << error;
+  }
+  return std::move(error);
+#endif
+#ifdef TD_PORT_WINDOWS
+  return fd_.read(slice);
+#endif
+}
+
+Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
+#ifdef TD_PORT_POSIX
+  CHECK(!fd_.empty());
+  int native_fd = get_native_fd();
+  auto pwrite_res = skip_eintr([&] { return ::pwrite(native_fd, slice.begin(), slice.size(), offset); });
+  if (pwrite_res >= 0) {
+    return static_cast<size_t>(pwrite_res);
+  }
+
+  auto pwrite_errno = errno;
+  auto error = Status::PosixError(
+      pwrite_errno, PSLICE() << "Pwrite to [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
+  if (pwrite_errno != EAGAIN
+#if EAGAIN != EWOULDBLOCK
+      && read_errno != EWOULDBLOCK
+#endif
+      && pwrite_errno != EIO) {
+    LOG(ERROR) << error;
+  }
+  return std::move(error);
+#endif
+#ifdef TD_PORT_WINDOWS
+  return fd_.pwrite(slice, offset);
+#endif
+}
+
+Result<size_t> FileFd::pread(MutableSlice slice, off_t offset) {
+#ifdef TD_PORT_POSIX
+  CHECK(!fd_.empty());
+  int native_fd = get_native_fd();
+  auto pread_res = skip_eintr([&] { return ::pread(native_fd, slice.begin(), slice.size(), offset); });
+  if (pread_res >= 0) {
+    return static_cast<size_t>(pread_res);
+  }
+
+  auto pread_errno = errno;
+  auto error = Status::PosixError(
+      pread_errno, PSLICE() << "Pread from [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
+  if (pread_errno != EAGAIN
+#if EAGAIN != EWOULDBLOCK
+      && read_errno != EWOULDBLOCK
+#endif
+      && pread_errno != EIO) {
+    LOG(ERROR) << error;
+  }
+  return std::move(error);
+#endif
+#ifdef TD_PORT_WINDOWS
+  return fd_.pread(slice, offset);
+#endif
+}
+
+Status FileFd::lock(FileFd::LockFlags flags, int32 max_tries) {
+#ifdef TD_PORT_POSIX
+  if (max_tries <= 0) {
+    return Status::Error(0, "Can't lock file: wrong max_tries");
+  }
+
+  while (true) {
+    struct flock L;
+    std::memset(&L, 0, sizeof(L));
+
+    L.l_type = static_cast<short>([&] {
+      switch (flags) {
+        case LockFlags::Read:
+          return F_RDLCK;
+        case LockFlags::Write:
+          return F_WRLCK;
+        case LockFlags::Unlock:
+          return F_UNLCK;
+        default:
+          UNREACHABLE();
+          return F_UNLCK;
+      };
+    }());
+
+    L.l_whence = SEEK_SET;
+    if (fcntl(fd_.get_native_fd(), F_SETLK, &L) == -1) {
+      int fcntl_errno = errno;
+      if (fcntl_errno == EAGAIN && --max_tries > 0) {
+        usleep(100000);
+        continue;
+      }
+
+      return Status::PosixError(fcntl_errno, "Can't lock file");
+    }
+    return Status::OK();
+  }
+#endif
+#ifdef TD_PORT_WINDOWS
+  return Status::OK();  // TODO(now)
+#endif
+}
+
+void FileFd::close() {
+  fd_.close();
+}
+
+bool FileFd::empty() const {
+  return fd_.empty();
+}
+
+#ifdef TD_PORT_POSIX
+int FileFd::get_native_fd() const {
+  return fd_.get_native_fd();
+}
+#endif
+
+int32 FileFd::get_flags() const {
+  return fd_.get_flags();
+}
+
+void FileFd::update_flags(Fd::Flags mask) {
+  fd_.update_flags(mask);
+}
+
+off_t FileFd::get_size() {
+#ifdef TD_PORT_POSIX
+  return detail::fstat(get_native_fd()).size_;
+#endif
+#ifdef TD_PORT_WINDOWS
+  return fd_.get_size();
+#endif
 }
 
 Fd FileFd::move_as_fd() {
-  Fd res = clone();
+#ifdef TD_PORT_POSIX
+  return std::move(fd_);
+#endif
+#ifdef TD_PORT_WINDOWS
+  Fd res = fd_.clone();
   // TODO(now): fix ownership
   return std::move(res);
+#endif
+}
+
+Stat FileFd::stat() {
+  return fd_.stat();
+}
+
+Status FileFd::sync() {
+#ifdef TD_PORT_POSIX
+  auto err = fsync(fd_.get_native_fd());
+  if (err < 0) {
+    return Status::OsError("Sync failed");
+  }
+  return Status::OK();
+#endif
+#ifdef TD_PORT_WINDOWS
+  return fd_.sync();
+#endif
 }
 
 }  // namespace td
-#endif  // TD_PORT_WINDOWS

@@ -708,8 +708,7 @@ class FdImpl {
 
   Status sync() const {
     CHECK(type_ == Fd::Type::FileFd);
-    auto status = FlushFileBuffers(get_io_handle());
-    if (status) {
+    if (FlushFileBuffers(get_io_handle()) != 0) {
       return Status::OK();
     }
     return Status::OsError("Sync failed");
