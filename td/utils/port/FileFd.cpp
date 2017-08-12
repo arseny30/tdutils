@@ -8,13 +8,13 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
-
-#include <cstring>
 #endif
 
 #ifdef TD_PORT_WINDOWS
 #include "td/utils/misc.h"  // for narrow_cast
 #endif
+
+#include <cstring>
 
 namespace td {
 
@@ -38,8 +38,7 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
   } else if (flags & Read) {
     native_flags |= O_RDONLY;
   } else {
-    return Status::Error(PSLICE() << "Failed to open file: invalid flags. [path=" << filepath
-                                  << "] [flags=" << initial_flags << "]");
+    return Status::Error(PSLICE() << "Failed to open file \"" << filepath << "\" with invalid flags " << flags);
   }
   flags &= ~(Write | Read);
 
@@ -93,7 +92,7 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
   } else if (flags & Read) {
     desired_access |= GENERIC_READ;
   } else {
-    return Status::Error(PSLICE() << "Failed to open file \"" << filepath << "\": invalid flags " << flags);
+    return Status::Error(PSLICE() << "Failed to open file \"" << filepath << "\" with invalid flags " << flags);
   }
   flags &= ~(Write | Read);
 
@@ -264,12 +263,12 @@ Result<size_t> FileFd::pread(MutableSlice slice, off_t offset) {
 }
 
 Status FileFd::lock(FileFd::LockFlags flags, int32 max_tries) {
-#ifdef TD_PORT_POSIX
   if (max_tries <= 0) {
     return Status::Error(0, "Can't lock file: wrong max_tries");
   }
 
   while (true) {
+#ifdef TD_PORT_POSIX
     struct flock L;
     std::memset(&L, 0, sizeof(L));
 
@@ -284,7 +283,7 @@ Status FileFd::lock(FileFd::LockFlags flags, int32 max_tries) {
         default:
           UNREACHABLE();
           return F_UNLCK;
-      };
+      }
     }());
 
     L.l_whence = SEEK_SET;
@@ -297,12 +296,34 @@ Status FileFd::lock(FileFd::LockFlags flags, int32 max_tries) {
 
       return Status::PosixError(fcntl_errno, "Can't lock file");
     }
-    return Status::OK();
-  }
 #endif
 #ifdef TD_PORT_WINDOWS
-  return Status::OK();  // TODO(now)
+    OVERLAPPED overlapped;
+    std::memset(&overlapped, 0, sizeof(overlapped));
+
+    BOOL result;
+    if (flags == LockFlags::Unlock) {
+      result = UnlockFileEx(fd_.get_io_handle(), 0, MAXDWORD, MAXDWORD, &overlapped);
+    } else {
+      DWORD dw_flags = LOCKFILE_FAIL_IMMEDIATELY;
+      if (flags == LockFlags::Write) {
+        dw_flags |= LOCKFILE_EXCLUSIVE_LOCK;
+      }
+
+      result = LockFileEx(fd_.get_io_handle(), dw_flags, 0, MAXDWORD, MAXDWORD, &overlapped);
+    }
+
+    if (!result) {
+      if (GetLastError() == ERROR_LOCK_VIOLATION && --max_tries > 0) {
+        Sleep(100);
+        continue;
+      }
+
+      return Status::OsError("Can't lock file");
+    }
 #endif
+    return Status::OK();
+  }
 }
 
 void FileFd::close() {
