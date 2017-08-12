@@ -1,19 +1,16 @@
 #include "td/utils/port/config.h"
 
-char disable_linker_warning_about_empty_file_file_fd_cpp TD_UNUSED;
+#include "td/utils/port/FileFd.h"
 
 #ifdef TD_PORT_POSIX
 
-#include "td/utils/format.h"
-#include "td/utils/port/FileFd.h"
 #include "td/utils/port/Stat.h"
 
 #include <fcntl.h>
-#include <unistd.h>
-
-#include <sys/types.h>
 #include <sys/file.h>
+#include <sys/types.h>
 #include <sys/uio.h>
+#include <unistd.h>
 
 #include <cstring>
 
@@ -63,15 +60,14 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
   }
 
   if (flags) {
-    return Status::Error(PSLICE() << "Failed to open file: unknown flags. " << tag("path", filepath)
-                                  << tag("flags", initial_flags));
+    return Status::Error(PSLICE() << "Failed to open file \"" << filepath << "\" with unknown flags " << initial_flags);
   }
 
   int native_fd = skip_eintr([&] { return ::open(filepath.c_str(), native_flags, static_cast<mode_t>(mode)); });
   if (native_fd < 0) {
     auto open_errno = errno;
-    return Status::PosixError(
-        open_errno, PSLICE() << "Failed to open file: " << tag("path", filepath) << tag("flags", initial_flags));
+    return Status::PosixError(open_errno,
+                              PSLICE() << "Failed to open file \"" << filepath << "\" with flags " << initial_flags);
   }
 
   FileFd result;
@@ -246,3 +242,97 @@ Status FileFd::sync() {
 }  // namespace td
 
 #endif  // TD_PORT_POSIX
+
+#ifdef TD_PORT_WINDOWS
+
+namespace td {
+
+// TODO: support modes
+Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 todo) {
+  auto r_filepath = to_wstring(filepath);
+  if (r_filepath.is_error()) {
+    return Status::Error(PSLICE() << "Failed to convert file path \" << filepath << \" to UTF-16");
+  }
+  auto w_filepath = r_filepath.move_as_ok();
+  DWORD desired_access = 0;
+  if ((flags & Write) && (flags & Read)) {
+    desired_access |= GENERIC_READ | GENERIC_WRITE;
+  } else if (flags & Write) {
+    desired_access |= GENERIC_WRITE;
+  } else if (flags & Read) {
+    desired_access |= GENERIC_READ;
+  } else {
+    return Status::Error(PSLICE() << "Failed to open file \"" << filepath << "\": invalid flags " << flags);
+  }
+  flags &= ~(Write | Read);
+
+  // TODO: share mode
+  DWORD share_mode = FILE_SHARE_READ | FILE_SHARE_DELETE | FILE_SHARE_WRITE;
+
+  DWORD creation_disposition = 0;
+  if (flags & Create) {
+    flags &= ~Create;
+    if (flags & Truncate) {
+      flags &= ~Truncate;
+      creation_disposition = CREATE_ALWAYS;
+    } else {
+      creation_disposition = OPEN_ALWAYS;
+    }
+  } else if (flags & CreateNew) {
+    flags &= ~CreateNew;
+    if (flags & Truncate) {
+      flags &= ~Truncate;
+      creation_disposition = CREATE_NEW;
+    } else {
+      creation_disposition = CREATE_NEW;
+    }
+  } else {
+    if (flags & Truncate) {
+      flags &= ~Truncate;
+      creation_disposition = TRUNCATE_EXISTING;
+    } else {
+      creation_disposition = OPEN_EXISTING;
+    }
+  }
+
+  bool append_flag = false;
+  if (flags & Append) {
+    append_flag = true;
+    flags &= ~Append;
+  }
+
+  if (flags) {
+    return Status::Error(PSLICE() << "Failed to open file \"" << filepath << "\": unknown flags " << flags);
+  }
+
+  auto handle = CreateFile2(w_filepath.c_str(), desired_access, share_mode, creation_disposition, nullptr);
+  if (handle == INVALID_HANDLE_VALUE) {
+    return Status::OsError(PSLICE() << "Failed to open file \"" << filepath << "\" with flags " << flags);
+  }
+  if (append_flag) {
+    LARGE_INTEGER offset;
+    offset.QuadPart = 0;
+    auto set_pointer_res = SetFilePointerEx(handle, offset, nullptr, FILE_END);
+    if (!set_pointer_res) {
+      auto res = Status::OsError(PSLICE() << "Failed to seek to the end of file \"" << filepath << "\"");
+      CloseHandle(handle);
+      return res;
+    }
+  }
+  auto res = FileFd(Fd::Type::FileFd, Fd::Mode::Owner, handle);
+  res.update_flags(Fd::Flag::Write);
+  return std::move(res);
+}
+
+Status FileFd::lock(LockFlags flags, int32 max_tries) {
+  return Status::OK();
+}
+
+Fd FileFd::move_as_fd() {
+  Fd res = clone();
+  // TODO(now): fix ownership
+  return std::move(res);
+}
+
+}  // namespace td
+#endif  // TD_PORT_WINDOWS

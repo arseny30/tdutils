@@ -134,10 +134,10 @@ namespace detail {
 class EventFdWindows;
 class FdImpl;
 }  // namespace detail
+
 // like linux fd.
 // also it handles fd destruction
-// descriptor(handler) itself should be create by some external function
-
+// descriptor(handler) itself should be created by some external function
 class Fd {
  public:
   enum Flag : int32 {
