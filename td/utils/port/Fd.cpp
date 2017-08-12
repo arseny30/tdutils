@@ -20,6 +20,7 @@
 #ifdef TD_PORT_WINDOWS
 
 #include "td/utils/buffer.h"
+#include "td/utils/misc.h"
 
 #include <algorithm>
 #include <cstring>
@@ -613,34 +614,6 @@ class FdImpl {
     clear_flags(Fd::Flag::Read);
   }
 
-  Result<size_t> pwrite(Slice slice, off_t pos) WARN_UNUSED_RESULT {
-    DWORD bytes_written = 0;
-    OVERLAPPED overlapped;
-    std::memset(&overlapped, 0, sizeof(overlapped));
-    auto pos64 = static_cast<uint64>(pos);
-    overlapped.Offset = static_cast<DWORD>(pos64);
-    overlapped.OffsetHigh = static_cast<DWORD>(pos64 >> 32);
-    auto res = WriteFile(get_io_handle(), slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_written, &overlapped);
-    if (!res) {
-      return Status::OsError("Failed to write_sync");
-    }
-    return bytes_written;
-  }
-
-  Result<size_t> pread(MutableSlice slice, off_t pos) WARN_UNUSED_RESULT {
-    DWORD bytes_read = 0;
-    OVERLAPPED overlapped;
-    std::memset(&overlapped, 0, sizeof(overlapped));
-    auto pos64 = static_cast<uint64>(pos);
-    overlapped.Offset = static_cast<DWORD>(pos64);
-    overlapped.OffsetHigh = static_cast<DWORD>(pos64 >> 32);
-    auto res = ReadFile(get_io_handle(), slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_read, &overlapped);
-    if (!res) {
-      return Status::OsError("Failed to write_sync");
-    }
-    return bytes_read;
-  }
-
   // TODO: interface for BufferedFd optimization.
 
   bool empty() const {
@@ -916,6 +889,10 @@ Fd &Fd::get_fd() {
   return *this;
 }
 
+Result<size_t> Fd::read(MutableSlice slice) {
+  return impl_->read(slice);
+}
+
 Result<size_t> Fd::write(Slice slice) {
   CHECK(!empty());
   return impl_->write(slice);
@@ -927,16 +904,6 @@ bool Fd::empty() const {
 
 void Fd::close() {
   impl_.reset();
-}
-
-Result<size_t> Fd::read(MutableSlice slice) {
-  return impl_->read(slice);
-}
-Result<size_t> Fd::pwrite(Slice slice, off_t pos) {
-  return impl_->pwrite(slice, pos);
-}
-Result<size_t> Fd::pread(MutableSlice slice, off_t pos) {
-  return impl_->pread(slice, pos);
 }
 
 Result<Fd> Fd::accept() {
@@ -967,9 +934,10 @@ int32 Fd::get_flags() const {
 void Fd::update_flags(Flags flags) {
   impl_->update_flags(flags);
 }
-// void Fd::update_flags_notify(Flags flags) {
+//void Fd::update_flags_notify(Flags flags) {
 //  impl_->update_flags_notify(flags);
 //}
+
 void Fd::on_read_event() {
   impl_->on_read_event();
 }
@@ -1067,6 +1035,7 @@ class InitWSA {
   }
 };
 static InitWSA init_wsa;
+
 #endif
 
 }  // namespace td

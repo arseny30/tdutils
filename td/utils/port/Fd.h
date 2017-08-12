@@ -155,9 +155,6 @@ class Fd {
   Result<size_t> write(Slice slice) WARN_UNUSED_RESULT;
   Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT;
 
-  Result<size_t> pwrite(Slice slice, off_t pos) WARN_UNUSED_RESULT;
-  Result<size_t> pread(MutableSlice slice, off_t pos) WARN_UNUSED_RESULT;
-
   bool empty() const;
   void close();
 

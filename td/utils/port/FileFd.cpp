@@ -232,7 +232,17 @@ Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
   return std::move(error);
 #endif
 #ifdef TD_PORT_WINDOWS
-  return fd_.pwrite(slice, offset);
+  DWORD bytes_written = 0;
+  OVERLAPPED overlapped;
+  std::memset(&overlapped, 0, sizeof(overlapped));
+  auto pos64 = static_cast<uint64>(offset);
+  overlapped.Offset = static_cast<DWORD>(pos64);
+  overlapped.OffsetHigh = static_cast<DWORD>(pos64 >> 32);
+  auto res = WriteFile(fd_.get_io_handle(), slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_written, &overlapped);
+  if (!res) {
+    return Status::OsError("Failed to pwrite");
+  }
+  return bytes_written;
 #endif
 }
 
@@ -258,7 +268,17 @@ Result<size_t> FileFd::pread(MutableSlice slice, off_t offset) {
   return std::move(error);
 #endif
 #ifdef TD_PORT_WINDOWS
-  return fd_.pread(slice, offset);
+  DWORD bytes_read = 0;
+  OVERLAPPED overlapped;
+  std::memset(&overlapped, 0, sizeof(overlapped));
+  auto pos64 = static_cast<uint64>(offset);
+  overlapped.Offset = static_cast<DWORD>(pos64);
+  overlapped.OffsetHigh = static_cast<DWORD>(pos64 >> 32);
+  auto res = ReadFile(fd_.get_io_handle(), slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_read, &overlapped);
+  if (!res) {
+    return Status::OsError("Failed to pread");
+  }
+  return bytes_read;
 #endif
 }
 
