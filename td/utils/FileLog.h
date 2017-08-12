@@ -58,13 +58,6 @@ class FileLog : public LogInterface {
     rotate_threshold_ = rotate_threshold;
   }
 
-  void init(FileFd fd) {
-    path_ = "";
-    fd_ = std::move(fd);
-    size_ = fd_.get_size();
-    rotate_threshold_ = std::numeric_limits<off_t>::max();
-  }
-
  private:
   FileFd fd_;
   string path_;
