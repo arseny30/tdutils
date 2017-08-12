@@ -38,8 +38,6 @@ class FileFd {
 
   off_t get_size();
 
-  Fd move_as_fd();
-
   Stat stat();
 
   Status sync() WARN_UNUSED_RESULT;

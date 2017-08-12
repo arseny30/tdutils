@@ -358,11 +358,6 @@ Result<size_t> Fd::read(MutableSlice slice) {
   }
 }
 
-Stat Fd::stat() const {
-  CHECK(!empty());
-  return detail::fstat(get_native_fd());
-}
-
 Status Fd::set_is_blocking(bool is_blocking) {
   auto old_flags = fcntl(fd_, F_GETFL);
   if (old_flags == -1) {
@@ -502,6 +497,14 @@ class FdImpl {
   SOCKET get_native_socket() const {
     CHECK(type_ == Fd::Type::SocketFd);
     return socket_;
+  }
+
+  HANDLE get_io_handle() const {
+    CHECK(!empty());
+    if (type() == Fd::Type::FileFd || type() == Fd::Type::StdinFileFd) {
+      return handle_;
+    }
+    return reinterpret_cast<HANDLE>(socket_);
   }
 
   Result<size_t> write(Slice slice) WARN_UNUSED_RESULT {
@@ -682,38 +685,6 @@ class FdImpl {
     type_ = Fd::Type::Empty;
   }
 
-  Stat stat() const {
-    CHECK(type_ == Fd::Type::FileFd);
-    Stat res;
-
-    FILE_BASIC_INFO basic_info;
-    auto status = GetFileInformationByHandleEx(get_io_handle(), FileBasicInfo, &basic_info, sizeof(basic_info));
-    LOG_IF(FATAL, !status) << Status::OsError("Stat failed");
-    res.atime_nsec_ = basic_info.LastAccessTime.QuadPart * 100;
-    res.mtime_nsec_ = basic_info.LastWriteTime.QuadPart * 100;
-    res.is_dir_ = (basic_info.FileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-    res.is_reg_ = true;
-
-    FILE_STANDARD_INFO standard_info;
-    status = GetFileInformationByHandleEx(get_io_handle(), FileStandardInfo, &standard_info, sizeof(standard_info));
-    LOG_IF(FATAL, !status) << Status::OsError("Stat failed");
-    res.size_ = narrow_cast<off_t>(standard_info.EndOfFile.QuadPart);
-
-    return res;
-  }
-
-  off_t get_size() const {
-    return stat().size_;
-  }
-
-  Status sync() const {
-    CHECK(type_ == Fd::Type::FileFd);
-    if (FlushFileBuffers(get_io_handle()) != 0) {
-      return Status::OK();
-    }
-    return Status::OsError("Sync failed");
-  }
-
  private:
   Fd::Type type_;
   HANDLE handle_ = INVALID_HANDLE_VALUE;
@@ -759,14 +730,6 @@ class FdImpl {
 
   Fd::Type type() const {
     return type_;
-  }
-
-  HANDLE get_io_handle() const {
-    CHECK(!empty());
-    if (type() == Fd::Type::FileFd || type() == Fd::Type::StdinFileFd) {
-      return handle_;
-    }
-    return reinterpret_cast<HANDLE>(socket_);
   }
 
   void on_error(Status error, Fd::Flag flag) {
@@ -1032,6 +995,10 @@ SOCKET Fd::get_native_socket() const {
   return impl_->get_native_socket();
 }
 
+HANDLE Fd::get_io_handle() const {
+  return impl_->get_io_handle();
+}
+
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 Fd &Fd::Stderr() {
   static auto handle = GetStdHandle(STD_ERROR_HANDLE);
@@ -1085,16 +1052,6 @@ void Fd::acquire() {
 }
 void Fd::release() {
   return impl_->release();
-}
-
-Stat Fd::stat() const {
-  return impl_->stat();
-}
-off_t Fd::get_size() const {
-  return impl_->get_size();
-}
-Status Fd::sync() {
-  return impl_->sync();
 }
 
 class InitWSA {

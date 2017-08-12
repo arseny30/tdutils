@@ -12,6 +12,10 @@
 #include <cstring>
 #endif
 
+#ifdef TD_PORT_WINDOWS
+#include "td/utils/misc.h"  // for narrow_cast
+#endif
+
 namespace td {
 
 const Fd &FileFd::get_fd() const {
@@ -284,7 +288,7 @@ Status FileFd::lock(FileFd::LockFlags flags, int32 max_tries) {
     }());
 
     L.l_whence = SEEK_SET;
-    if (fcntl(fd_.get_native_fd(), F_SETLK, &L) == -1) {
+    if (fcntl(get_native_fd(), F_SETLK, &L) == -1) {
       int fcntl_errno = errno;
       if (fcntl_errno == EAGAIN && --max_tries > 0) {
         usleep(100000);
@@ -324,40 +328,48 @@ void FileFd::update_flags(Fd::Flags mask) {
 }
 
 off_t FileFd::get_size() {
-#ifdef TD_PORT_POSIX
-  return detail::fstat(get_native_fd()).size_;
-#endif
-#ifdef TD_PORT_WINDOWS
-  return fd_.get_size();
-#endif
-}
-
-Fd FileFd::move_as_fd() {
-#ifdef TD_PORT_POSIX
-  return std::move(fd_);
-#endif
-#ifdef TD_PORT_WINDOWS
-  Fd res = fd_.clone();
-  // TODO(now): fix ownership
-  return std::move(res);
-#endif
+  return stat().size_;
 }
 
 Stat FileFd::stat() {
-  return fd_.stat();
+  CHECK(!empty());
+#ifdef TD_PORT_POSIX
+  return detail::fstat(get_native_fd());
+#endif
+#ifdef TD_PORT_WINDOWS
+  Stat res;
+
+  FILE_BASIC_INFO basic_info;
+  auto status = GetFileInformationByHandleEx(fd_.get_io_handle(), FileBasicInfo, &basic_info, sizeof(basic_info));
+  LOG_IF(FATAL, !status) << Status::OsError("Stat failed");
+  res.atime_nsec_ = basic_info.LastAccessTime.QuadPart * 100;
+  res.mtime_nsec_ = basic_info.LastWriteTime.QuadPart * 100;
+  res.is_dir_ = (basic_info.FileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+  res.is_reg_ = true;
+
+  FILE_STANDARD_INFO standard_info;
+  status = GetFileInformationByHandleEx(fd_.get_io_handle(), FileStandardInfo, &standard_info, sizeof(standard_info));
+  LOG_IF(FATAL, !status) << Status::OsError("Stat failed");
+  res.size_ = narrow_cast<off_t>(standard_info.EndOfFile.QuadPart);
+
+  return res;
+#endif
 }
 
 Status FileFd::sync() {
+  CHECK(!empty());
 #ifdef TD_PORT_POSIX
   auto err = fsync(fd_.get_native_fd());
   if (err < 0) {
     return Status::OsError("Sync failed");
   }
-  return Status::OK();
 #endif
 #ifdef TD_PORT_WINDOWS
-  return fd_.sync();
+  if (FlushFileBuffers(fd_.get_io_handle()) == 0) {
+    return Status::OsError("Sync failed");
+  }
 #endif
+  return Status::OK();
 }
 
 }  // namespace td

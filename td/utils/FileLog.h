@@ -16,16 +16,6 @@ class FileLog : public LogInterface {
   static constexpr int DEFAULT_ROTATE_THRESHOLD = 10 * (1 << 20);
 
  public:
-  FileLog() = default;
-  FileLog(const FileLog &other) = delete;
-  FileLog &operator=(const FileLog &other) = delete;
-  FileLog(FileLog &&other) = delete;
-  FileLog &operator=(FileLog &&other) = delete;
-  ~FileLog() override {
-    if (!fd_.empty()) {
-      fd_.close();
-    }
-  }
   void append(CSlice xslice, int log_level) override {
     Slice slice = xslice;
     while (!slice.empty()) {
@@ -62,22 +52,21 @@ class FileLog : public LogInterface {
 
     auto r_fd = FileFd::open(path_, FileFd::Create | FileFd::Write | FileFd::Append);
     LOG_IF(FATAL, r_fd.is_error()) << "Can't open log: " << r_fd.error();
-    fd_ = r_fd.move_as_ok().move_as_fd();
-    Fd::duplicate(fd_, Fd::Stderr()).ignore();
-    auto stat = fd_.stat();
-    size_ = stat.size_;
+    fd_ = r_fd.move_as_ok();
+    Fd::duplicate(fd_.get_fd(), Fd::Stderr()).ignore();
+    size_ = fd_.get_size();
     rotate_threshold_ = rotate_threshold;
   }
 
-  void init(Fd fd) {
+  void init(FileFd fd) {
     path_ = "";
     fd_ = std::move(fd);
-    size_ = 0;
+    size_ = fd_.get_size();
     rotate_threshold_ = std::numeric_limits<off_t>::max();
   }
 
  private:
-  Fd fd_;
+  FileFd fd_;
   string path_;
   off_t size_;
   off_t rotate_threshold_;
@@ -91,8 +80,8 @@ class FileLog : public LogInterface {
     if (r_fd.is_error()) {
       std::abort();
     }
-    fd_ = r_fd.move_as_ok().move_as_fd();
-    Fd::duplicate(fd_, Fd::Stderr()).ignore();
+    fd_ = r_fd.move_as_ok();
+    Fd::duplicate(fd_.get_fd(), Fd::Stderr()).ignore();
     size_ = 0;
     SET_VERBOSITY_LEVEL(current_verbosity_level);
   }

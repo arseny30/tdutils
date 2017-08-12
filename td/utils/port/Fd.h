@@ -86,8 +86,6 @@ class Fd {
   Result<size_t> write_unsafe(Slice slice) WARN_UNUSED_RESULT;
   Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT;
 
-  Stat stat() const;
-
  private:
   struct Info {
     std::atomic<int> refcnt;
@@ -166,10 +164,6 @@ class Fd {
   Result<Fd> accept() WARN_UNUSED_RESULT;
   void connect(const IPAddress &addr);
 
-  Stat stat() const;
-  off_t get_size() const;
-  Status sync() WARN_UNUSED_RESULT;
-
   Fd clone() const;
   uint64 get_key() const;
 
@@ -188,6 +182,7 @@ class Fd {
   void on_write_event();
 
   SOCKET get_native_socket() const;
+  HANDLE get_io_handle() const;
 
   static Fd &Stderr();
   static Fd &Stdin();

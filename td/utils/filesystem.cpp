@@ -11,7 +11,7 @@ namespace td {
 Result<BufferSlice> read_file(CSlice path, off_t size) {
   TRY_RESULT(from_file, FileFd::open(path, FileFd::Read));
   if (size == -1) {
-    size = from_file.stat().size_;
+    size = from_file.get_size();
   }
   BufferWriter content{static_cast<size_t>(size), 0, 0};
   TRY_RESULT(got_size, from_file.read(content.as_slice()));

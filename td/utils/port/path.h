@@ -105,7 +105,7 @@ Status walk_path_dir(string &path, DIR *subdir, Func &&func) {
 
 template <class Func>
 Status walk_path_dir(string &path, FileFd fd, Func &&func) {
-  auto *subdir = fdopendir(fd.move_as_fd().move_as_native_fd());
+  auto *subdir = fdopendir(fd.get_fd().move_as_native_fd());
   if (subdir == nullptr) {
     auto fdopendir_errno = errno;
     auto error = Status::PosixError(fdopendir_errno, "fdopendir");
