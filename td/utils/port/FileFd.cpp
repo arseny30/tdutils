@@ -238,7 +238,8 @@ Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
   auto pos64 = static_cast<uint64>(offset);
   overlapped.Offset = static_cast<DWORD>(pos64);
   overlapped.OffsetHigh = static_cast<DWORD>(pos64 >> 32);
-  auto res = WriteFile(fd_.get_io_handle(), slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_written, &overlapped);
+  auto res =
+      WriteFile(fd_.get_io_handle(), slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_written, &overlapped);
   if (!res) {
     return Status::OsError("Failed to pwrite");
   }
@@ -402,12 +403,49 @@ Status FileFd::sync() {
 #ifdef TD_PORT_POSIX
   auto err = fsync(fd_.get_native_fd());
   if (err < 0) {
-    return Status::OsError("Sync failed");
+    auto fsync_errno = errno;
+    return Status::PosixError(fsync_errno, "Sync failed");
   }
 #endif
 #ifdef TD_PORT_WINDOWS
   if (FlushFileBuffers(fd_.get_io_handle()) == 0) {
     return Status::OsError("Sync failed");
+  }
+#endif
+  return Status::OK();
+}
+
+Status FileFd::seek(off_t position) {
+  CHECK(!empty());
+#ifdef TD_PORT_POSIX
+  auto err = skip_eintr([&] { return ::lseek(fd_.get_native_fd(), position, SEEK_SET); });
+  if (err < 0) {
+    auto lseek_errno = errno;
+    return Status::PosixError(lseek_errno, "Seek failed");
+  }
+#endif
+#ifdef TD_PORT_WINDOWS
+  LARGE_INTEGER offset;
+  offset.QuadPart = position;
+  if (SetFilePointerEx(fd_.get_io_handle(), offset, nullptr, FILE_BEGIN) == 0) {
+    return Status::OsError("Seek failed");
+  }
+#endif
+  return Status::OK();
+}
+
+Status FileFd::truncate_to_current_position(off_t current_position) {
+  CHECK(!empty());
+#ifdef TD_PORT_POSIX
+  auto err = skip_eintr([&] { return ::ftruncate(fd_.get_native_fd(), current_position); });
+  if (err < 0) {
+    auto ftruncate_errno = errno;
+    return Status::PosixError(ftruncate_errno, "Truncate failed");
+  }
+#endif
+#ifdef TD_PORT_WINDOWS
+  if (SetEndOfFile(fd_.get_io_handle()) == 0) {
+    return Status::OsError("Truncate failed");
   }
 #endif
   return Status::OK();

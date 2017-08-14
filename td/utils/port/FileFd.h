@@ -42,6 +42,10 @@ class FileFd {
 
   Status sync() WARN_UNUSED_RESULT;
 
+  Status seek(off_t position) WARN_UNUSED_RESULT;
+
+  Status truncate_to_current_position(off_t current_position) WARN_UNUSED_RESULT;
+
 #ifdef TD_PORT_POSIX
   int get_native_fd() const;
 #endif  // TD_PORT_POSIX
