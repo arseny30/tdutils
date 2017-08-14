@@ -110,12 +110,8 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
     }
   } else if (flags & CreateNew) {
     flags &= ~CreateNew;
-    if (flags & Truncate) {
-      flags &= ~Truncate;
-      creation_disposition = CREATE_NEW;
-    } else {
-      creation_disposition = CREATE_NEW;
-    }
+    flags &= ~Truncate;
+    creation_disposition = CREATE_NEW;
   } else {
     if (flags & Truncate) {
       flags &= ~Truncate;
