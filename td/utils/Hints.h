@@ -1,6 +1,7 @@
 #pragma once
 
 #include "td/utils/common.h"
+#include "td/utils/Slice.h"
 
 #include <map>
 #include <unordered_map>
@@ -13,7 +14,7 @@ class Hints {
   using RatingT = int64;
 
  public:
-  void add(KeyT key, const string &name);
+  void add(KeyT key, Slice name);
 
   void remove(KeyT key) {
     add(key, "");
@@ -21,13 +22,14 @@ class Hints {
 
   void set_rating(KeyT key, RatingT rating);
 
-  vector<KeyT> search(const string &query, int32 limit) const;  // TODO sort by name instead of sort by rating
+  vector<KeyT> search(Slice query, int32 limit,
+                      bool return_all_for_empty_query = false) const;  // TODO sort by name instead of sort by rating
 
   bool has_key(KeyT key) const;
 
   string key_to_string(KeyT key) const;
 
-  vector<KeyT> search_empty(int32 limit) const;
+  vector<KeyT> search_empty(int32 limit) const;  // == search("", limit, true)
 
   size_t size() const;
 
@@ -36,7 +38,7 @@ class Hints {
   std::unordered_map<KeyT, string> key_to_name_;
   std::unordered_map<KeyT, RatingT> key_to_rating_;
 
-  static vector<string> get_words(const string &name);
+  static vector<string> get_words(Slice name);
 
   vector<KeyT> search_word(const string &word) const;
 
