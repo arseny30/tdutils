@@ -17,7 +17,7 @@ class IPAddress {
 
   bool is_valid() const;
 
-  const struct sockaddr *get_sockaddr() const;
+  const sockaddr *get_sockaddr() const;
   size_t get_sockaddr_len() const;
   int get_address_family() const;
   Slice get_ip_str() const;
@@ -45,14 +45,14 @@ class IPAddress {
 
  private:
   union {
-    struct sockaddr_storage addr_;
-    struct sockaddr sockaddr_;
-    struct sockaddr_in ipv4_addr_;
-    struct sockaddr_in6 ipv6_addr_;
+    sockaddr_storage addr_;
+    sockaddr sockaddr_;
+    sockaddr_in ipv4_addr_;
+    sockaddr_in6 ipv6_addr_;
   };
   bool is_valid_;
 
-  Status init_sockaddr(struct sockaddr *addr, socklen_t len) WARN_UNUSED_RESULT;
+  Status init_sockaddr(sockaddr *addr, socklen_t len) WARN_UNUSED_RESULT;
   void init_ipv4_any();
   void init_ipv6_any();
 };

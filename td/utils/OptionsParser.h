@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <string>
+
 #include <getopt.h>
 
 namespace td {
@@ -58,12 +59,12 @@ class OptionsParser {
     }
     CSlice short_options = sb.as_cslice();
 
-    vector<struct option> long_options;
+    vector<option> long_options;
     for (auto &opt : options_) {
       if (opt.long_key.empty()) {
         continue;
       }
-      struct option o;
+      option o;
       o.flag = nullptr;
       o.val = opt.short_key;
       o.has_arg = opt.type == Option::Arg ? required_argument : no_argument;

@@ -70,7 +70,7 @@ Stat fstat(int native_fd) {
 
 Status update_atime(int native_fd) {
 #if TD_LINUX
-  struct timespec times[2];
+  timespec times[2];
   // access time
   times[0].tv_nsec = UTIME_NOW;
   // modify time
@@ -86,7 +86,7 @@ Status update_atime(int native_fd) {
   return Status::OK();
 #elif TD_DARWIN
   auto info = fstat(native_fd);
-  struct timeval upd[2];
+  timeval upd[2];
   auto now = Clocks::system();
   // access time
   upd[0].tv_sec = static_cast<decltype(upd[0].tv_sec)>(now);
@@ -104,7 +104,7 @@ Status update_atime(int native_fd) {
   return Status::OK();
 #else
   return Status::Error("Not supported");
-// struct timespec times[2];
+// timespec times[2];
 //// access time
 // times[0].tv_nsec = UTIME_NOW;
 //// modify time
@@ -142,7 +142,7 @@ Result<Stat> stat(CSlice path) {
 
 Result<MemStat> mem_stat() {
 #if TD_DARWIN
-  struct task_basic_info t_info;
+  task_basic_info t_info;
   mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
 
   if (KERN_SUCCESS !=

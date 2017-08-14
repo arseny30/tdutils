@@ -30,7 +30,7 @@ void Epoll::clear() {
 }
 
 void Epoll::subscribe(const Fd &fd, Fd::Flags flags) {
-  struct epoll_event event;
+  epoll_event event;
   event.events = EPOLLHUP | EPOLLERR | EPOLLET;
 #ifdef EPOLLRDHUP
   event.events |= EPOLLRDHUP;
@@ -66,7 +66,7 @@ void Epoll::run(int timeout_ms) {
 
   for (int i = 0; i < ready_n; i++) {
     Fd::Flags flags = 0;
-    struct epoll_event *event = &events[i];
+    epoll_event *event = &events[i];
     if (event->events & EPOLLIN) {
       event->events &= ~EPOLLIN;
       flags |= Fd::Read;

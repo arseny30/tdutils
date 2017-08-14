@@ -36,7 +36,7 @@ void KQueue::clear() {
   kq = -1;
 }
 
-int KQueue::update(int nevents, const struct timespec *timeout, bool may_fail) {
+int KQueue::update(int nevents, const timespec *timeout, bool may_fail) {
   int err = kevent(kq, &events[0], changes_n, &events[0], nevents, timeout);
   auto kevent_errno = errno;
 
@@ -114,8 +114,8 @@ void KQueue::unsubscribe_before_close(const Fd &fd) {
 }
 
 void KQueue::run(int timeout_ms) {
-  struct timespec timeout_data;
-  struct timespec *timeout_ptr;
+  timespec timeout_data;
+  timespec *timeout_ptr;
   if (timeout_ms == -1) {
     timeout_ptr = nullptr;
   } else {

@@ -61,8 +61,8 @@ void Select::unsubscribe_before_close(const Fd &fd) {
 }
 
 void Select::run(int timeout_ms) {
-  struct timeval timeout_data;
-  struct timeval *timeout_ptr;
+  timeval timeout_data;
+  timeval *timeout_ptr;
   if (timeout_ms == -1) {
     timeout_ptr = nullptr;
   } else {

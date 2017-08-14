@@ -27,7 +27,7 @@ bool IPAddress::is_valid() const {
   return is_valid_;
 }
 
-const struct sockaddr *IPAddress::get_sockaddr() const {
+const sockaddr *IPAddress::get_sockaddr() const {
   return &sockaddr_;
 }
 
@@ -137,8 +137,8 @@ Status IPAddress::init_host_port(CSlice host, int port) {
 }
 
 Status IPAddress::init_host_port(CSlice host, CSlice port) {
-  struct addrinfo hints;
-  struct addrinfo *info = nullptr;
+  addrinfo hints;
+  addrinfo *info = nullptr;
   std::memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_INET;  // TODO AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
@@ -152,7 +152,7 @@ Status IPAddress::init_host_port(CSlice host, CSlice port) {
   };
 
   // prefer ipv4
-  struct addrinfo *best_info = info;
+  addrinfo *best_info = info;
   for (auto *ptr = info->ai_next; ptr != nullptr; ptr = ptr->ai_next) {
     if (ptr->ai_socktype == AF_INET) {
       best_info = ptr;
@@ -172,13 +172,13 @@ Status IPAddress::init_host_port(CSlice host_port) {
   return init_host_port(host_port.substr(0, pos).str(), host_port.substr(pos + 1).str());
 }
 
-Status IPAddress::init_sockaddr(struct sockaddr *addr, socklen_t len) {
+Status IPAddress::init_sockaddr(sockaddr *addr, socklen_t len) {
   if (addr->sa_family == AF_INET6) {
     CHECK(len == sizeof(ipv6_addr_));
-    std::memcpy(&ipv6_addr_, reinterpret_cast<struct sockaddr_in6 *>(addr), sizeof(ipv6_addr_));
+    std::memcpy(&ipv6_addr_, reinterpret_cast<sockaddr_in6 *>(addr), sizeof(ipv6_addr_));
   } else if (addr->sa_family == AF_INET) {
     CHECK(len == sizeof(ipv4_addr_));
-    std::memcpy(&ipv4_addr_, reinterpret_cast<struct sockaddr_in *>(addr), sizeof(ipv4_addr_));
+    std::memcpy(&ipv4_addr_, reinterpret_cast<sockaddr_in *>(addr), sizeof(ipv4_addr_));
     LOG(INFO) << "Have ipv4 address with port " << ntohs(ipv4_addr_.sin_port);
   } else {
     return Status::Error(PSLICE() << "Unknown " << tag("sa_family", addr->sa_family));

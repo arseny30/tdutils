@@ -20,7 +20,7 @@ class KQueue final : public PollBase {
   int changes_n;
   int kq;
 
-  int update(int nevents, const struct timespec *timeout, bool may_fail = false);
+  int update(int nevents, const timespec *timeout, bool may_fail = false);
 
   void invalidate(const Fd &fd);
 

@@ -61,10 +61,10 @@ Status ServerSocketFd::get_pending_error() {
 
 Result<SocketFd> ServerSocketFd::accept() {
 #ifdef TD_PORT_POSIX
-  struct sockaddr_storage addr;
+  sockaddr_storage addr;
   socklen_t addr_len = sizeof(addr);
   int native_fd = fd_.get_native_fd();
-  int r_fd = skip_eintr([&] { return ::accept(native_fd, reinterpret_cast<struct sockaddr *>(&addr), &addr_len); });
+  int r_fd = skip_eintr([&] { return ::accept(native_fd, reinterpret_cast<sockaddr *>(&addr), &addr_len); });
   auto accept_errno = errno;
   if (r_fd >= 0) {
     return SocketFd::from_native_fd(r_fd);
@@ -155,7 +155,7 @@ Status ServerSocketFd::init(int32 port, CSlice addr) {
   }
 #endif
 
-  struct linger ling = {0, 0};
+  linger ling = {0, 0};
 #ifdef TD_PORT_POSIX
   int flags = 1;
 #if !TD_ANDROID && !TD_CYGWIN

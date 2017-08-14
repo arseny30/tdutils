@@ -286,10 +286,10 @@ Status FileFd::lock(FileFd::LockFlags flags, int32 max_tries) {
 
   while (true) {
 #ifdef TD_PORT_POSIX
-    struct flock L;
-    std::memset(&L, 0, sizeof(L));
+    struct flock lock;
+    std::memset(&lock, 0, sizeof(lock));
 
-    L.l_type = static_cast<short>([&] {
+    lock.l_type = static_cast<short>([&] {
       switch (flags) {
         case LockFlags::Read:
           return F_RDLCK;
@@ -303,8 +303,8 @@ Status FileFd::lock(FileFd::LockFlags flags, int32 max_tries) {
       }
     }());
 
-    L.l_whence = SEEK_SET;
-    if (fcntl(get_native_fd(), F_SETLK, &L) == -1) {
+    lock.l_whence = SEEK_SET;
+    if (fcntl(get_native_fd(), F_SETLK, &lock) == -1) {
       int fcntl_errno = errno;
       if (fcntl_errno == EAGAIN && --max_tries > 0) {
         usleep(100000);
