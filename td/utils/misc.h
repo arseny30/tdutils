@@ -412,10 +412,23 @@ T trim(T str) {
 inline string oneline(Slice str) {
   string result;
   result.reserve(str.size());
+  bool after_new_line = true;
   for (auto c : str) {
     if (c != '\n') {
+      if (after_new_line) {
+        if (c == ' ') {
+          continue;
+        }
+        after_new_line = false;
+      }
       result += c;
+    } else {
+      after_new_line = true;
+      result += ' ';
     }
+  }
+  while (!result.empty() && result.back() == ' ') {
+    result.pop_back();
   }
   return result;
 }
