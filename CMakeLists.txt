@@ -22,6 +22,7 @@ set(TDUTILS_SOURCE
   td/utils/port/IPAddress.cpp
   td/utils/port/path.cpp
   td/utils/port/ServerSocketFd.cpp
+  td/utils/port/signals.cpp
   td/utils/port/SocketFd.cpp
   td/utils/port/Stat.cpp
   td/utils/port/thread_local.cpp
@@ -31,6 +32,7 @@ set(TDUTILS_SOURCE
   td/utils/port/detail/EventFdWindows.cpp
   td/utils/port/detail/KQueue.cpp
   td/utils/port/detail/Select.cpp
+
   ${TDMIME_AUTO}
 
   td/utils/base64.cpp
@@ -67,6 +69,7 @@ set(TDUTILS_SOURCE
   td/utils/port/PollBase.h
   td/utils/port/RwMutex.h
   td/utils/port/ServerSocketFd.h
+  td/utils/port/signals.h
   td/utils/port/SocketFd.h
   td/utils/port/Stat.h
   td/utils/port/thread.h
