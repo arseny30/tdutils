@@ -2,10 +2,21 @@
 
 #include "td/utils/port/config.h"
 
+#include "td/utils/common.h"
+#include "td/utils/Slice.h"
 #include "td/utils/Status.h"
 
 namespace td {
 
-Status setup_signals_alt_stack();
+Status setup_signals_alt_stack() WARN_UNUSED_RESULT;
+
+enum class SignalType { Abort, Error, Quit, Pipe, HangUp, User, Other };
+
+Status set_signal_handler(SignalType type, void (*func)(int)) WARN_UNUSED_RESULT;
+
+Status ignore_signal(SignalType type) WARN_UNUSED_RESULT;
+
+// writes data to the standard error stream in a signal-safe way
+void signal_write(Slice data, bool add_header = true);
 
 }  // namespace td
