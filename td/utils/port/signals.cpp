@@ -4,11 +4,14 @@
 #include <signal.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#endif
 
+#include <cerrno>
 #include <cstring>
 #include <ctime>
 #include <limits>
-#endif
+
+#include "td/utils/format.h"
 
 namespace td {
 
@@ -108,8 +111,7 @@ Status ignore_signal(SignalType type) {
 #endif
 }
 
-#ifdef TD_PORT_POSIX
-static void signal_write_int(char **s, Slice name, int i) {
+static void signal_safe_append_int(char **s, Slice name, int i) {
   if (i < 0) {
     i = std::numeric_limits<int>::max();
   }
@@ -131,7 +133,8 @@ static void signal_write_int(char **s, Slice name, int i) {
   *--*s = '[';
 }
 
-static void signal_write_data(Slice data) {
+static void signal_safe_write_data(Slice data) {
+#ifdef TD_PORT_POSIX
   while (!data.empty()) {
     auto res = write(2, data.begin(), data.size());
     if (res < 0 && errno == EINTR) {
@@ -145,11 +148,22 @@ static void signal_write_data(Slice data) {
       data.remove_prefix(res);
     }
   }
-}
 #endif
+#ifdef TD_PORT_WINDOWS
+// TODO write data
+#endif
+}
 
-void signal_write(Slice data, bool add_header) {
+static int get_process_id() {
 #ifdef TD_PORT_POSIX
+  return getpid();
+#endif
+#ifdef TD_PORT_WINDOWS
+  return GetCurrentProcessId();
+#endif
+}
+
+void signal_safe_write(Slice data, bool add_header) {
   auto old_errno = errno;
 
   if (add_header) {
@@ -158,16 +172,47 @@ void signal_write(Slice data, bool add_header) {
     char *header_end = header + HEADER_BUF_SIZE;
     char *header_begin = header_end;
 
-    signal_write_int(&header_begin, "time", static_cast<int>(std::time(nullptr)));
-    signal_write_int(&header_begin, "pid", getpid());
+    signal_safe_append_int(&header_begin, "time", static_cast<int>(std::time(nullptr)));
+    signal_safe_append_int(&header_begin, "pid", get_process_id());
 
-    signal_write_data(Slice(header_begin, header_end));
+    signal_safe_write_data(Slice(header_begin, header_end));
   }
 
-  signal_write_data(data);
+  signal_safe_write_data(data);
 
   errno = old_errno;
-#endif
+}
+
+void signal_safe_write_signal_number(int sig, bool add_header) {
+  char buf[100];
+  char *end = buf + sizeof(buf);
+  char *ptr = end;
+  *--ptr = '\n';
+  do {
+    *--ptr = static_cast<char>(sig % 10 + '0');
+    sig /= 10;
+  } while (sig != 0);
+
+  ptr -= 8;
+  std::memcpy(ptr, "Signal: ", 8);
+  signal_safe_write(Slice(ptr, end), add_header);
+}
+
+void signal_safe_write_pointer(void *p, bool add_header) {
+  std::uintptr_t addr = reinterpret_cast<std::uintptr_t>(p);
+  char buf[100];
+  char *end = buf + sizeof(buf);
+  char *ptr = end;
+  *--ptr = '\n';
+  do {
+    *--ptr = td::format::hex_digit(addr % 16);
+    addr /= 16;
+  } while (addr != 0);
+  *--ptr = 'x';
+  *--ptr = '0';
+  ptr -= 9;
+  std::memcpy(ptr, "Address: ", 9);
+  signal_safe_write(Slice(ptr, end), add_header);
 }
 
 }  // namespace td

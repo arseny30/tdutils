@@ -17,6 +17,10 @@ Status set_signal_handler(SignalType type, void (*func)(int)) WARN_UNUSED_RESULT
 Status ignore_signal(SignalType type) WARN_UNUSED_RESULT;
 
 // writes data to the standard error stream in a signal-safe way
-void signal_write(Slice data, bool add_header = true);
+void signal_safe_write(Slice data, bool add_header = true);
+
+void signal_safe_write_signal_number(int sig, bool add_header = true);
+
+void signal_safe_write_pointer(void *p, bool add_header = true);
 
 }  // namespace td
