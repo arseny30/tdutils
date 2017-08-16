@@ -112,8 +112,8 @@ Status set_signal_handler(SignalType type, void (*func)(int)) {
 #endif
 }
 
-#ifdef TD_PORT_POSIX
 using extended_signal_handler = void (*)(int sig, void *addr);
+#ifdef TD_PORT_POSIX
 static extended_signal_handler extended_signal_handlers[NSIG] = {};
 
 static void siginfo_handler(int signum, siginfo_t *info, void *data) {
@@ -155,23 +155,23 @@ Status ignore_signal(SignalType type) {
 #endif
 }
 
-static void signal_safe_append_int(char **s, Slice name, int i) {
-  if (i < 0) {
-    i = std::numeric_limits<int>::max();
+static void signal_safe_append_int(char **s, Slice name, int number) {
+  if (number < 0) {
+    number = std::numeric_limits<int>::max();
   }
 
   *--*s = ' ';
   *--*s = ']';
 
   do {
-    *--*s = static_cast<char>(i % 10 + '0');
-    i /= 10;
-  } while (i > 0);
+    *--*s = static_cast<char>(number % 10 + '0');
+    number /= 10;
+  } while (number > 0);
 
   *--*s = ' ';
 
-  for (auto i = static_cast<int>(name.size()) - 1; i >= 0; i--) {
-    *--*s = name[i];
+  for (auto pos = static_cast<int>(name.size()) - 1; pos >= 0; pos--) {
+    *--*s = name[pos];
   }
 
   *--*s = '[';
