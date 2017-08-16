@@ -102,6 +102,15 @@ Status set_signal_handler(SignalType type, void (*func)(int)) {
 #endif
 }
 
+Status set_runtime_signal_handler(int runtime_signal_number, void (*func)(int)) {
+#ifdef SIGRTMIN
+  CHECK(SIGRTMIN + runtime_signal_number <= SIGRTMAX);
+  return set_signal_handler_impl({SIGRTMIN + runtime_signal_number}, func == nullptr ? SIG_DFL : func);
+#else
+  return Status::OK();
+#endif
+}
+
 Status ignore_signal(SignalType type) {
 #ifdef TD_PORT_POSIX
   return set_signal_handler_impl(get_native_signals(type), SIG_IGN);
