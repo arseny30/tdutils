@@ -12,9 +12,11 @@ Status setup_signals_alt_stack() WARN_UNUSED_RESULT;
 
 enum class SignalType { Abort, Error, Quit, Pipe, HangUp, User, Other };
 
-Status set_signal_handler(SignalType type, void (*func)(int)) WARN_UNUSED_RESULT;
+Status set_signal_handler(SignalType type, void (*func)(int sig)) WARN_UNUSED_RESULT;
 
-Status set_runtime_signal_handler(int runtime_signal_number, void (*func)(int)) WARN_UNUSED_RESULT;
+Status set_extended_signal_handler(SignalType type, void (*func)(int sig, void *addr)) WARN_UNUSED_RESULT;
+
+Status set_runtime_signal_handler(int runtime_signal_number, void (*func)(int sig)) WARN_UNUSED_RESULT;
 
 Status ignore_signal(SignalType type) WARN_UNUSED_RESULT;
 

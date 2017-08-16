@@ -12,6 +12,7 @@
 #include <limits>
 
 #include "td/utils/format.h"
+#include "td/utils/logging.h"
 
 namespace td {
 
@@ -53,15 +54,24 @@ Status setup_signals_alt_stack() {
 }
 
 #ifdef TD_PORT_POSIX
-static Status set_signal_handler_impl(vector<int> signals, void (*func)(int)) {
+template <class F>
+static Status set_signal_handler_impl(vector<int> signals, F func, bool is_extended = false) {
   struct sigaction act;
   std::memset(&act, '\0', sizeof(act));
-  act.sa_handler = func;
+  if (is_extended) {  // TODO if constexpr, remove useless reinterpret_cast
+    act.sa_handler = reinterpret_cast<decltype(act.sa_handler)>(func);
+  } else {
+    act.sa_sigaction = reinterpret_cast<decltype(act.sa_sigaction)>(func);
+  }
   sigemptyset(&act.sa_mask);
   for (auto signal : signals) {
     sigaddset(&act.sa_mask, signal);
   }
   act.sa_flags = SA_RESTART | SA_ONSTACK;
+  if (is_extended) {
+    act.sa_flags |= SA_SIGINFO;
+  }
+
   for (auto signal : signals) {
     if (sigaction(signal, &act, nullptr) != 0) {
       auto sigaction_errno = errno;
@@ -96,6 +106,31 @@ static vector<int> get_native_signals(SignalType type) {
 Status set_signal_handler(SignalType type, void (*func)(int)) {
 #ifdef TD_PORT_POSIX
   return set_signal_handler_impl(get_native_signals(type), func == nullptr ? SIG_DFL : func);
+#endif
+#ifdef TD_PORT_WINDOWS
+  return Status::OK();  // nothing to do
+#endif
+}
+
+#ifdef TD_PORT_POSIX
+using extended_signal_handler = void (*)(int sig, void *addr);
+static extended_signal_handler extended_signal_handlers[NSIG] = {};
+
+static void siginfo_handler(int signum, siginfo_t *info, void *data) {
+  auto handler = extended_signal_handlers[signum];
+  handler(signum, info->si_addr);
+}
+#endif
+
+Status set_extended_signal_handler(SignalType type, extended_signal_handler func) {
+#ifdef TD_PORT_POSIX
+  CHECK(func != nullptr);
+  auto signals = get_native_signals(type);
+  for (auto signal : signals) {
+    CHECK(0 <= signal && signal < NSIG);
+    extended_signal_handlers[signal] = func;
+  }
+  return set_signal_handler_impl(std::move(signals), siginfo_handler, true);
 #endif
 #ifdef TD_PORT_WINDOWS
   return Status::OK();  // nothing to do
