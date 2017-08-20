@@ -1,5 +1,7 @@
 #include "td/utils/base64.h"
 
+#include "td/utils/misc.h"
+
 #include <algorithm>
 #include <iterator>
 
@@ -178,9 +180,10 @@ Result<string> base64url_decode(Slice base64) {
 
 string base64_filter(Slice slice) {
   string res;
+  res.reserve(slice.size());
   for (auto c : slice) {
-    if (c == '=' || c == '+' || c == '/' || isalnum(c)) {
-      res.append(1, c);
+    if (is_alnum(c) || c == '+' || c == '/' || c == '=') {
+      res += c;
     }
   }
   return res;

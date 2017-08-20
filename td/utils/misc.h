@@ -385,6 +385,10 @@ inline bool is_digit(char c) {
   return '0' <= c && c <= '9';
 }
 
+inline bool is_alnum(char c) {
+  return is_alpha(c) || is_digit(c);
+}
+
 inline bool is_hex_digit(char c) {
   if (is_digit(c)) {
     return true;
