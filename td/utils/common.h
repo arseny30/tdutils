@@ -65,14 +65,10 @@ using wstring = std::wstring;
 
 template <class ValueT>
 using vector = std::vector<ValueT>;
+
 template <class ValueT>
 using unique_ptr = std::unique_ptr<ValueT>;
-template <class ValueT>
-using shared_ptr = std::shared_ptr<ValueT>;
-template <class ValueT>
-using weak_ptr = std::weak_ptr<ValueT>;
 
-using std::make_shared;
 using std::make_unique;
 
 struct Unit {};

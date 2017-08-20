@@ -8,7 +8,7 @@
 namespace td {
 // It is draft object pool implementaion
 //
-// Compared with shared_ptr:
+// Compared with std::shared_ptr:
 // + WeakPtr are much faster. Just pointer copy. No barriers, no atomics.
 // - We can't destroy object, because we don't know if it is pointed to by some weak pointer
 //

@@ -475,9 +475,9 @@ class ChainBufferIterator {
 
  private:
   ChainBufferNodeReaderPtr head_;
-  BufferSlice reader_;      // copy of head_->slice_ TODO: we may use something without copy shared_ptr
-  bool need_sync_ = false;  // copy of head_->sync_flag_;
-  size_t offset_ = 0;       // position in union of all nodes.
+  BufferSlice reader_;      // copy of head_->slice_
+  bool need_sync_ = false;  // copy of head_->sync_flag_
+  size_t offset_ = 0;       // position in the union of all nodes
 
   ChainBufferIterator(ChainBufferNodeReaderPtr head, BufferSlice reader, bool need_sync, size_t offset)
       : head_(std::move(head)), reader_(std::move(reader)), need_sync_(need_sync), offset_(offset) {
