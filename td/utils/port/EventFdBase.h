@@ -1,6 +1,8 @@
 #pragma once
 
+#include "td/utils/common.h"
 #include "td/utils/port/Fd.h"
+#include "td/utils/Status.h"
 
 namespace td {
 class EventFdBase {

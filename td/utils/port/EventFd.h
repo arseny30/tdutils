@@ -1,6 +1,8 @@
 #pragma once
+
 #include "td/utils/port/config.h"
-// include both and let config.h decide
+
+// include all and let config.h decide
 #include "td/utils/port/detail/EventFdBsd.h"
 #include "td/utils/port/detail/EventFdLinux.h"
 #include "td/utils/port/detail/EventFdWindows.h"

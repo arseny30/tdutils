@@ -6,6 +6,7 @@
 #include "td/utils/port/detail/ThreadPthread.h"
 
 namespace td {
+
 #if TD_THREAD_PTHREAD
 using thread = detail::ThreadPthread;
 namespace this_thread = detail::this_thread_pthread;
@@ -15,4 +16,5 @@ namespace this_thread = detail::this_thread_stl;
 #else
 #error "Thread's implementation is not defined"
 #endif
+
 }  // namespace td

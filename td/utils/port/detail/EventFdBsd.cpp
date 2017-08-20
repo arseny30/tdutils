@@ -4,11 +4,11 @@ char disable_linker_warning_about_empty_file_event_fd_bsd_cpp TD_UNUSED;
 
 #ifdef TD_EVENTFD_BSD
 
+#include "td/utils/port/detail/EventFdBsd.h"
+
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <fcntl.h>
-
-#include "td/utils/port/detail/EventFdBsd.h"
 
 namespace td {
 namespace detail {

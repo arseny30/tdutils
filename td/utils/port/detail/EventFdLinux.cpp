@@ -4,9 +4,9 @@ char disable_linker_warning_about_empty_file_event_fd_linux_cpp TD_UNUSED;
 
 #ifdef TD_EVENTFD_LINUX
 
-#include <sys/eventfd.h>
-
 #include "td/utils/port/detail/EventFdLinux.h"
+
+#include <sys/eventfd.h>
 
 namespace td {
 namespace detail {
