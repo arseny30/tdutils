@@ -44,7 +44,7 @@ Result<SocketFd> SocketFd::from_native_fd(int fd) {
   fd_guard.dismiss();
 
   SocketFd socket;
-  socket.fd_ = Fd(fd, Fd::Mode::Own);
+  socket.fd_ = Fd(fd, Fd::Mode::Owner);
   return std::move(socket);
 }
 #endif
@@ -105,7 +105,7 @@ Status SocketFd::init(const IPAddress &address) {
       return Status::PosixError(connect_errno, PSLICE() << "Failed to connect to " << address);
     }
   }
-  fd_ = Fd(fd, Fd::Mode::Own);
+  fd_ = Fd(fd, Fd::Mode::Owner);
 #endif
 #ifdef TD_PORT_WINDOWS
   auto bind_addr = address.get_any_addr();
@@ -114,7 +114,7 @@ Status SocketFd::init(const IPAddress &address) {
     return Status::WsaError("Failed to bind a socket");
   }
 
-  fd_ = Fd(Fd::Type::SocketFd, Fd::Mode::Owner, fd, address.get_address_family());
+  fd_ = Fd::create_socket_fd(fd);
   fd_.connect(address);
 #endif
 

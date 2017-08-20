@@ -37,8 +37,8 @@ void EventFdBsd::init() {
   fcntl_errno = errno;
   LOG_IF(FATAL, err == -1) << Status::PosixError(fcntl_errno, "fcntl 1 failed");
 
-  in_ = Fd(fds[0], Fd::Mode::Own);
-  out_ = Fd(fds[1], Fd::Mode::Own);
+  in_ = Fd(fds[0], Fd::Mode::Owner);
+  out_ = Fd(fds[1], Fd::Mode::Owner);
 }
 
 bool EventFdBsd::empty() {

@@ -7,27 +7,30 @@
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
 
+#ifdef TD_PORT_WINDOWS
+#include "td/utils/port/IPAddress.h"
+#endif
+
 #ifdef TD_PORT_POSIX
+#include <errno.h>
 
 #include <atomic>
+#endif
 
 namespace td {
 
 class ObserverBase;
 
-template <class F>
-auto skip_eintr(F &&f) {
-  decltype(f()) res;
-  do {
-    res = f();
-  } while (res < 0 && errno == EINTR);
-  return res;
-}
+#ifdef TD_PORT_WINDOWS
+namespace detail {
+class EventFdWindows;
+}  // namespace detail
+#endif
 
 class Fd {
  public:
   // TODO: Close may be not enough
-  // Sometimes descriptor is half closed.
+  // Sometimes descriptor is half-closed.
 
   enum Flag : int32 {
     Write = 0x001,
@@ -38,7 +41,7 @@ class Fd {
     None = 0
   };
   using Flags = int32;
-  enum class Mode { Reference, Own };
+  enum class Mode { Reference, Owner };
 
   Fd();
   Fd(const Fd &) = delete;
@@ -47,46 +50,78 @@ class Fd {
   Fd &operator=(Fd &&other);
   ~Fd();
 
+#ifdef TD_PORT_POSIX
   Fd(int fd, Mode mode);
+#endif
+#ifdef TD_PORT_WINDOWS
+  static Fd create_file_fd(HANDLE handle);
 
-  Fd clone();
+  static Fd create_socket_fd(SOCKET sock);
+
+  static Fd create_server_socket_fd(SOCKET sock, int socket_family);
+
+  static Fd create_event_fd();
+#endif
+
+  Fd clone() const;
+
   static Fd &Stderr();
   static Fd &Stdout();
   static Fd &Stdin();
+
   static Status duplicate(const Fd &from, Fd &to);
 
   bool empty() const;
-  bool is_ref() const {
-    return mode_ == Mode::Reference;
-  }
 
   const Fd &get_fd() const;
   Fd &get_fd();
-
-  int get_native_fd() const;
-  int move_as_native_fd();
-
-  Status set_is_blocking(bool is_blocking);
 
   void set_observer(ObserverBase *observer);
   ObserverBase *get_observer() const;
 
   void close();
 
-  void update_flags_notify(Flags flags);
   void update_flags(Flags flags);
-  void clear_flags(Flags flags);
 
-  int32 get_flags() const;
+  Flags get_flags() const;
 
   bool has_pending_error() const;
   Status get_pending_error() WARN_UNUSED_RESULT;
 
   Result<size_t> write(Slice slice) WARN_UNUSED_RESULT;
-  Result<size_t> write_unsafe(Slice slice) WARN_UNUSED_RESULT;
   Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT;
 
+#ifdef TD_PORT_POSIX
+  Status set_is_blocking(bool is_blocking);
+
+  void update_flags_notify(Flags flags);
+  void clear_flags(Flags flags);
+
+  Result<size_t> write_unsafe(Slice slice) WARN_UNUSED_RESULT;
+
+  int get_native_fd() const;
+  int move_as_native_fd();
+#endif
+
+#ifdef TD_PORT_WINDOWS
+  Result<Fd> accept() WARN_UNUSED_RESULT;
+  void connect(const IPAddress &addr);
+
+  uint64 get_key() const;
+
+  HANDLE get_read_event();
+  HANDLE get_write_event();
+  void on_read_event();
+  void on_write_event();
+
+  SOCKET get_native_socket() const;
+  HANDLE get_io_handle() const;
+#endif
+
  private:
+  Mode mode_ = Mode::Owner;
+
+#ifdef TD_PORT_POSIX
   struct Info {
     std::atomic<int> refcnt;
     int32 flags;
@@ -102,9 +137,6 @@ class Fd {
   };
   static InfoSet fd_info_set_;
 
-  int fd_ = -1;
-  Mode mode_ = Mode::Own;
-
   static Fd stderr_;
   static Fd stdout_;
   static Fd stdin_;
@@ -116,77 +148,12 @@ class Fd {
 
   void close_ref();
   void close_own();
-};
 
-#endif  // TD_PORT_POSIX
-
+  int fd_ = -1;
+#endif
 #ifdef TD_PORT_WINDOWS
+  class FdImpl;
 
-#include "td/utils/port/IPAddress.h"
-
-namespace td {
-
-class ObserverBase;
-
-namespace detail {
-class EventFdWindows;
-class FdImpl;
-}  // namespace detail
-
-// like linux fd.
-// also it handles fd destruction
-// descriptor(handler) itself should be created by some external function
-class Fd {
- public:
-  enum Flag : int32 {
-    Write = 0x001,
-    Read = 0x002,
-    Close = 0x004,
-    Error = 0x008,
-    All = Write | Read | Close | Error,
-    None = 0
-  };
-  using Flags = int32;
-  Fd() = default;
-
-  const Fd &get_fd() const;
-  Fd &get_fd();
-
-  Result<size_t> write(Slice slice) WARN_UNUSED_RESULT;
-  Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT;
-
-  bool empty() const;
-  void close();
-
-  Result<Fd> accept() WARN_UNUSED_RESULT;
-  void connect(const IPAddress &addr);
-
-  Fd clone() const;
-  uint64 get_key() const;
-
-  void set_observer(ObserverBase *observer);
-  ObserverBase *get_observer() const;
-
-  Flags get_flags() const;
-  void update_flags(Flags flags);
-
-  bool has_pending_error() const;
-  Status get_pending_error() WARN_UNUSED_RESULT;
-
-  HANDLE get_read_event();
-  HANDLE get_write_event();
-  void on_read_event();
-  void on_write_event();
-
-  SOCKET get_native_socket() const;
-  HANDLE get_io_handle() const;
-
-  static Fd &Stderr();
-  static Fd &Stdin();
-  static Fd &Stdout();
-  static Status duplicate(const Fd &from, Fd &to);
-
- private:
   enum class Type {
     Empty,
     EventFd,
@@ -195,26 +162,30 @@ class Fd {
     SocketFd,
     ServerSocketFd,
   };
-  enum class Mode { Owner, Reference };
-
-  friend class FileFd;
-  friend class SocketFd;
-  friend class ServerSocketFd;
-  friend class detail::EventFdWindows;
-  friend class detail::FdImpl;
-
-  Mode mode_ = Mode::Owner;
-  shared_ptr<detail::FdImpl> impl_;
 
   Fd(Type type, Mode mode, HANDLE handle);
-  Fd(Type type, Mode mode, SOCKET sock, int32 socket_family = 0);
-  explicit Fd(shared_ptr<detail::FdImpl> impl);
+  Fd(Type type, Mode mode, SOCKET sock, int socket_family);
+  explicit Fd(std::shared_ptr<FdImpl> impl);
+
+  friend class detail::EventFdWindows;  // for release and acquire
 
   void acquire();
   void release();
+
+  std::shared_ptr<FdImpl> impl_;
+#endif
 };
 
-#endif  // TD_PORT_WINDOWS
+#ifdef TD_PORT_POSIX
+template <class F>
+auto skip_eintr(F &&f) {
+  decltype(f()) res;
+  do {
+    res = f();
+  } while (res < 0 && errno == EINTR);
+  return res;
+}
+#endif
 
 template <class FdT>
 bool can_read(const FdT &fd) {

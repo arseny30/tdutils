@@ -10,7 +10,7 @@ namespace td {
 namespace detail {
 
 void EventFdWindows::init() {
-  fd_ = Fd(Fd::Type::EventFd, Fd::Mode::Owner, INVALID_HANDLE_VALUE);
+  fd_ = Fd::create_event_fd();
 }
 
 bool EventFdWindows::empty() {

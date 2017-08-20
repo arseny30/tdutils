@@ -3,8 +3,13 @@
 #include "td/utils/port/config.h"
 
 #ifdef TD_POLL_WINEVENT
+#include "td/utils/common.h"
 #include "td/utils/misc.h"
+#include "td/utils/port/Fd.h"
 #include "td/utils/port/PollBase.h"
+#include "td/utils/Status.h"
+
+#include <utility>
 
 namespace td {
 namespace detail {

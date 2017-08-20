@@ -55,7 +55,7 @@ Fd::Fd(int fd, Mode mode) : fd_(fd), mode_(mode) {
   if (old_ref_cnt == 0) {
     old_ref_cnt = info->refcnt.load(std::memory_order_acquire);
     CHECK(old_ref_cnt == 0);
-    CHECK(mode_ == Mode::Own) << tag("fd", fd_);
+    CHECK(mode_ == Mode::Owner) << tag("fd", fd_);
     VLOG(fd) << "FD created [fd:" << fd_ << "]";
 
     auto fcntl_res = fcntl(fd_, F_GETFD);
@@ -63,7 +63,7 @@ Fd::Fd(int fd, Mode mode) : fd_(fd), mode_(mode) {
     LOG_IF(FATAL, fcntl_res == -1) << Status::PosixError(fcntl_errno, "fcntl F_GET_FD failed");
 
     info->refcnt.store(1, std::memory_order_relaxed);
-    CHECK(!is_ref());
+    CHECK(mode_ != Mode::Reference);
     CHECK(info->observer == nullptr);
     info->flags = 0;
     info->observer = nullptr;
@@ -73,7 +73,7 @@ Fd::Fd(int fd, Mode mode) : fd_(fd), mode_(mode) {
     auto fcntl_errno = errno;
     LOG_IF(FATAL, fcntl_res == -1) << Status::PosixError(fcntl_errno, "fcntl F_GET_FD failed");
 
-    CHECK(is_ref());
+    CHECK(mode_ == Mode::Reference);
     info->refcnt.fetch_add(1, std::memory_order_relaxed);
   }
 }
@@ -104,7 +104,7 @@ Fd &Fd::operator=(Fd &&other) {
   return *this;
 }
 
-Fd Fd::clone() {
+Fd Fd::clone() const {
   return Fd(fd_, Mode::Reference);
 }
 
@@ -167,7 +167,7 @@ void Fd::close_ref() {
 }
 
 void Fd::close_own() {
-  CHECK(mode_ == Mode::Own);
+  CHECK(mode_ == Mode::Owner);
   VLOG(fd) << "FD closed [fd:" << fd_ << "]";
 
   clear_info();
@@ -181,7 +181,7 @@ void Fd::close() {
       case Mode::Reference:
         close_ref();
         break;
-      case Mode::Own:
+      case Mode::Owner:
         close_own();
         break;
     }
@@ -200,7 +200,7 @@ const Fd::Info *Fd::get_info() const {
 
 void Fd::clear_info() {
   CHECK(!empty());
-  CHECK(!is_ref());
+  CHECK(mode_ != Mode::Reference);
 
   auto *info = get_info();
   int old_ref_cnt = info->refcnt.load(std::memory_order_relaxed);
@@ -243,7 +243,7 @@ void Fd::update_flags_inner(int32 new_flags, bool notify_flag) {
   }
 }
 
-int32 Fd::get_flags() const {
+Fd::Flags Fd::get_flags() const {
   return get_info()->flags;
 }
 
@@ -252,10 +252,10 @@ void Fd::clear_flags(Flags flags) {
 }
 
 bool Fd::has_pending_error() const {
-  return get_flags() & Fd::Error;
+  return (get_flags() & Fd::Flag::Error) != 0;
 }
 Status Fd::get_pending_error() {
-  if (!(get_flags() & Fd::Error)) {
+  if (!has_pending_error()) {
     return Status::OK();
   }
   clear_flags(Fd::Error);
@@ -378,14 +378,13 @@ Status Fd::set_is_blocking(bool is_blocking) {
 
 #ifdef TD_PORT_WINDOWS
 
-namespace detail {
-class FdImpl {
+class Fd::FdImpl {
  public:
   FdImpl(Fd::Type type, HANDLE handle)
       : type_(type), handle_(handle), async_mode_(type_ == Fd::Type::EventFd || type_ == Fd::Type::StdinFileFd) {
     init();
   }
-  FdImpl(Fd::Type type, SOCKET sock, int32 socket_family)
+  FdImpl(Fd::Type type, SOCKET sock, int socket_family)
       : type_(type), socket_(sock), socket_family_(socket_family), async_mode_(true) {
     init();
   }
@@ -446,7 +445,7 @@ class FdImpl {
   }
 
   Status get_pending_error() {
-    if (!(get_flags() & Fd::Error)) {
+    if (!has_pending_error()) {
       return Status::OK();
     }
     clear_flags(Fd::Error);
@@ -663,7 +662,7 @@ class FdImpl {
   HANDLE handle_ = INVALID_HANDLE_VALUE;
   SOCKET socket_ = INVALID_SOCKET;
 
-  int32 socket_family_ = 0;
+  int socket_family_ = 0;
 
   bool async_mode_ = false;
 
@@ -753,7 +752,7 @@ class FdImpl {
     if (status == 0) {
       return on_error(Status::OsError("AcceptEx failed"), Fd::Flag::Write);
     }
-    accepted_.push_back(Fd(Fd::Type::SocketFd, Fd::Mode::Owner, accept_socket_));
+    accepted_.push_back(Fd::create_socket_fd(accept_socket_));
     accept_socket_ = INVALID_SOCKET;
     update_flags_notify(Fd::Flag::Read);
   }
@@ -836,7 +835,7 @@ class FdImpl {
         AcceptEx(socket_, accept_socket_, addr_buf_, 0, MAX_ADDR_SIZE, MAX_ADDR_SIZE, &bytes_read, &read_overlapped_);
     if (status != 0) {
       ResetEvent(read_event_);
-      accepted_.push_back(Fd(Fd::Type::SocketFd, Fd::Mode::Owner, accept_socket_));
+      accepted_.push_back(Fd::create_socket_fd(accept_socket_));
       accept_socket_ = INVALID_SOCKET;
       update_flags_notify(Fd::Flag::Read);
       return;
@@ -879,7 +878,29 @@ class FdImpl {
   }
 };
 
-}  // namespace detail
+Fd::Fd() = default;
+
+Fd::Fd(Fd &&other) = default;
+
+Fd &Fd::operator=(Fd &&other) = default;
+
+Fd::~Fd() = default;
+
+Fd Fd::create_file_fd(HANDLE handle) {
+  return Fd(Fd::Type::FileFd, Fd::Mode::Owner, handle);
+}
+
+Fd Fd::create_socket_fd(SOCKET sock) {
+  return Fd(Fd::Type::SocketFd, Fd::Mode::Owner, sock, AF_UNSPEC);
+}
+
+Fd Fd::create_server_socket_fd(SOCKET sock, int socket_family) {
+  return Fd(Fd::Type::ServerSocketFd, Fd::Mode::Owner, sock, socket_family);
+}
+
+Fd Fd::create_event_fd() {
+  return Fd(Fd::Type::EventFd, Fd::Mode::Owner, INVALID_HANDLE_VALUE);
+}
 
 const Fd &Fd::get_fd() const {
   return *this;
@@ -928,15 +949,12 @@ ObserverBase *Fd::get_observer() const {
   return impl_->get_observer();
 }
 
-int32 Fd::get_flags() const {
+Fd::Flags Fd::get_flags() const {
   return impl_->get_flags();
 }
 void Fd::update_flags(Flags flags) {
   impl_->update_flags(flags);
 }
-//void Fd::update_flags_notify(Flags flags) {
-//  impl_->update_flags_notify(flags);
-//}
 
 void Fd::on_read_event() {
   impl_->on_read_event();
@@ -1008,16 +1026,20 @@ Status Fd::duplicate(const Fd &from, Fd &to) {
   return Status::Error("Not supported");
 }
 
-Fd::Fd(Type type, Mode mode, HANDLE handle) : mode_(mode), impl_(make_shared<detail::FdImpl>(type, handle)) {
+Fd::Fd(Type type, Mode mode, HANDLE handle) : mode_(mode), impl_(std::make_shared<FdImpl>(type, handle)) {
 }
-Fd::Fd(Type type, Mode mode, SOCKET sock, int32 socket_family)
-    : mode_(mode), impl_(make_shared<detail::FdImpl>(type, sock, socket_family)) {
+
+Fd::Fd(Type type, Mode mode, SOCKET sock, int socket_family)
+    : mode_(mode), impl_(std::make_shared<FdImpl>(type, sock, socket_family)) {
 }
-Fd::Fd(shared_ptr<detail::FdImpl> impl) : mode_(Mode::Reference), impl_(std::move(impl)) {
+
+Fd::Fd(std::shared_ptr<FdImpl> impl) : mode_(Mode::Reference), impl_(std::move(impl)) {
 }
+
 void Fd::acquire() {
   return impl_->acquire();
 }
+
 void Fd::release() {
   return impl_->release();
 }
@@ -1034,6 +1056,7 @@ class InitWSA {
     }
   }
 };
+
 static InitWSA init_wsa;
 
 #endif

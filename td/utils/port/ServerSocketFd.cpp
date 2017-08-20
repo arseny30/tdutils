@@ -194,10 +194,10 @@ Status ServerSocketFd::init(int32 port, CSlice addr) {
   }
 
 #ifdef TD_PORT_POSIX
-  fd_ = Fd(fd, Fd::Mode::Own);
+  fd_ = Fd(fd, Fd::Mode::Owner);
 #endif
 #ifdef TD_PORT_WINDOWS
-  fd_ = Fd(Fd::Type::ServerSocketFd, Fd::Mode::Owner, fd, address.get_address_family());
+  fd_ = Fd::create_server_socket_fd(fd, address.get_address_family());
 #endif
 
   fd_quard.dismiss();

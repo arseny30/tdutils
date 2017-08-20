@@ -16,7 +16,7 @@ void EventFdLinux::init() {
   auto eventfd_errno = errno;
   LOG_IF(FATAL, fd == -1) << Status::PosixError(eventfd_errno, "eventfd call failed");
 
-  fd_ = Fd(fd, Fd::Mode::Own);
+  fd_ = Fd(fd, Fd::Mode::Owner);
 }
 
 bool EventFdLinux::empty() {

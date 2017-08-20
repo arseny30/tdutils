@@ -73,7 +73,7 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
   }
 
   FileFd result;
-  result.fd_ = Fd(native_fd, Fd::Mode::Own);
+  result.fd_ = Fd(native_fd, Fd::Mode::Owner);
   result.fd_.update_flags(Fd::Flag::Write);
   return std::move(result);
 #endif
@@ -146,7 +146,7 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
     }
   }
   FileFd result;
-  result.fd_ = Fd(Fd::Type::FileFd, Fd::Mode::Owner, handle);
+  result.fd_ = Fd::create_file_fd(handle);
   result.fd_.update_flags(Fd::Flag::Write);
   return std::move(result);
 #endif
@@ -220,7 +220,7 @@ Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
       pwrite_errno, PSLICE() << "Pwrite to [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
   if (pwrite_errno != EAGAIN
 #if EAGAIN != EWOULDBLOCK
-      && read_errno != EWOULDBLOCK
+      && pwrite_errno != EWOULDBLOCK
 #endif
       && pwrite_errno != EIO) {
     LOG(ERROR) << error;
@@ -257,7 +257,7 @@ Result<size_t> FileFd::pread(MutableSlice slice, off_t offset) {
       pread_errno, PSLICE() << "Pread from [fd = " << native_fd << "] at [offset = " << offset << "] has failed");
   if (pread_errno != EAGAIN
 #if EAGAIN != EWOULDBLOCK
-      && read_errno != EWOULDBLOCK
+      && pread_errno != EWOULDBLOCK
 #endif
       && pread_errno != EIO) {
     LOG(ERROR) << error;
