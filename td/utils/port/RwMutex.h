@@ -2,100 +2,12 @@
 
 #include "td/utils/port/config.h"
 
-#ifdef TD_PORT_WINDOWS
-
 #include "td/utils/common.h"
 #include "td/utils/Status.h"
-
-namespace td {
-class RwMutex {
- public:
-  RwMutex() {
-    init();
-  }
-  RwMutex(const RwMutex &) = delete;
-  RwMutex &operator=(const RwMutex &) = delete;
-  RwMutex(RwMutex &&other) {
-    init();
-    other.clear();
-  }
-  RwMutex &operator=(RwMutex &&other) {
-    other.clear();
-    return *this;
-  }
-
-  ~RwMutex() {
-    clear();
-  }
-
-  bool empty() const {
-    return !valid_;
-  }
-  void init() {
-    CHECK(empty());
-    valid_ = true;
-    mutex_ = make_unique<SRWLOCK>();
-    InitializeSRWLock(mutex_.get());
-  }
-  void clear() {
-    if (valid_) {
-      valid_ = false;
-      mutex_.release();
-    }
-  }
-  struct ReadUnlock {
-    void operator()(RwMutex *ptr) {
-      ptr->unlock_read_unsafe();
-    }
-  };
-  struct WriteUnlock {
-    void operator()(RwMutex *ptr) {
-      ptr->unlock_write_unsafe();
-    }
-  };
-
-  using ReadLock = std::unique_ptr<RwMutex, ReadUnlock>;
-  using WriteLock = std::unique_ptr<RwMutex, WriteUnlock>;
-
-  Result<ReadLock> lock_read() WARN_UNUSED_RESULT {
-    lock_read_unsafe();
-    return ReadLock(this);
-  }
-  Result<WriteLock> lock_write() WARN_UNUSED_RESULT {
-    lock_write_unsafe();
-    return WriteLock(this);
-  }
-
-  void lock_read_unsafe() {
-    CHECK(!empty());
-    AcquireSRWLockShared(mutex_.get());
-  }
-  void lock_write_unsafe() {
-    CHECK(!empty());
-    AcquireSRWLockExclusive(mutex_.get());
-  }
-  void unlock_read_unsafe() {
-    CHECK(!empty());
-    ReleaseSRWLockShared(mutex_.get());
-  }
-  void unlock_write_unsafe() {
-    CHECK(!empty());
-    ReleaseSRWLockExclusive(mutex_.get());
-  }
-
- private:
-  bool valid_ = false;
-  unique_ptr<SRWLOCK> mutex_;
-};
-}  // namespace td
-#endif  // TD_PORT_WINDOWS
 
 #ifdef TD_PORT_POSIX
-
-#include "td/utils/common.h"
-#include "td/utils/Status.h"
-
 #include <pthread.h>
+#endif
 
 namespace td {
 class RwMutex {
@@ -118,18 +30,13 @@ class RwMutex {
   }
 
   bool empty() const {
-    return !valid_;
+    return !is_valid_;
   }
-  void init() {
-    valid_ = true;
-    pthread_rwlock_init(&mutex_, nullptr);
-  }
-  void clear() {
-    if (valid_) {
-      pthread_rwlock_destroy(&mutex_);
-      valid_ = false;
-    }
-  }
+
+  void init();
+
+  void clear();
+
   struct ReadUnlock {
     void operator()(RwMutex *ptr) {
       ptr->unlock_read_unsafe();
@@ -143,32 +50,98 @@ class RwMutex {
 
   using ReadLock = std::unique_ptr<RwMutex, ReadUnlock>;
   using WriteLock = std::unique_ptr<RwMutex, WriteUnlock>;
+
   Result<ReadLock> lock_read() WARN_UNUSED_RESULT {
     lock_read_unsafe();
     return ReadLock(this);
   }
+
   Result<WriteLock> lock_write() WARN_UNUSED_RESULT {
     lock_write_unsafe();
     return WriteLock(this);
   }
 
-  void lock_read_unsafe() {
-    // TODO error handling
-    pthread_rwlock_rdlock(&mutex_);
-  }
-  void lock_write_unsafe() {
-    pthread_rwlock_wrlock(&mutex_);
-  }
-  void unlock_read_unsafe() {
-    pthread_rwlock_unlock(&mutex_);
-  }
-  void unlock_write_unsafe() {
-    pthread_rwlock_unlock(&mutex_);
-  }
+  void lock_read_unsafe();
+
+  void lock_write_unsafe();
+
+  void unlock_read_unsafe();
+
+  void unlock_write_unsafe();
 
  private:
-  bool valid_;
+  bool is_valid_ = false;
+#ifdef TD_PORT_POSIX
   pthread_rwlock_t mutex_;
+#endif
+#ifdef TD_PORT_WINDOWS
+  unique_ptr<SRWLOCK> mutex_;
+#endif
 };
+
+inline void RwMutex::init() {
+  CHECK(empty());
+  is_valid_ = true;
+#ifdef TD_PORT_POSIX
+  pthread_rwlock_init(&mutex_, nullptr);
+#endif
+#ifdef TD_PORT_WINDOWS
+  mutex_ = make_unique<SRWLOCK>();
+  InitializeSRWLock(mutex_.get());
+#endif
+}
+
+inline void RwMutex::clear() {
+  if (is_valid_) {
+#ifdef TD_PORT_POSIX
+    pthread_rwlock_destroy(&mutex_);
+#endif
+#ifdef TD_PORT_WINDOWS
+    mutex_.release();
+#endif
+    is_valid_ = false;
+  }
+}
+
+inline void RwMutex::lock_read_unsafe() {
+  CHECK(!empty());
+// TODO error handling
+#ifdef TD_PORT_POSIX
+  pthread_rwlock_rdlock(&mutex_);
+#endif
+#ifdef TD_PORT_WINDOWS
+  AcquireSRWLockShared(mutex_.get());
+#endif
+}
+
+inline void RwMutex::lock_write_unsafe() {
+  CHECK(!empty());
+#ifdef TD_PORT_POSIX
+  pthread_rwlock_wrlock(&mutex_);
+#endif
+#ifdef TD_PORT_WINDOWS
+  AcquireSRWLockExclusive(mutex_.get());
+#endif
+}
+
+inline void RwMutex::unlock_read_unsafe() {
+  CHECK(!empty());
+#ifdef TD_PORT_POSIX
+  pthread_rwlock_unlock(&mutex_);
+#endif
+#ifdef TD_PORT_WINDOWS
+  ReleaseSRWLockShared(mutex_.get());
+#endif
+}
+
+inline void RwMutex::unlock_write_unsafe() {
+  CHECK(!empty());
+#ifdef TD_PORT_POSIX
+  pthread_rwlock_unlock(&mutex_);
+#endif
+#ifdef TD_PORT_WINDOWS
+  ReleaseSRWLockExclusive(mutex_.get());
+#endif
+}
+
 }  // namespace td
-#endif  // TD_PORT_POSIX
