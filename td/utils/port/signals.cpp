@@ -5,6 +5,9 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #endif
+#ifdef TD_PORT_WINDOWS
+#include <csignal>
+#endif
 
 #include <cerrno>
 #include <cstring>
@@ -102,28 +105,59 @@ static vector<int> get_native_signals(SignalType type) {
   }
 }
 #endif
+#ifdef TD_PORT_WINDOWS
+static Status set_signal_handler_impl(vector<int> signals, void (*func)(int sig), bool /*unused*/ = true) {
+  for (auto signal : signals) {
+    if (std::signal(signal, func) == SIG_ERR) {
+      return Status::Error("Failed to set signal handler");
+    }
+  }
+  return Status::OK();
+}
+
+static vector<int> get_native_signals(SignalType type) {
+  switch (type) {
+    case SignalType::Abort:
+      return {SIGABRT};
+    case SignalType::Error:
+      return {SIGILL, SIGFPE, SIGSEGV};
+    case SignalType::Quit:
+      return {SIGINT, SIGTERM};
+    case SignalType::Pipe:
+      return {};
+    case SignalType::HangUp:
+      return {};
+    case SignalType::User:
+      return {};
+    case SignalType::Other:
+      return {};
+    default:
+      return {};
+  }
+}
+#endif
 
 Status set_signal_handler(SignalType type, void (*func)(int)) {
-#ifdef TD_PORT_POSIX
   return set_signal_handler_impl(get_native_signals(type), func == nullptr ? SIG_DFL : func);
-#endif
-#ifdef TD_PORT_WINDOWS
-  return Status::OK();  // nothing to do
-#endif
 }
 
 using extended_signal_handler = void (*)(int sig, void *addr);
-#ifdef TD_PORT_POSIX
 static extended_signal_handler extended_signal_handlers[NSIG] = {};
 
+#ifdef TD_PORT_POSIX
 static void siginfo_handler(int signum, siginfo_t *info, void *data) {
   auto handler = extended_signal_handlers[signum];
   handler(signum, info->si_addr);
 }
 #endif
+#ifdef TD_PORT_WINDOWS
+static void siginfo_handler(int signum) {
+  auto handler = extended_signal_handlers[signum];
+  handler(signum, nullptr);
+}
+#endif
 
 Status set_extended_signal_handler(SignalType type, extended_signal_handler func) {
-#ifdef TD_PORT_POSIX
   CHECK(func != nullptr);
   auto signals = get_native_signals(type);
   for (auto signal : signals) {
@@ -131,10 +165,6 @@ Status set_extended_signal_handler(SignalType type, extended_signal_handler func
     extended_signal_handlers[signal] = func;
   }
   return set_signal_handler_impl(std::move(signals), siginfo_handler, true);
-#endif
-#ifdef TD_PORT_WINDOWS
-  return Status::OK();  // nothing to do
-#endif
 }
 
 Status set_runtime_signal_handler(int runtime_signal_number, void (*func)(int)) {
@@ -147,12 +177,7 @@ Status set_runtime_signal_handler(int runtime_signal_number, void (*func)(int)) 
 }
 
 Status ignore_signal(SignalType type) {
-#ifdef TD_PORT_POSIX
   return set_signal_handler_impl(get_native_signals(type), SIG_IGN);
-#endif
-#ifdef TD_PORT_WINDOWS
-  return Status::OK();  // nothing to do
-#endif
 }
 
 static void signal_safe_append_int(char **s, Slice name, int number) {
@@ -194,7 +219,9 @@ static void signal_safe_write_data(Slice data) {
   }
 #endif
 #ifdef TD_PORT_WINDOWS
-// TODO write data
+  HANDLE stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
+  DWORD bytes_written;
+  WriteFile(stderr_handle, data.data(), static_cast<DWORD>(data.size()), &bytes_written, nullptr);
 #endif
 }
 
