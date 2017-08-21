@@ -36,27 +36,7 @@ int32 ServerSocketFd::get_flags() const {
 }
 
 Status ServerSocketFd::get_pending_error() {
-#ifdef TD_PORT_POSIX
-  if (!(fd_.get_flags() & Fd::Error)) {
-    return Status::OK();
-  }
-  fd_.clear_flags(Fd::Error);
-  int error = 0;
-  socklen_t errlen = sizeof(error);
-  if (getsockopt(fd_.get_native_fd(), SOL_SOCKET, SO_ERROR, static_cast<void *>(&error), &errlen) == 0) {
-    if (error == 0) {
-      return Status::OK();
-    }
-    return Status::PosixError(error, PSLICE() << "Error on socket [fd_ = " << fd_.get_native_fd() << "]");
-  }
-  auto getsockopt_errno = errno;
-  LOG(INFO) << "Can't load errno = " << getsockopt_errno;
-  return Status::PosixError(getsockopt_errno,
-                            PSLICE() << "Can't load error on socket [fd_ = " << fd_.get_native_fd() << "]");
-#endif
-#ifdef TD_PORT_WINDOWS
   return fd_.get_pending_error();
-#endif
 }
 
 Result<SocketFd> ServerSocketFd::accept() {
@@ -122,8 +102,7 @@ Status ServerSocketFd::init(int32 port, CSlice addr) {
   auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
 #ifdef TD_PORT_POSIX
   if (fd == -1) {
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   if (fd == INVALID_SOCKET) {
 #endif
     return OS_SOCKET_ERROR("Failed to create a socket");

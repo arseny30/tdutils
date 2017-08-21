@@ -12,6 +12,7 @@
 #include <atomic>
 
 #include <fcntl.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -252,12 +253,23 @@ void Fd::clear_flags(Flags flags) {
 bool Fd::has_pending_error() const {
   return (get_flags() & Fd::Flag::Error) != 0;
 }
+
 Status Fd::get_pending_error() {
   if (!has_pending_error()) {
     return Status::OK();
   }
   clear_flags(Fd::Error);
-  return Status::Error(PSLICE() << "Can't load error on generic fd [fd_=" << get_native_fd() << "]");
+  int error = 0;
+  socklen_t errlen = sizeof(error);
+  if (getsockopt(fd_, SOL_SOCKET, SO_ERROR, static_cast<void *>(&error), &errlen) == 0) {
+    if (error == 0) {
+      return Status::OK();
+    }
+    return Status::PosixError(error, PSLICE() << "Error on socket [fd_ = " << fd_ << "]");
+  }
+  auto status = OS_SOCKET_ERROR(PSLICE() << "Can't load error on socket [fd_ = " << fd_ << "]");
+  LOG(INFO) << "Can't load pending socket error: " << status;
+  return status;
 }
 
 Result<size_t> Fd::write_unsafe(Slice slice) {
@@ -1071,8 +1083,7 @@ static InitWSA init_wsa;
 namespace detail {
 #ifdef TD_PORT_POSIX
 Status set_native_socket_is_blocking(int fd, bool is_blocking) {
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
 Status set_native_socket_is_blocking(SOCKET fd, bool is_blocking) {
 #endif
 #ifdef TD_PORT_POSIX
