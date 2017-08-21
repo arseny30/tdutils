@@ -56,4 +56,3 @@ if (NOT CMAKE_CROSSCOMPILING)
     DEPENDS auto/extension_to_mime_type.gperf
   )
 endif()
-
