@@ -1,6 +1,11 @@
 #pragma once
+
 #include "td/utils/Status.h"
+
+#include <utility>
+
 namespace td {
+
 template <class T>
 class optional {
  public:
@@ -21,4 +26,5 @@ class optional {
  private:
   Result<T> impl_;
 };
+
 }  // namespace td

@@ -41,7 +41,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
-#include <utility>  // for std::move and std::forward
+#include <utility>
 #include <vector>
 
 #define TD_DEBUG

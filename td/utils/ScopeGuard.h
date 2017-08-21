@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <type_traits>
+#include <utility>
 
 template <class FunctionT = std::function<void(void)>>
 class ScopeGuard {

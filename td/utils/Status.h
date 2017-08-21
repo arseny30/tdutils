@@ -10,6 +10,7 @@
 #include <cerrno>
 #include <cstring>  // for strerror
 #include <new>
+#include <utility>
 
 #if TD_PORT_WINDOWS
 #include <codecvt>

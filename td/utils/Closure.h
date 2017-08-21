@@ -6,6 +6,7 @@
 
 #include <tuple>
 #include <type_traits>
+#include <utility>
 
 //
 // Essentially we have:
@@ -43,8 +44,7 @@
 // Var->Ref          + / copy->+   // khm. It will complile, but won't work
 //
 // So I will use common idiom: forward references
-// If delay is needed, just std::forward data to temporary storage, and sdt::move them when call
-// is executed.
+// If delay is needed, just std::forward data to temporary storage, and std::move them when call is executed.
 //
 //
 // create_immediate_closure(&Actor::func, arg1, arg2, ..., argn).run(actor)
