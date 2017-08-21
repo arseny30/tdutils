@@ -161,8 +161,11 @@ Status set_extended_signal_handler(SignalType type, extended_signal_handler func
   CHECK(func != nullptr);
   auto signals = get_native_signals(type);
   for (auto signal : signals) {
-    CHECK(0 <= signal && signal < NSIG);
-    extended_signal_handlers[signal] = func;
+    if (0 <= signal && signal < NSIG) {
+      extended_signal_handlers[signal] = func;
+    } else {
+      UNREACHABLE();
+    }
   }
   return set_signal_handler_impl(std::move(signals), siginfo_handler, true);
 }

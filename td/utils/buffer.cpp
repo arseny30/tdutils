@@ -1,6 +1,5 @@
 #include "td/utils/buffer.h"
 
-#include <cstdlib>  // for malloc
 #include <new>
 
 namespace td {
@@ -72,17 +71,19 @@ void BufferAllocator::dec_ref_cnt(BufferRaw *ptr) {
     auto buf_size = std::max(sizeof(BufferRaw), offsetof(BufferRaw, data_) + ptr->data_size_);
     buffer_mem -= buf_size;
     ptr->~BufferRaw();
-    std::free(ptr);
+    delete[] ptr;
   }
 }
 
 BufferRaw *BufferAllocator::create_buffer_raw(size_t size) {
   size = (size + 7) & -8;
 
-  auto buf_size = std::max(sizeof(BufferRaw), offsetof(BufferRaw, data_) + size);
+  auto buf_size = offsetof(BufferRaw, data_) + size;
+  if (buf_size < sizeof(BufferRaw)) {
+    buf_size = sizeof(BufferRaw);
+  }
   buffer_mem += buf_size;
-  auto *buffer_raw = reinterpret_cast<BufferRaw *>(std::malloc(buf_size));
-  CHECK(buffer_raw);
+  auto *buffer_raw = reinterpret_cast<BufferRaw *>(new char[buf_size]);
   new (buffer_raw) BufferRaw();
   buffer_raw->data_size_ = size;
   buffer_raw->begin_ = 0;
