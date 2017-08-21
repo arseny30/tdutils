@@ -571,7 +571,7 @@ class Fd::FdImpl {
   Result<Fd> accept() {
     if (accepted_.empty()) {
       clear_flags(Fd::Flag::Read);
-      return Status::PosixError<EAGAIN>();  // TODO: do not export system specific errors.
+      return Status::Error(-1, "Operation would block");
     }
     auto res = std::move(accepted_.back());
     accepted_.pop_back();

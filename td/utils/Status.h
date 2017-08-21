@@ -129,16 +129,11 @@ class Status {
     return status.clone_static();
   }
 
-  template <int Code>
-  static Status PosixError() {
-    static Status status(true, ErrorType::os, Code, "");
-    return status.clone_static();
-  }
-
   static Status InvalidId() WARN_UNUSED_RESULT {
     static Status status(true, ErrorType::general, 0, "Invalid Id");
     return status.clone_static();
   }
+
   static Status Hangup() WARN_UNUSED_RESULT {
     static Status status(true, ErrorType::general, 0, "Hangup");
     return status.clone_static();

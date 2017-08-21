@@ -50,16 +50,14 @@ Result<SocketFd> ServerSocketFd::accept() {
     return SocketFd::from_native_fd(r_fd);
   }
 
-  if (accept_errno == EAGAIN) {
-    fd_.clear_flags(Fd::Read);
-    return Status::PosixError<EAGAIN>();
-  }
+  if (accept_errno == EAGAIN
 #if EAGAIN != EWOULDBLOCK
-  if (accept_errno == EWOULDBLOCK) {
-    fd_.clear_flags(Fd::Read);
-    return Status::PosixError<EWOULDBLOCK>();
-  }
+      || accept_errno == EWOULDBLOCK
 #endif
+  ) {
+    fd_.clear_flags(Fd::Read);
+    return Status::Error(-1, "Operation would block");
+  }
 
   auto error = Status::PosixError(accept_errno, PSLICE() << "Accept from [fd = " << native_fd << "] has failed");
   switch (accept_errno) {
