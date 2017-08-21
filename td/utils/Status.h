@@ -41,11 +41,23 @@
   }
 
 #if TD_PORT_WINDOWS
-#define OS_ERROR(message) [&](){ auto saved_error = ::GetLastError(); return ::td::Status::WindowsError(saved_error, (message)); }()
-#define OS_SOCKET_ERROR(message) [&](){ auto saved_error = ::WSAGetLastError(); return ::td::Status::WindowsError(saved_error, (message)); }()
+#define OS_ERROR(message)                                      \
+  [&]() {                                                      \
+    auto saved_error = ::GetLastError();                       \
+    return ::td::Status::WindowsError(saved_error, (message)); \
+  }()
+#define OS_SOCKET_ERROR(message)                               \
+  [&]() {                                                      \
+    auto saved_error = ::WSAGetLastError();                    \
+    return ::td::Status::WindowsError(saved_error, (message)); \
+  }()
 #endif
 #if TD_PORT_POSIX
-#define OS_ERROR(message) [&](){ auto saved_errno = errno; return ::td::Status::PosixError(saved_errno, (message)); }()
+#define OS_ERROR(message)                                    \
+  [&]() {                                                    \
+    auto saved_errno = errno;                                \
+    return ::td::Status::PosixError(saved_errno, (message)); \
+  }()
 #define OS_SOCKET_ERROR(message) OS_ERROR(message)
 #endif
 
@@ -96,14 +108,14 @@ class Status {
   }
 
 #if TD_PORT_WINDOWS
-  static Status WindowsError(int error_code, Slice message) WARN_UNUSED_RESULT {
-    return Status(false, ErrorType::os, error_code, message);
+  static Status WindowsError(int saved_error, Slice message) WARN_UNUSED_RESULT {
+    return Status(false, ErrorType::os, saved_error, message);
   }
 #endif
 
 #if TD_PORT_POSIX
-  static Status PosixError(int32 errno_code, Slice message) WARN_UNUSED_RESULT {
-    return Status(false, ErrorType::os, errno_code, message);
+  static Status PosixError(int32 saved_errno, Slice message) WARN_UNUSED_RESULT {
+    return Status(false, ErrorType::os, saved_errno, message);
   }
 #endif
 
