@@ -49,15 +49,12 @@ Status SocketFd::init(const IPAddress &address) {
   auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
 #ifdef TD_PORT_POSIX
   if (fd == -1) {
-    auto socket_errno = errno;
-    return Status::PosixError(socket_errno, "Failed to create a socket");
-  }
 #endif
 #ifdef TD_PORT_WINDOWS
   if (fd == INVALID_SOCKET) {
-    return Status::WsaError("Failed to create a socket");
-  }
 #endif
+    return OS_SOCKET_ERROR("Failed to create a socket");
+  }
   auto fd_quard = ScopeExit() + [fd]() {
 #ifdef TD_PORT_POSIX
     ::close(fd);
@@ -94,7 +91,7 @@ Status SocketFd::init(const IPAddress &address) {
   auto bind_addr = address.get_any_addr();
   auto e_bind = bind(fd, bind_addr.get_sockaddr(), narrow_cast<int>(bind_addr.get_sockaddr_len()));
   if (e_bind != 0) {
-    return Status::WsaError("Failed to bind a socket");
+    return OS_SOCKET_ERROR("Failed to bind a socket");
   }
 
   fd_ = Fd::create_socket_fd(fd);

@@ -67,9 +67,7 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
 
   int native_fd = skip_eintr([&] { return ::open(filepath.c_str(), native_flags, static_cast<mode_t>(mode)); });
   if (native_fd < 0) {
-    auto open_errno = errno;
-    return Status::PosixError(open_errno,
-                              PSLICE() << "Failed to open file \"" << filepath << "\" with flags " << initial_flags);
+    return OS_ERROR(PSLICE() << "Failed to open file \"" << filepath << "\" with flags " << initial_flags);
   }
 
   FileFd result;
@@ -133,14 +131,14 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
 
   auto handle = CreateFile2(w_filepath.c_str(), desired_access, share_mode, creation_disposition, nullptr);
   if (handle == INVALID_HANDLE_VALUE) {
-    return Status::OsError(PSLICE() << "Failed to open file \"" << filepath << "\" with flags " << flags);
+    return OS_ERROR(PSLICE() << "Failed to open file \"" << filepath << "\" with flags " << flags);
   }
   if (append_flag) {
     LARGE_INTEGER offset;
     offset.QuadPart = 0;
     auto set_pointer_res = SetFilePointerEx(handle, offset, nullptr, FILE_END);
     if (!set_pointer_res) {
-      auto res = Status::OsError(PSLICE() << "Failed to seek to the end of file \"" << filepath << "\"");
+      auto res = OS_ERROR(PSLICE() << "Failed to seek to the end of file \"" << filepath << "\"");
       CloseHandle(handle);
       return res;
     }
@@ -237,7 +235,7 @@ Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
   auto res =
       WriteFile(fd_.get_io_handle(), slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_written, &overlapped);
   if (!res) {
-    return Status::OsError("Failed to pwrite");
+    return OS_ERROR("Failed to pwrite");
   }
   return bytes_written;
 #endif
@@ -273,7 +271,7 @@ Result<size_t> FileFd::pread(MutableSlice slice, off_t offset) {
   overlapped.OffsetHigh = static_cast<DWORD>(pos64 >> 32);
   auto res = ReadFile(fd_.get_io_handle(), slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_read, &overlapped);
   if (!res) {
-    return Status::OsError("Failed to pread");
+    return OS_ERROR("Failed to pread");
   }
   return bytes_read;
 #endif
@@ -305,14 +303,8 @@ Status FileFd::lock(FileFd::LockFlags flags, int32 max_tries) {
 
     lock.l_whence = SEEK_SET;
     if (fcntl(get_native_fd(), F_SETLK, &lock) == -1) {
-      int fcntl_errno = errno;
-      if (fcntl_errno == EAGAIN && --max_tries > 0) {
+      if (errno == EAGAIN && --max_tries > 0) {
         usleep(100000);
-        continue;
-      }
-
-      return Status::PosixError(fcntl_errno, "Can't lock file");
-    }
 #endif
 #ifdef TD_PORT_WINDOWS
     OVERLAPPED overlapped;
@@ -333,12 +325,12 @@ Status FileFd::lock(FileFd::LockFlags flags, int32 max_tries) {
     if (!result) {
       if (GetLastError() == ERROR_LOCK_VIOLATION && --max_tries > 0) {
         Sleep(100);
+#endif
         continue;
       }
 
-      return Status::OsError("Can't lock file");
+      return OS_ERROR("Can't lock file");
     }
-#endif
     return Status::OK();
   }
 }
@@ -379,7 +371,10 @@ Stat FileFd::stat() {
 
   FILE_BASIC_INFO basic_info;
   auto status = GetFileInformationByHandleEx(fd_.get_io_handle(), FileBasicInfo, &basic_info, sizeof(basic_info));
-  LOG_IF(FATAL, !status) << Status::OsError("Stat failed");
+  if (!status) {
+    auto error = OS_ERROR("Stat failed");
+    LOG(FATAL) << error;
+  }
   res.atime_nsec_ = basic_info.LastAccessTime.QuadPart * 100;
   res.mtime_nsec_ = basic_info.LastWriteTime.QuadPart * 100;
   res.is_dir_ = (basic_info.FileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
@@ -387,7 +382,10 @@ Stat FileFd::stat() {
 
   FILE_STANDARD_INFO standard_info;
   status = GetFileInformationByHandleEx(fd_.get_io_handle(), FileStandardInfo, &standard_info, sizeof(standard_info));
-  LOG_IF(FATAL, !status) << Status::OsError("Stat failed");
+  if (!status) {
+    auto error = OS_ERROR("Stat failed");
+    LOG(FATAL) << error;
+  }
   res.size_ = narrow_cast<off_t>(standard_info.EndOfFile.QuadPart);
 
   return res;
@@ -397,53 +395,41 @@ Stat FileFd::stat() {
 Status FileFd::sync() {
   CHECK(!empty());
 #ifdef TD_PORT_POSIX
-  auto err = fsync(fd_.get_native_fd());
-  if (err < 0) {
-    auto fsync_errno = errno;
-    return Status::PosixError(fsync_errno, "Sync failed");
-  }
+  if (fsync(fd_.get_native_fd()) != 0) {
 #endif
 #ifdef TD_PORT_WINDOWS
   if (FlushFileBuffers(fd_.get_io_handle()) == 0) {
-    return Status::OsError("Sync failed");
-  }
 #endif
+    return OS_ERROR("Sync failed");
+  }
   return Status::OK();
 }
 
 Status FileFd::seek(off_t position) {
   CHECK(!empty());
 #ifdef TD_PORT_POSIX
-  auto err = skip_eintr([&] { return ::lseek(fd_.get_native_fd(), position, SEEK_SET); });
-  if (err < 0) {
-    auto lseek_errno = errno;
-    return Status::PosixError(lseek_errno, "Seek failed");
-  }
+  if (skip_eintr([&] { return ::lseek(fd_.get_native_fd(), position, SEEK_SET); }) < 0) {
 #endif
 #ifdef TD_PORT_WINDOWS
   LARGE_INTEGER offset;
   offset.QuadPart = position;
   if (SetFilePointerEx(fd_.get_io_handle(), offset, nullptr, FILE_BEGIN) == 0) {
-    return Status::OsError("Seek failed");
-  }
 #endif
+    return OS_ERROR("Seek failed");
+  }
   return Status::OK();
 }
 
 Status FileFd::truncate_to_current_position(off_t current_position) {
   CHECK(!empty());
 #ifdef TD_PORT_POSIX
-  auto err = skip_eintr([&] { return ::ftruncate(fd_.get_native_fd(), current_position); });
-  if (err < 0) {
-    auto ftruncate_errno = errno;
-    return Status::PosixError(ftruncate_errno, "Truncate failed");
-  }
+  if (skip_eintr([&] { return ::ftruncate(fd_.get_native_fd(), current_position); }) < 0) {
 #endif
 #ifdef TD_PORT_WINDOWS
   if (SetEndOfFile(fd_.get_io_handle()) == 0) {
-    return Status::OsError("Truncate failed");
-  }
 #endif
+    return OS_ERROR("Truncate failed");
+  }
   return Status::OK();
 }
 

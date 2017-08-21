@@ -103,7 +103,7 @@ Status IPAddress::init_ipv6_port(CSlice ipv6, int port) {
   if (err == 0) {
     return Status::Error(PSLICE() << "Failed inet_pton(AF_INET6, " << ipv6 << ")");
   } else if (err == -1) {
-    return Status::OsError(PSLICE() << "Failed inet_pton(AF_INET6, " << ipv6 << ")");
+    return OS_SOCKET_ERROR(PSLICE() << "Failed inet_pton(AF_INET6, " << ipv6 << ")");
   }
   is_valid_ = true;
   return Status::OK();
@@ -125,7 +125,7 @@ Status IPAddress::init_ipv4_port(CSlice ipv4, int port) {
   if (err == 0) {
     return Status::Error(PSLICE() << "Failed inet_pton(AF_INET, " << ipv4 << ")");
   } else if (err == -1) {
-    return Status::OsError(PSLICE() << "Failed inet_pton(AF_INET, " << ipv4 << ")");
+    return OS_SOCKET_ERROR(PSLICE() << "Failed inet_pton(AF_INET, " << ipv4 << ")");
   }
   is_valid_ = true;
   return Status::OK();
@@ -198,12 +198,7 @@ Status IPAddress::init_socket_address(const SocketFd &socket_fd) {
   socklen_t len = sizeof(addr_);
   int ret = getsockname(fd, &sockaddr_, &len);
   if (ret != 0) {
-#if TD_WINDOWS
-    return Status::WsaError("Failed to get socket address");
-#else
-    auto getsockname_errno = errno;
-    return Status::PosixError(getsockname_errno, "Failed to get socket address");
-#endif
+    return OS_SOCKET_ERROR("Failed to get socket address");
   }
   is_valid_ = true;
   return Status::OK();
@@ -219,12 +214,7 @@ Status IPAddress::init_peer_address(const SocketFd &socket_fd) {
   socklen_t len = sizeof(addr_);
   int ret = getpeername(fd, &sockaddr_, &len);
   if (ret != 0) {
-#if TD_WINDOWS
-    return Status::WsaError("Failed to get peer socket address");
-#else
-    auto getpeername_errno = errno;
-    return Status::PosixError(getpeername_errno, "Failed to get peer socket address");
-#endif
+    return OS_SOCKET_ERROR("Failed to get peer socket address");
   }
   is_valid_ = true;
   return Status::OK();

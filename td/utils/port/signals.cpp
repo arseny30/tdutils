@@ -22,8 +22,7 @@ namespace td {
 #ifdef TD_PORT_POSIX
 static Status protect_memory(void *addr, size_t len) {
   if (mprotect(addr, len, PROT_NONE) != 0) {
-    auto mprotect_errno = errno;
-    return Status::PosixError(mprotect_errno, "mprotect failed");
+    return OS_ERROR("mprotect failed");
   }
   return Status::OK();
 }
@@ -36,8 +35,7 @@ Status setup_signals_alt_stack() {
 
   void *stack = mmap(nullptr, stack_size + 2 * page_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
   if (stack == MAP_FAILED) {
-    auto mmap_errno = errno;
-    return Status::PosixError(mmap_errno, "Mmap failed");
+    return OS_ERROR("Mmap failed");
   }
 
   TRY_STATUS(protect_memory(stack, page_size));
@@ -49,8 +47,7 @@ Status setup_signals_alt_stack() {
   signal_stack.ss_flags = 0;
 
   if (sigaltstack(&signal_stack, nullptr) != 0) {
-    auto sigaltstack_errno = errno;
-    return Status::PosixError(sigaltstack_errno, "sigaltstack failed");
+    return OS_ERROR("sigaltstack failed");
   }
 #endif
   return Status::OK();
@@ -77,8 +74,7 @@ static Status set_signal_handler_impl(vector<int> signals, F func, bool is_exten
 
   for (auto signal : signals) {
     if (sigaction(signal, &act, nullptr) != 0) {
-      auto sigaction_errno = errno;
-      return Status::PosixError(sigaction_errno, "sigaction failed");
+      return OS_ERROR("sigaction failed");
     }
   }
   return Status::OK();

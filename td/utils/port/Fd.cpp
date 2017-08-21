@@ -121,10 +121,8 @@ Fd &Fd::Stdin() {
 Status Fd::duplicate(const Fd &from, Fd &to) {
   CHECK(!from.empty());
   CHECK(!to.empty());
-  int status = dup2(from.get_native_fd(), to.get_native_fd());
-  if (status == -1) {
-    auto dup2_errno = errno;
-    return Status::PosixError(dup2_errno, "dup2 ");
+  if (dup2(from.get_native_fd(), to.get_native_fd()) == -1) {
+    return OS_ERROR("dup2 failed");
   }
   return Status::OK();
 }
@@ -362,13 +360,11 @@ Result<size_t> Fd::read(MutableSlice slice) {
 Status Fd::set_is_blocking(bool is_blocking) {
   auto old_flags = fcntl(fd_, F_GETFL);
   if (old_flags == -1) {
-    auto fcntl_errno = errno;
-    return Status::PosixError(fcntl_errno, "Failed to get socket flags");
+    return OS_SOCKET_ERROR("Failed to get socket flags");
   }
   auto new_flags = is_blocking ? old_flags & ~O_NONBLOCK : old_flags | O_NONBLOCK;
   if (new_flags != old_flags && fcntl(fd_, F_SETFL, new_flags) == -1) {
-    auto fcntl_errno = errno;
-    return Status::PosixError(fcntl_errno, "Failed to set socket flags");
+    return OS_SOCKET_ERROR("Failed to set socket flags");
   }
 
   return Status::OK();
@@ -534,7 +530,7 @@ class Fd::FdImpl {
     DWORD bytes_written = 0;
     auto res = WriteFile(get_io_handle(), slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_written, nullptr);
     if (!res) {
-      return Status::OsError("Failed to write_sync");
+      return OS_ERROR("Failed to write_sync");
     }
     return bytes_written;
   }
@@ -551,7 +547,7 @@ class Fd::FdImpl {
     DWORD bytes_read = 0;
     auto res = ReadFile(get_io_handle(), slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_read, nullptr);
     if (!res) {
-      return Status::OsError("Failed to read_sync");
+      return OS_ERROR("Failed to read_sync");
     }
     if (bytes_read == 0) {
       clear_flags(Fd::Flag::Read);
@@ -582,7 +578,7 @@ class Fd::FdImpl {
     int error = ::WSAIoctl(socket_, SIO_GET_EXTENSION_FUNCTION_POINTER, static_cast<void *>(&guid), sizeof(guid),
                            static_cast<void *>(&ConnectExPtr), sizeof(ConnectExPtr), &numBytes, nullptr, nullptr);
     if (error) {
-      return on_error(Status::WsaError("WSAIoctl failed"), Fd::Flag::Read);
+      return on_error(OS_SOCKET_ERROR("WSAIoctl failed"), Fd::Flag::Read);
     }
     auto status = ConnectExPtr(socket_, addr.get_sockaddr(), narrow_cast<int>(addr.get_sockaddr_len()), nullptr, 0,
                                &bytes_read, &read_overlapped_);
@@ -597,7 +593,7 @@ class Fd::FdImpl {
     if (last_error == ERROR_IO_PENDING) {
       return;
     }
-    on_error(Status::WsaError("ConnectEx failed"), Fd::Flag::Read);
+    on_error(OS_SOCKET_ERROR("ConnectEx failed"), Fd::Flag::Read);
   }
 
   // for EventFd
@@ -624,15 +620,19 @@ class Fd::FdImpl {
     switch (type()) {
       case Fd::Type::StdinFileFd:
       case Fd::Type::FileFd: {
-        auto res = CloseHandle(handle_);
-        LOG_IF(ERROR, !res) << Status::OsError("Failed to close file");
+        if (!CloseHandle(handle_)) {
+          auto error = OS_ERROR("Failed to close file");
+          LOG(ERROR) << error;
+        }
         handle_ = INVALID_HANDLE_VALUE;
         break;
       }
       case Fd::Type::ServerSocketFd:
       case Fd::Type::SocketFd: {
-        auto res = closesocket(socket_);
-        LOG_IF(ERROR, res != 0) << Status::OsError("Failed to close socket");
+        if (closesocket(socket_) != 0) {
+          auto error = OS_SOCKET_ERROR("Failed to close socket");
+          LOG(ERROR) << error;
+        }
         socket_ = INVALID_SOCKET;
         break;
       }
@@ -643,13 +643,17 @@ class Fd::FdImpl {
     }
 
     if (read_event_ != INVALID_HANDLE_VALUE) {
-      auto res = CloseHandle(read_event_);
-      LOG_IF(ERROR, !res) << Status::OsError("Failed to close event");
+      if (!CloseHandle(read_event_)) {
+        auto error = OS_ERROR("Failed to close event");
+        LOG(ERROR) << error;
+      }
       read_event_ = INVALID_HANDLE_VALUE;
     }
     if (write_event_ != INVALID_HANDLE_VALUE) {
-      auto res = CloseHandle(write_event_);
-      LOG_IF(ERROR, !res) << Status::OsError("Failed to close event");
+      if (!CloseHandle(write_event_)) {
+        auto error = OS_ERROR("Failed to close event");
+        LOG(ERROR) << error;
+      }
       write_event_ = INVALID_HANDLE_VALUE;
     }
 
@@ -719,7 +723,7 @@ class Fd::FdImpl {
     DWORD bytes_read;
     auto status = GetOverlappedResult(get_io_handle(), &read_overlapped_, &bytes_read, false);
     if (status == 0) {
-      return on_error(Status::OsError("ReadFile failed"), Fd::Flag::Read);
+      return on_error(OS_ERROR("ReadFile failed"), Fd::Flag::Read);
     }
 
     VLOG(fd) << "Read " << tag("fd", get_io_handle()) << tag("size", bytes_read);
@@ -735,7 +739,7 @@ class Fd::FdImpl {
     DWORD bytes_written;
     auto status = GetOverlappedResult(get_io_handle(), &write_overlapped_, &bytes_written, false);
     if (status == 0) {
-      return on_error(Status::OsError("WriteFile failed"), Fd::Flag::Write);
+      return on_error(OS_ERROR("WriteFile failed"), Fd::Flag::Write);
     }
     if (bytes_written != 0) {
       VLOG(fd) << "Write " << tag("fd", get_io_handle()) << tag("size", bytes_written);
@@ -749,7 +753,7 @@ class Fd::FdImpl {
     DWORD bytes_read;
     auto status = GetOverlappedResult(get_io_handle(), &read_overlapped_, &bytes_read, false);
     if (status == 0) {
-      return on_error(Status::OsError("AcceptEx failed"), Fd::Flag::Write);
+      return on_error(OS_ERROR("AcceptEx failed"), Fd::Flag::Write);
     }
     accepted_.push_back(Fd::create_socket_fd(accept_socket_));
     accept_socket_ = INVALID_SOCKET;
@@ -762,7 +766,7 @@ class Fd::FdImpl {
     VLOG(fd) << "on_connect_ready";
     auto status = GetOverlappedResult(get_io_handle(), &read_overlapped_, &bytes_read, false);
     if (status == 0) {
-      return on_error(Status::OsError("ConnectEx failed"), Fd::Flag::Write);
+      return on_error(OS_ERROR("ConnectEx failed"), Fd::Flag::Write);
     }
     connected_ = true;
     VLOG(fd) << "connected = true";
@@ -794,7 +798,7 @@ class Fd::FdImpl {
       async_read_flag_ = true;
       return;
     }
-    on_error(Status::OsError("ReadFile failed"), Fd::Flag::Read);
+    on_error(OS_ERROR("ReadFile failed"), Fd::Flag::Read);
   }
 
   void try_start_write() {
@@ -819,7 +823,7 @@ class Fd::FdImpl {
       return;
     }
     CHECK(WaitForSingleObject(write_event_, 0) != WAIT_OBJECT_0);
-    on_error(Status::OsError("WriteFile failed"), Fd::Flag::Write);
+    on_error(OS_ERROR("WriteFile failed"), Fd::Flag::Write);
   }
 
   void try_start_accept() {
@@ -845,7 +849,7 @@ class Fd::FdImpl {
       async_read_flag_ = true;
       return;
     }
-    on_error(Status::OsError("AcceptExFailed"), Fd::Flag::Read);
+    on_error(OS_SOCKET_ERROR("AcceptExFailed"), Fd::Flag::Read);
   }
 
   void loop() {
@@ -1053,9 +1057,9 @@ class InitWSA {
     /* Use the MAKEWORD(lowbyte, highbyte) macro declared in Windef.h */
     WORD wVersionRequested = MAKEWORD(2, 2);
     WSADATA wsaData;
-    int err = WSAStartup(wVersionRequested, &wsaData);
-    if (err != 0) {
-      LOG(FATAL) << Status::WsaError("Failed to init WSA");
+    if (WSAStartup(wVersionRequested, &wsaData) != 0) {
+      auto error = OS_SOCKET_ERROR("Failed to init WSA");
+      LOG(FATAL) << error;
     }
   }
 };
@@ -1073,14 +1077,13 @@ Status set_native_socket_is_blocking(SOCKET fd, bool is_blocking) {
 #endif
 #ifdef TD_PORT_POSIX
   if (fcntl(fd, F_SETFL, is_blocking ? 0 : O_NONBLOCK) == -1) {
-    auto fcntl_errno = errno;
-    return Status::PosixError(fcntl_errno, "Failed to change socket flags");
+    return OS_SOCKET_ERROR("Failed to change socket flags");
   }
 #endif
 #ifdef TD_PORT_WINDOWS
   u_long mode = is_blocking;
   if (ioctlsocket(fd, FIONBIO, &mode) != 0) {
-    return Status::WsaError("Failed to change socket flags");
+    return OS_SOCKET_ERROR("Failed to change socket flags");
   }
 #endif
   return Status::OK();

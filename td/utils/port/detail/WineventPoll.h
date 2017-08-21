@@ -62,7 +62,10 @@ class WineventPoll final : public PollBase {
       }
     }
     auto status = WaitForMultipleObjects(narrow_cast<DWORD>(events.size()), events.data(), false, timeout_ms);
-    LOG_IF(FATAL, status == WAIT_FAILED) << Status::OsError("WaitforMultipleObjects failed");
+    if (status == WAIT_FAILED) {
+      auto error = OS_ERROR("WaitForMultipleObjects failed");
+      LOG(FATAL) << error;
+    }
     for (size_t i = 0; i < events.size(); i++) {
       if (WaitForSingleObject(events[i], 0) == WAIT_OBJECT_0) {
         auto &fd = fds_[events_desc[i].first].fd_ref;

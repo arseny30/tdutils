@@ -11,7 +11,7 @@
 #include <cstring>  // for strerror
 #include <new>
 
-#if TD_WINDOWS
+#if TD_PORT_WINDOWS
 #include <codecvt>
 #include <locale>
 #endif
@@ -40,15 +40,27 @@
     }                                           \
   }
 
+#if TD_PORT_WINDOWS
+#define OS_ERROR(message) [&](){ auto saved_error = ::GetLastError(); return ::td::Status::WindowsError(saved_error, (message)); }()
+#define OS_SOCKET_ERROR(message) [&](){ auto saved_error = ::WSAGetLastError(); return ::td::Status::WindowsError(saved_error, (message)); }()
+#endif
+#if TD_PORT_POSIX
+#define OS_ERROR(message) [&](){ auto saved_errno = ::errno; return ::td::Status::PosixError(saved_errno, (message)); }()
+#define OS_SOCKET_ERROR(message) OS_ERROR(message)
+#endif
+
 namespace td {
+
+#if TD_PORT_POSIX
 CSlice strerror_safe(int code);
-#if TD_WINDOWS
+#endif
+#if TD_PORT_WINDOWS
 string winerror_to_string(int code);
 #endif
 
 class Status {
  private:
-  enum class ErrorType : int8 { posix, general, os };
+  enum class ErrorType : int8 { general, os };
 
  public:
   Status() = default;
@@ -83,21 +95,15 @@ class Status {
     return Error(0, message);
   }
 
-  static Status PosixError(int32 code, Slice message = Slice()) WARN_UNUSED_RESULT {
-    return Status(false, ErrorType::posix, code, message);
+#if TD_PORT_WINDOWS
+  static Status WindowsError(int error_code, Slice message) WARN_UNUSED_RESULT {
+    return Status(false, ErrorType::os, error_code, message);
   }
+#endif
 
-#if TD_WINDOWS
-  static Status WsaError(Slice message) WARN_UNUSED_RESULT {
-    return Status(false, ErrorType::os, WSAGetLastError(), message);
-  }
-
-  static Status OsError(Slice message) WARN_UNUSED_RESULT {
-    return Status(false, ErrorType::os, GetLastError(), message);
-  }
-#else
-  static Status OsError(Slice message) WARN_UNUSED_RESULT {
-    return Status(false, ErrorType::os, errno, message);
+#if TD_PORT_POSIX
+  static Status PosixError(int32 errno_code, Slice message) WARN_UNUSED_RESULT {
+    return Status(false, ErrorType::os, errno_code, message);
   }
 #endif
 
@@ -113,7 +119,7 @@ class Status {
 
   template <int Code>
   static Status PosixError() {
-    static Status status(true, ErrorType::posix, Code, "");
+    static Status status(true, ErrorType::os, Code, "");
     return status.clone_static();
   }
 
@@ -132,18 +138,15 @@ class Status {
     }
     Info info = get_info();
     switch (info.error_type) {
-      case ErrorType::posix:
-        sb << "[PosixError : " << strerror_safe(info.error_code);
-        break;
       case ErrorType::general:
         sb << "[Error";
         break;
       case ErrorType::os:
-        sb << "[Os Error : ";
-#if TD_WINDOWS
-        sb << winerror_to_string(info.error_code);
-#else
-        sb << strerror_safe(info.error_code);
+#if TD_PORT_POSIX
+        sb << "[PosixError : " << strerror_safe(info.error_code);
+#endif
+#if TD_PORT_WINDOWS
+        sb << "[WindowsError : " << winerror_to_string(info.error_code);
 #endif
         break;
       default:
@@ -212,15 +215,14 @@ class Status {
     }
     Info info = get_info();
     switch (info.error_type) {
-      case ErrorType::posix:
-        return strerror_safe(info.error_code).str();
       case ErrorType::general:
         return message().str();
       case ErrorType::os:
-#if TD_WINDOWS
-        return winerror_to_string(info.error_code);
-#else
+#if TD_PORT_POSIX
         return strerror_safe(info.error_code).str();
+#endif
+#if TD_PORT_WINDOWS
+        return winerror_to_string(info.error_code);
 #endif
       default:
         LOG(FATAL) << "Unknown status type: " << static_cast<int8>(info.error_type);
@@ -431,7 +433,7 @@ inline StringBuilder &operator<<(StringBuilder &string_builder, const Status &st
 
 // TODO move to_string somewhere else
 
-#if TD_WINDOWS
+#if TD_PORT_WINDOWS
 template <class Facet>
 class usable_facet : public Facet {
  public:

@@ -64,7 +64,7 @@ Stat fstat(int native_fd) {
   struct ::stat buf;
   int err = fstat(native_fd, &buf);
   auto fstat_errno = errno;
-  LOG_IF(FATAL, err < 0) << "stat " << tag("fd", native_fd) << " failed: " << Status::PosixError(fstat_errno);
+  LOG_IF(FATAL, err < 0) << Status::PosixError(fstat_errno, PSLICE() << "stat of " << tag("fd", native_fd) << " failed");
   return detail::from_native_stat(buf);
 }
 
@@ -75,11 +75,9 @@ Status update_atime(int native_fd) {
   times[0].tv_nsec = UTIME_NOW;
   // modify time
   times[1].tv_nsec = UTIME_OMIT;
-  // int err = utimensat(native_fd, nullptr, times, 0);
-  int err = futimens(native_fd, times);
-  if (err < 0) {
-    auto futimens_errno = errno;
-    auto status = Status::PosixError(futimens_errno, PSLICE() << "futimens " << tag("fd", native_fd));
+  // if (utimensat(native_fd, nullptr, times, 0) < 0) {
+  if (futimens(native_fd, times) < 0) {
+    auto status = OS_ERROR(PSLICE() << "futimens " << tag("fd", native_fd));
     LOG(WARNING) << status;
     return status;
   }
@@ -94,10 +92,8 @@ Status update_atime(int native_fd) {
   // modify time
   upd[1].tv_sec = static_cast<decltype(upd[1].tv_sec)>(info.mtime_nsec_ / 1000000000ll);
   upd[1].tv_usec = static_cast<decltype(upd[1].tv_usec)>(info.mtime_nsec_ % 1000000000ll / 1000);
-  int err = futimes(native_fd, upd);
-  if (err < 0) {
-    auto futimes_errno = errno;
-    auto status = Status::PosixError(futimes_errno, PSLICE() << "futimes " << tag("fd", native_fd));
+  if (futimes(native_fd, upd) < 0) {
+    auto status = OS_ERROR(PSLICE() << "futimes " << tag("fd", native_fd));
     LOG(WARNING) << status;
     return status;
   }
@@ -110,13 +106,11 @@ Status update_atime(int native_fd) {
 //// modify time
 // times[1].tv_nsec = UTIME_OMIT;
 ////  int err = syscall(__NR_utimensat, native_fd, nullptr, times, 0);
-// int err = futimens(native_fd, times);
-// if (err < 0) {
-// auto futimens_errno = errno;
-// auto status = Status::PosixError(futimens_errno, PSLICE() << "futimens " << tag("fd", native_fd));
-// LOG(WARNING) << status;
-// return status;
-//}
+// if (futimens(native_fd, times) < 0) {
+//   auto status = OS_ERROR(PSLICE() << "futimens " << tag("fd", native_fd));
+//   LOG(WARNING) << status;
+//   return status;
+// }
 // return Status::OK();
 #endif
 }
@@ -132,10 +126,8 @@ Status update_atime(CSlice path) {
 
 Result<Stat> stat(CSlice path) {
   struct ::stat buf;
-  int err = stat(path.c_str(), &buf);
-  if (err < 0) {
-    auto stat_errno = errno;
-    return Status::PosixError(stat_errno, PSLICE() << "stat " << tag("file", path) << " failed: ");
+  if (stat(path.c_str(), &buf) < 0) {
+    return OS_ERROR(PSLICE() << "stat for " << tag("file", path) << " failed");
   }
   return detail::from_native_stat(buf);
 }

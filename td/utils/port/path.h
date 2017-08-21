@@ -107,8 +107,7 @@ template <class Func>
 Status walk_path_dir(string &path, FileFd fd, Func &&func) {
   auto *subdir = fdopendir(fd.get_fd().move_as_native_fd());
   if (subdir == nullptr) {
-    auto fdopendir_errno = errno;
-    auto error = Status::PosixError(fdopendir_errno, "fdopendir");
+    auto error = OS_ERROR("fdopendir");
     fd.close();
     return error;
   }
@@ -119,8 +118,7 @@ template <class Func>
 Status walk_path_dir(string &path, Func &&func) {
   auto *subdir = opendir(path.c_str());
   if (subdir == nullptr) {
-    auto opendir_errno = errno;
-    return Status::PosixError(opendir_errno, PSLICE() << tag("opendir", path));
+    return OS_ERROR(PSLICE() << tag("opendir", path));
   }
   return walk_path_dir(path, subdir, std::forward<Func>(func));
 }
@@ -170,7 +168,7 @@ Status walk_path_dir(const wstring &dir_name, Func &&func) {
   WIN32_FIND_DATA file_data;
   auto handle = FindFirstFileExW(name.c_str(), FindExInfoStandard, &file_data, FindExSearchNameMatch, nullptr, 0);
   if (handle == INVALID_HANDLE_VALUE) {
-    return Status::OsError(PSLICE() << "FindFirstFileEx" << tag("name", to_string(name).ok()));
+    return OS_ERROR(PSLICE() << "FindFirstFileEx" << tag("name", to_string(name).ok()));
   }
 
   SCOPE_EXIT {
@@ -193,7 +191,7 @@ Status walk_path_dir(const wstring &dir_name, Func &&func) {
       if (last_error == ERROR_NO_MORE_FILES) {
         return Status::OK();
       }
-      return Status::OsError("FindNextFileW");
+      return OS_ERROR("FindNextFileW");
     }
   }
 }

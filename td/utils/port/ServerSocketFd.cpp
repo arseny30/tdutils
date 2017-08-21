@@ -122,15 +122,12 @@ Status ServerSocketFd::init(int32 port, CSlice addr) {
   auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
 #ifdef TD_PORT_POSIX
   if (fd == -1) {
-    auto socket_errno = errno;
-    return Status::PosixError(socket_errno, "Failed to create a socket");
-  }
 #endif
 #ifdef TD_PORT_WINDOWS
   if (fd == INVALID_SOCKET) {
-    return Status::WsaError("Failed to create a socket");
-  }
 #endif
+    return OS_SOCKET_ERROR("Failed to create a socket");
+  }
   auto fd_quard = ScopeExit() + [fd]() {
 #ifdef TD_PORT_POSIX
     ::close(fd);
@@ -159,25 +156,13 @@ Status ServerSocketFd::init(int32 port, CSlice addr) {
 
   int e_bind = bind(fd, address.get_sockaddr(), static_cast<socklen_t>(address.get_sockaddr_len()));
   if (e_bind != 0) {
-#ifdef TD_PORT_POSIX
-    auto bind_errno = errno;
-    return Status::PosixError(bind_errno, "Failed to bind socket");
-#endif
-#ifdef TD_PORT_WINDOWS
-    return Status::WsaError("Failed to bind socket");
-#endif
+    return OS_SOCKET_ERROR("Failed to bind a socket");
   }
 
   // TODO: magic constant
   int e_listen = listen(fd, 8192);
   if (e_listen != 0) {
-#ifdef TD_PORT_POSIX
-    auto listen_errno = errno;
-    return Status::PosixError(listen_errno, "Failed to listen");
-#endif
-#ifdef TD_PORT_WINDOWS
-    return Status::WsaError("Failed to listen");
-#endif
+    return OS_SOCKET_ERROR("Failed to listen on a socket");
   }
 
 #ifdef TD_PORT_POSIX
