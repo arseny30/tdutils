@@ -18,7 +18,7 @@ struct Stat {
 
 Result<Stat> stat(CSlice path) WARN_UNUSED_RESULT;
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 
 namespace detail {
 Stat fstat(int native_fd);  // TODO return Result<Stat>
@@ -35,6 +35,6 @@ struct MemStat {
 
 Result<MemStat> mem_stat() WARN_UNUSED_RESULT;
 
-#endif  // TD_PORT_POSIX
+#endif
 
 }  // namespace td

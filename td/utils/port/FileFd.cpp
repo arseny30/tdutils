@@ -2,7 +2,7 @@
 
 #include "td/utils/port/FileFd.h"
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 #include <fcntl.h>
 #include <sys/file.h>
 #include <sys/types.h>
@@ -10,7 +10,7 @@
 #include <unistd.h>
 #endif
 
-#ifdef TD_PORT_WINDOWS
+#if TD_PORT_WINDOWS
 #include "td/utils/misc.h"  // for narrow_cast
 #endif
 
@@ -27,7 +27,7 @@ Fd &FileFd::get_fd() {
 }
 
 Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   int32 initial_flags = flags;
   int native_flags = 0;
 
@@ -74,8 +74,7 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
   result.fd_ = Fd(native_fd, Fd::Mode::Owner);
   result.fd_.update_flags(Fd::Flag::Write);
   return std::move(result);
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   // TODO: support modes
   auto r_filepath = to_wstring(filepath);
   if (r_filepath.is_error()) {
@@ -151,7 +150,7 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
 }
 
 Result<size_t> FileFd::write(Slice slice) {
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   CHECK(!fd_.empty());
   int native_fd = get_native_fd();
   auto write_res = skip_eintr([&] { return ::write(native_fd, slice.begin(), slice.size()); });
@@ -169,14 +168,13 @@ Result<size_t> FileFd::write(Slice slice) {
     LOG(ERROR) << error;
   }
   return std::move(error);
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   return fd_.write(slice);
 #endif
 }
 
 Result<size_t> FileFd::read(MutableSlice slice) {
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   CHECK(!fd_.empty());
   int native_fd = get_native_fd();
   auto read_res = skip_eintr([&] { return ::read(native_fd, slice.begin(), slice.size()); });
@@ -198,14 +196,13 @@ Result<size_t> FileFd::read(MutableSlice slice) {
     LOG(ERROR) << error;
   }
   return std::move(error);
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   return fd_.read(slice);
 #endif
 }
 
 Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   CHECK(!fd_.empty());
   int native_fd = get_native_fd();
   auto pwrite_res = skip_eintr([&] { return ::pwrite(native_fd, slice.begin(), slice.size(), offset); });
@@ -224,8 +221,7 @@ Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
     LOG(ERROR) << error;
   }
   return std::move(error);
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   DWORD bytes_written = 0;
   OVERLAPPED overlapped;
   std::memset(&overlapped, 0, sizeof(overlapped));
@@ -242,7 +238,7 @@ Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
 }
 
 Result<size_t> FileFd::pread(MutableSlice slice, off_t offset) {
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   CHECK(!fd_.empty());
   int native_fd = get_native_fd();
   auto pread_res = skip_eintr([&] { return ::pread(native_fd, slice.begin(), slice.size(), offset); });
@@ -261,8 +257,7 @@ Result<size_t> FileFd::pread(MutableSlice slice, off_t offset) {
     LOG(ERROR) << error;
   }
   return std::move(error);
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   DWORD bytes_read = 0;
   OVERLAPPED overlapped;
   std::memset(&overlapped, 0, sizeof(overlapped));
@@ -283,7 +278,7 @@ Status FileFd::lock(FileFd::LockFlags flags, int32 max_tries) {
   }
 
   while (true) {
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
     struct flock lock;
     std::memset(&lock, 0, sizeof(lock));
 
@@ -305,8 +300,7 @@ Status FileFd::lock(FileFd::LockFlags flags, int32 max_tries) {
     if (fcntl(get_native_fd(), F_SETLK, &lock) == -1) {
       if (errno == EAGAIN && --max_tries > 0) {
         usleep(100000);
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
     OVERLAPPED overlapped;
     std::memset(&overlapped, 0, sizeof(overlapped));
 
@@ -343,7 +337,7 @@ bool FileFd::empty() const {
   return fd_.empty();
 }
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 int FileFd::get_native_fd() const {
   return fd_.get_native_fd();
 }
@@ -363,10 +357,9 @@ off_t FileFd::get_size() {
 
 Stat FileFd::stat() {
   CHECK(!empty());
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   return detail::fstat(get_native_fd());
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   Stat res;
 
   FILE_BASIC_INFO basic_info;
@@ -394,10 +387,9 @@ Stat FileFd::stat() {
 
 Status FileFd::sync() {
   CHECK(!empty());
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   if (fsync(fd_.get_native_fd()) != 0) {
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   if (FlushFileBuffers(fd_.get_io_handle()) == 0) {
 #endif
     return OS_ERROR("Sync failed");
@@ -407,10 +399,9 @@ Status FileFd::sync() {
 
 Status FileFd::seek(off_t position) {
   CHECK(!empty());
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   if (skip_eintr([&] { return ::lseek(fd_.get_native_fd(), position, SEEK_SET); }) < 0) {
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   LARGE_INTEGER offset;
   offset.QuadPart = position;
   if (SetFilePointerEx(fd_.get_io_handle(), offset, nullptr, FILE_BEGIN) == 0) {
@@ -422,10 +413,9 @@ Status FileFd::seek(off_t position) {
 
 Status FileFd::truncate_to_current_position(off_t current_position) {
   CHECK(!empty());
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   if (skip_eintr([&] { return ::ftruncate(fd_.get_native_fd(), current_position); }) < 0) {
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   if (SetEndOfFile(fd_.get_io_handle()) == 0) {
 #endif
     return OS_ERROR("Truncate failed");

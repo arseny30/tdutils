@@ -46,9 +46,9 @@ class FileFd {
 
   Status truncate_to_current_position(off_t current_position) WARN_UNUSED_RESULT;
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   int get_native_fd() const;
-#endif  // TD_PORT_POSIX
+#endif
 
  private:
   Fd fd_;

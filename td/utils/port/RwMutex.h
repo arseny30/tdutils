@@ -5,7 +5,7 @@
 #include "td/utils/common.h"
 #include "td/utils/Status.h"
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 #include <pthread.h>
 #endif
 
@@ -71,10 +71,9 @@ class RwMutex {
 
  private:
   bool is_valid_ = false;
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   pthread_rwlock_t mutex_;
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   unique_ptr<SRWLOCK> mutex_;
 #endif
 };
@@ -82,10 +81,9 @@ class RwMutex {
 inline void RwMutex::init() {
   CHECK(empty());
   is_valid_ = true;
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   pthread_rwlock_init(&mutex_, nullptr);
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   mutex_ = make_unique<SRWLOCK>();
   InitializeSRWLock(mutex_.get());
 #endif
@@ -93,10 +91,9 @@ inline void RwMutex::init() {
 
 inline void RwMutex::clear() {
   if (is_valid_) {
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
     pthread_rwlock_destroy(&mutex_);
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
     mutex_.release();
 #endif
     is_valid_ = false;
@@ -106,40 +103,36 @@ inline void RwMutex::clear() {
 inline void RwMutex::lock_read_unsafe() {
   CHECK(!empty());
 // TODO error handling
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   pthread_rwlock_rdlock(&mutex_);
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   AcquireSRWLockShared(mutex_.get());
 #endif
 }
 
 inline void RwMutex::lock_write_unsafe() {
   CHECK(!empty());
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   pthread_rwlock_wrlock(&mutex_);
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   AcquireSRWLockExclusive(mutex_.get());
 #endif
 }
 
 inline void RwMutex::unlock_read_unsafe() {
   CHECK(!empty());
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   pthread_rwlock_unlock(&mutex_);
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   ReleaseSRWLockShared(mutex_.get());
 #endif
 }
 
 inline void RwMutex::unlock_write_unsafe() {
   CHECK(!empty());
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   pthread_rwlock_unlock(&mutex_);
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   ReleaseSRWLockExclusive(mutex_.get());
 #endif
 }

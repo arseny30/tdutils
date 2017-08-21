@@ -3,7 +3,7 @@
 #include "td/utils/port/IPAddress.h"
 #include "td/utils/port/ServerSocketFd.h"
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -40,7 +40,7 @@ Status ServerSocketFd::get_pending_error() {
 }
 
 Result<SocketFd> ServerSocketFd::accept() {
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   sockaddr_storage addr;
   socklen_t addr_len = sizeof(addr);
   int native_fd = fd_.get_native_fd();
@@ -81,8 +81,7 @@ Result<SocketFd> ServerSocketFd::accept() {
       fd_.update_flags(Fd::Close);
       return std::move(error);
   }
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   TRY_RESULT(socket_fd, fd_.accept());
   return SocketFd(std::move(socket_fd));
 #endif
@@ -100,7 +99,7 @@ Status ServerSocketFd::init(int32 port, CSlice addr) {
   IPAddress address;
   TRY_STATUS(address.init_ipv4_port(addr, port));
   auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   if (fd == -1) {
 #elif TD_PORT_WINDOWS
   if (fd == INVALID_SOCKET) {
@@ -108,10 +107,9 @@ Status ServerSocketFd::init(int32 port, CSlice addr) {
     return OS_SOCKET_ERROR("Failed to create a socket");
   }
   auto fd_quard = ScopeExit() + [fd]() {
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
     ::close(fd);
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
     ::closesocket(fd);
 #endif
   };
@@ -119,13 +117,12 @@ Status ServerSocketFd::init(int32 port, CSlice addr) {
   TRY_STATUS(detail::set_native_socket_is_blocking(fd, false));
 
   linger ling = {0, 0};
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   int flags = 1;
 #if !TD_ANDROID && !TD_CYGWIN
-  setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &flags, sizeof(flags));
+  setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, reinterpret_cast<const char *>(&flags), sizeof(flags));
 #endif
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   BOOL flags = TRUE;
 #endif
   setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&flags), sizeof(flags));
@@ -144,10 +141,9 @@ Status ServerSocketFd::init(int32 port, CSlice addr) {
     return OS_SOCKET_ERROR("Failed to listen on a socket");
   }
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   fd_ = Fd(fd, Fd::Mode::Owner);
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   fd_ = Fd::create_server_socket_fd(fd, address.get_address_family());
 #endif
 

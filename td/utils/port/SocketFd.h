@@ -39,10 +39,10 @@ class SocketFd {
 
   Status init(const IPAddress &address) WARN_UNUSED_RESULT;
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   static Result<SocketFd> from_native_fd(int fd);
 #endif
-#ifdef TD_PORT_WINDOWS
+#if TD_PORT_WINDOWS
   explicit SocketFd(Fd fd) : fd_(std::move(fd)) {
   }
 #endif

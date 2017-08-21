@@ -40,7 +40,14 @@
     }                                           \
   }
 
-#if TD_PORT_WINDOWS
+#if TD_PORT_POSIX
+#define OS_ERROR(message)                                    \
+  [&]() {                                                    \
+    auto saved_errno = errno;                                \
+    return ::td::Status::PosixError(saved_errno, (message)); \
+  }()
+#define OS_SOCKET_ERROR(message) OS_ERROR(message)
+#elif TD_PORT_WINDOWS
 #define OS_ERROR(message)                                      \
   [&]() {                                                      \
     auto saved_error = ::GetLastError();                       \
@@ -52,20 +59,13 @@
     return ::td::Status::WindowsError(saved_error, (message)); \
   }()
 #endif
-#if TD_PORT_POSIX
-#define OS_ERROR(message)                                    \
-  [&]() {                                                    \
-    auto saved_errno = errno;                                \
-    return ::td::Status::PosixError(saved_errno, (message)); \
-  }()
-#define OS_SOCKET_ERROR(message) OS_ERROR(message)
-#endif
 
 namespace td {
 
 #if TD_PORT_POSIX
 CSlice strerror_safe(int code);
 #endif
+
 #if TD_PORT_WINDOWS
 string winerror_to_string(int code);
 #endif
@@ -156,8 +156,7 @@ class Status {
       case ErrorType::os:
 #if TD_PORT_POSIX
         sb << "[PosixError : " << strerror_safe(info.error_code);
-#endif
-#if TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
         sb << "[WindowsError : " << winerror_to_string(info.error_code);
 #endif
         break;
@@ -232,8 +231,7 @@ class Status {
       case ErrorType::os:
 #if TD_PORT_POSIX
         return strerror_safe(info.error_code).str();
-#endif
-#if TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
         return winerror_to_string(info.error_code);
 #endif
       default:

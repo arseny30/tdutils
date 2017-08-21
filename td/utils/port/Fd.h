@@ -7,11 +7,11 @@
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
 
-#ifdef TD_PORT_WINDOWS
+#if TD_PORT_WINDOWS
 #include "td/utils/port/IPAddress.h"
 #endif
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 #include <errno.h>
 
 #include <atomic>
@@ -21,7 +21,7 @@ namespace td {
 
 class ObserverBase;
 
-#ifdef TD_PORT_WINDOWS
+#if TD_PORT_WINDOWS
 namespace detail {
 class EventFdWindows;
 }  // namespace detail
@@ -50,10 +50,10 @@ class Fd {
   Fd &operator=(Fd &&other);
   ~Fd();
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   Fd(int fd, Mode mode);
 #endif
-#ifdef TD_PORT_WINDOWS
+#if TD_PORT_WINDOWS
   static Fd create_file_fd(HANDLE handle);
 
   static Fd create_socket_fd(SOCKET sock);
@@ -93,7 +93,7 @@ class Fd {
 
   Status set_is_blocking(bool is_blocking);
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   void update_flags_notify(Flags flags);
   void clear_flags(Flags flags);
 
@@ -103,7 +103,7 @@ class Fd {
   int move_as_native_fd();
 #endif
 
-#ifdef TD_PORT_WINDOWS
+#if TD_PORT_WINDOWS
   Result<Fd> accept() WARN_UNUSED_RESULT;
   void connect(const IPAddress &addr);
 
@@ -121,7 +121,7 @@ class Fd {
  private:
   Mode mode_ = Mode::Owner;
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   struct Info {
     std::atomic<int> refcnt;
     int32 flags;
@@ -151,7 +151,7 @@ class Fd {
 
   int fd_ = -1;
 #endif
-#ifdef TD_PORT_WINDOWS
+#if TD_PORT_WINDOWS
   class FdImpl;
 
   enum class Type {
@@ -176,7 +176,7 @@ class Fd {
 #endif
 };
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 template <class F>
 auto skip_eintr(F &&f) {
   decltype(f()) res;
@@ -203,10 +203,10 @@ bool can_close(const FdT &fd) {
 }
 
 namespace detail {
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 Status set_native_socket_is_blocking(int fd, bool is_blocking);
 #endif
-#ifdef TD_PORT_WINDOWS
+#if TD_PORT_WINDOWS
 Status set_native_socket_is_blocking(SOCKET fd, bool is_blocking);
 #endif
 }  // namespace detail

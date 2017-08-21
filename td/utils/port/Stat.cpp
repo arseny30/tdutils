@@ -3,7 +3,7 @@
 #include "td/utils/port/FileFd.h"
 #include "td/utils/port/Stat.h"
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 
 #include "td/utils/format.h"
 #include "td/utils/misc.h"
@@ -64,7 +64,8 @@ Stat fstat(int native_fd) {
   struct ::stat buf;
   int err = fstat(native_fd, &buf);
   auto fstat_errno = errno;
-  LOG_IF(FATAL, err < 0) << Status::PosixError(fstat_errno, PSLICE() << "stat of " << tag("fd", native_fd) << " failed");
+  LOG_IF(FATAL, err < 0) << Status::PosixError(fstat_errno, PSLICE()
+                                                                << "stat of " << tag("fd", native_fd) << " failed");
   return detail::from_native_stat(buf);
 }
 
@@ -209,9 +210,9 @@ Result<MemStat> mem_stat() {
 #endif
 }
 }  // namespace td
-#endif  // TD_PORT_POSIX
+#endif
 
-#ifdef TD_PORT_WINDOWS
+#if TD_PORT_WINDOWS
 namespace td {
 
 Result<Stat> stat(CSlice path) {
@@ -220,4 +221,4 @@ Result<Stat> stat(CSlice path) {
 }
 
 }  // namespace td
-#endif  // TD_PORT_WINDOWS
+#endif

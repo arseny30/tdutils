@@ -2,11 +2,11 @@
 
 #include "td/utils/port/SocketFd.h"
 
-#ifdef TD_PORT_WINDOWS
+#if TD_PORT_WINDOWS
 #include "td/utils/misc.h"
 #endif
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netinet/in.h>
@@ -24,7 +24,7 @@ Result<SocketFd> SocketFd::open(const IPAddress &address) {
   return std::move(socket);
 }
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 Result<SocketFd> SocketFd::from_native_fd(int fd) {
   auto fd_guard = ScopeExit() + [fd]() { ::close(fd); };
 
@@ -47,7 +47,7 @@ Result<SocketFd> SocketFd::from_native_fd(int fd) {
 
 Status SocketFd::init(const IPAddress &address) {
   auto fd = socket(address.get_address_family(), SOCK_STREAM, 0);
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   if (fd == -1) {
 #elif TD_PORT_WINDOWS
   if (fd == INVALID_SOCKET) {
@@ -55,20 +55,18 @@ Status SocketFd::init(const IPAddress &address) {
     return OS_SOCKET_ERROR("Failed to create a socket");
   }
   auto fd_quard = ScopeExit() + [fd]() {
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
     ::close(fd);
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
     ::closesocket(fd);
 #endif
   };
 
   TRY_STATUS(detail::set_native_socket_is_blocking(fd, false));
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   int flags = 1;
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   BOOL flags = TRUE;
 #endif
   setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&flags), sizeof(flags));
@@ -76,7 +74,7 @@ Status SocketFd::init(const IPAddress &address) {
   setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char *>(&flags), sizeof(flags));
 // TODO: SO_REUSEADDR, SO_KEEPALIVE, TCP_NODELAY, SO_SNDBUF, SO_RCVBUF, TCP_QUICKACK, SO_LINGER
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   int e_connect = connect(fd, address.get_sockaddr(), static_cast<socklen_t>(address.get_sockaddr_len()));
   if (e_connect == -1) {
     auto connect_errno = errno;
@@ -85,8 +83,7 @@ Status SocketFd::init(const IPAddress &address) {
     }
   }
   fd_ = Fd(fd, Fd::Mode::Owner);
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   auto bind_addr = address.get_any_addr();
   auto e_bind = bind(fd, bind_addr.get_sockaddr(), narrow_cast<int>(bind_addr.get_sockaddr_len()));
   if (e_bind != 0) {

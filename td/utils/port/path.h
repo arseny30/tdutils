@@ -11,7 +11,7 @@
 
 #include <utility>
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 #include <dirent.h>
 #include <sys/types.h>
 #endif
@@ -37,7 +37,7 @@ Result<string> mkdtemp(CSlice dir, Slice prefix) WARN_UNUSED_RESULT;
 template <class Func>
 Status walk_path(CSlice path, Func &func) WARN_UNUSED_RESULT;
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 
 // TODO move details somewhere else
 namespace detail {
@@ -156,9 +156,9 @@ Status walk_path(CSlice path, Func &&func) {
   return detail::walk_path(curr_path, std::forward<Func>(func));
 }
 
-#endif  // TD_PORT_POSIX
+#endif
 
-#ifdef TD_PORT_WINDOWS
+#if TD_PORT_WINDOWS
 
 namespace detail {
 template <class Func>
@@ -203,6 +203,6 @@ Status walk_path(CSlice path, Func &&func) {
   return detail::walk_path_dir(wpath.c_str(), func);
 }
 
-#endif  // TD_PORT_WINDOWS
+#endif
 
 }  // namespace td

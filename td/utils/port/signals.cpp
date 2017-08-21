@@ -1,11 +1,11 @@
 #include "td/utils/port/signals.h"
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 #include <signal.h>
 #include <sys/mman.h>
 #include <unistd.h>
 #endif
-#ifdef TD_PORT_WINDOWS
+#if TD_PORT_WINDOWS
 #include <csignal>
 #endif
 
@@ -19,7 +19,7 @@
 
 namespace td {
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 static Status protect_memory(void *addr, size_t len) {
   if (mprotect(addr, len, PROT_NONE) != 0) {
     return OS_ERROR("mprotect failed");
@@ -29,7 +29,7 @@ static Status protect_memory(void *addr, size_t len) {
 #endif
 
 Status setup_signals_alt_stack() {
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   auto page_size = getpagesize();
   auto stack_size = (MINSIGSTKSZ + 16 * page_size - 1) / page_size * page_size;
 
@@ -53,7 +53,7 @@ Status setup_signals_alt_stack() {
   return Status::OK();
 }
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 template <class F>
 static Status set_signal_handler_impl(vector<int> signals, F func, bool is_extended = false) {
   struct sigaction act;
@@ -101,7 +101,7 @@ static vector<int> get_native_signals(SignalType type) {
   }
 }
 #endif
-#ifdef TD_PORT_WINDOWS
+#if TD_PORT_WINDOWS
 static Status set_signal_handler_impl(vector<int> signals, void (*func)(int sig), bool /*unused*/ = true) {
   for (auto signal : signals) {
     if (std::signal(signal, func) == SIG_ERR) {
@@ -140,13 +140,12 @@ Status set_signal_handler(SignalType type, void (*func)(int)) {
 using extended_signal_handler = void (*)(int sig, void *addr);
 static extended_signal_handler extended_signal_handlers[NSIG] = {};
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 static void siginfo_handler(int signum, siginfo_t *info, void *data) {
   auto handler = extended_signal_handlers[signum];
   handler(signum, info->si_addr);
 }
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
 static void siginfo_handler(int signum) {
   auto handler = extended_signal_handlers[signum];
   handler(signum, nullptr);
@@ -202,7 +201,7 @@ static void signal_safe_append_int(char **s, Slice name, int number) {
 }
 
 static void signal_safe_write_data(Slice data) {
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   while (!data.empty()) {
     auto res = write(2, data.begin(), data.size());
     if (res < 0 && errno == EINTR) {
@@ -216,23 +215,21 @@ static void signal_safe_write_data(Slice data) {
       data.remove_prefix(res);
     }
   }
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
   HANDLE stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
   DWORD bytes_written;
   WriteFile(stderr_handle, data.data(), static_cast<DWORD>(data.size()), &bytes_written, nullptr);
 #else
-  // there is no stderr
+// there is no stderr
 #endif
 #endif
 }
 
 static int get_process_id() {
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
   return getpid();
-#endif
-#ifdef TD_PORT_WINDOWS
+#elif TD_PORT_WINDOWS
   return GetCurrentProcessId();
 #endif
 }

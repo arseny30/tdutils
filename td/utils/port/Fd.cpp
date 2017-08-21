@@ -7,7 +7,7 @@
 #include "td/utils/misc.h"
 #include "td/utils/Observer.h"
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 
 #include <atomic>
 
@@ -18,7 +18,7 @@
 
 #endif
 
-#ifdef TD_PORT_WINDOWS
+#if TD_PORT_WINDOWS
 
 #include "td/utils/buffer.h"
 #include "td/utils/misc.h"
@@ -30,7 +30,7 @@
 
 namespace td {
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 
 Fd::InfoSet::InfoSet() {
   get_info(0).refcnt = 1;
@@ -382,9 +382,9 @@ Status Fd::set_is_blocking(bool is_blocking) {
   return Status::OK();
 }
 
-#endif  // TD_PORT_POSIX
+#endif
 
-#ifdef TD_PORT_WINDOWS
+#if TD_PORT_WINDOWS
 
 class Fd::FdImpl {
  public:
@@ -1081,22 +1081,16 @@ static InitWSA init_wsa;
 #endif
 
 namespace detail {
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 Status set_native_socket_is_blocking(int fd, bool is_blocking) {
+  if (fcntl(fd, F_SETFL, is_blocking ? 0 : O_NONBLOCK) == -1) {
 #elif TD_PORT_WINDOWS
 Status set_native_socket_is_blocking(SOCKET fd, bool is_blocking) {
-#endif
-#ifdef TD_PORT_POSIX
-  if (fcntl(fd, F_SETFL, is_blocking ? 0 : O_NONBLOCK) == -1) {
-    return OS_SOCKET_ERROR("Failed to change socket flags");
-  }
-#endif
-#ifdef TD_PORT_WINDOWS
   u_long mode = is_blocking;
   if (ioctlsocket(fd, FIONBIO, &mode) != 0) {
+#endif
     return OS_SOCKET_ERROR("Failed to change socket flags");
   }
-#endif
   return Status::OK();
 }
 }  // namespace detail

@@ -1,6 +1,6 @@
 #include "td/utils/port/path.h"
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 
 #include <limits.h>
 #include <stdio.h>
@@ -50,7 +50,7 @@ Status mkpath(CSlice path, int32 mode) {
   return Status::OK();
 }
 
-#ifdef TD_PORT_POSIX
+#if TD_PORT_POSIX
 
 Status mkdir(CSlice dir, int32 mode) {
   int mkdir_res = skip_eintr([&] { return ::mkdir(dir.c_str(), static_cast<mode_t>(mode)); });
@@ -190,9 +190,9 @@ Result<string> mkdtemp(CSlice dir, Slice prefix) {
   return result;
 }
 
-#endif  // TD_PORT_POSIX
+#endif
 
-#ifdef TD_PORT_WINDOWS
+#if TD_PORT_WINDOWS
 
 #include "td/utils/misc.h"
 
@@ -347,6 +347,6 @@ Result<std::pair<FileFd, string>> mkstemp(CSlice dir) {
   return Status::Error(PSLICE() << "Can't create temporary file \"" << file_pattern << '"');
 }
 
-#endif  // TD_PORT_WINDOWS
+#endif
 
 }  // namespace td
