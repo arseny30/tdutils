@@ -29,13 +29,8 @@ void EventFdBsd::init() {
 #endif
   LOG_IF(FATAL, err == -1) << Status::PosixError(socketpair_errno, "socketpair failed");
 
-  err = fcntl(fds[0], F_SETFL, O_NONBLOCK);
-  auto fcntl_errno = errno;
-  LOG_IF(FATAL, err == -1) << Status::PosixError(fcntl_errno, "fcntl 0 failed");
-
-  err = fcntl(fds[1], F_SETFL, O_NONBLOCK);
-  fcntl_errno = errno;
-  LOG_IF(FATAL, err == -1) << Status::PosixError(fcntl_errno, "fcntl 1 failed");
+  detail::set_native_socket_is_blocking(fds[0], false).ensure();
+  detail::set_native_socket_is_blocking(fds[1], false).ensure();
 
   in_ = Fd(fds[0], Fd::Mode::Owner);
   out_ = Fd(fds[1], Fd::Mode::Owner);

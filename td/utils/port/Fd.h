@@ -91,9 +91,9 @@ class Fd {
   Result<size_t> write(Slice slice) WARN_UNUSED_RESULT;
   Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT;
 
-#ifdef TD_PORT_POSIX
   Status set_is_blocking(bool is_blocking);
 
+#ifdef TD_PORT_POSIX
   void update_flags_notify(Flags flags);
   void clear_flags(Flags flags);
 
@@ -201,5 +201,14 @@ template <class FdT>
 bool can_close(const FdT &fd) {
   return (fd.get_flags() & Fd::Close) != 0;
 }
+
+namespace detail {
+#ifdef TD_PORT_POSIX
+Status set_native_socket_is_blocking(int fd, bool is_blocking);
+#endif
+#ifdef TD_PORT_WINDOWS
+Status set_native_socket_is_blocking(SOCKET fd, bool is_blocking);
+#endif
+}  // namespace detail
 
 }  // namespace td

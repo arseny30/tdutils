@@ -140,20 +140,7 @@ Status ServerSocketFd::init(int32 port, CSlice addr) {
 #endif
   };
 
-#ifdef TD_PORT_POSIX
-  int err = fcntl(fd, F_SETFL, O_NONBLOCK);
-  if (err == -1) {
-    auto fcntl_errno = errno;
-    return Status::PosixError(fcntl_errno, "Failed to make socket nonblocking");
-  }
-#endif
-#ifdef TD_PORT_WINDOWS
-  u_long iMode = 1;
-  int err = ioctlsocket(fd, FIONBIO, &iMode);
-  if (err != 0) {
-    return Status::WsaError("Failed to make socket nonblocking");
-  }
-#endif
+  TRY_STATUS(detail::set_native_socket_is_blocking(fd, false));
 
   linger ling = {0, 0};
 #ifdef TD_PORT_POSIX

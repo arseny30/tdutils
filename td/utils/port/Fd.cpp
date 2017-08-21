@@ -384,8 +384,8 @@ class Fd::FdImpl {
       : type_(type), handle_(handle), async_mode_(type_ == Fd::Type::EventFd || type_ == Fd::Type::StdinFileFd) {
     init();
   }
-  FdImpl(Fd::Type type, SOCKET sock, int socket_family)
-      : type_(type), socket_(sock), socket_family_(socket_family), async_mode_(true) {
+  FdImpl(Fd::Type type, SOCKET socket, int socket_family)
+      : type_(type), socket_(socket), socket_family_(socket_family), async_mode_(true) {
     init();
   }
 
@@ -495,7 +495,6 @@ class Fd::FdImpl {
   }
 
   SOCKET get_native_socket() const {
-    CHECK(type_ == Fd::Type::SocketFd);
     return socket_;
   }
 
@@ -1026,6 +1025,10 @@ Status Fd::duplicate(const Fd &from, Fd &to) {
   return Status::Error("Not supported");
 }
 
+Status Fd::set_is_blocking(bool is_blocking) {
+  return detail::set_native_socket_is_blocking(get_native_socket(), is_blocking);
+}
+
 Fd::Fd(Type type, Mode mode, HANDLE handle) : mode_(mode), impl_(std::make_shared<FdImpl>(type, handle)) {
 }
 
@@ -1060,5 +1063,28 @@ class InitWSA {
 static InitWSA init_wsa;
 
 #endif
+
+namespace detail {
+#ifdef TD_PORT_POSIX
+Status set_native_socket_is_blocking(int fd, bool is_blocking) {
+#endif
+#ifdef TD_PORT_WINDOWS
+Status set_native_socket_is_blocking(SOCKET fd, bool is_blocking) {
+#endif
+#ifdef TD_PORT_POSIX
+  if (fcntl(fd, F_SETFL, is_blocking ? 0 : O_NONBLOCK) == -1) {
+    auto fcntl_errno = errno;
+    return Status::PosixError(fcntl_errno, "Failed to change socket flags");
+  }
+#endif
+#ifdef TD_PORT_WINDOWS
+  u_long mode = is_blocking;
+  if (ioctlsocket(fd, FIONBIO, &mode) != 0) {
+    return Status::WsaError("Failed to change socket flags");
+  }
+#endif
+  return Status::OK();
+}
+}  // namespace detail
 
 }  // namespace td

@@ -28,11 +28,7 @@ Result<SocketFd> SocketFd::open(const IPAddress &address) {
 Result<SocketFd> SocketFd::from_native_fd(int fd) {
   auto fd_guard = ScopeExit() + [fd]() { ::close(fd); };
 
-  int err = fcntl(fd, F_SETFL, O_NONBLOCK);
-  if (err == -1) {
-    auto fcntl_errno = errno;
-    return Status::PosixError(fcntl_errno, "Failed to make socket nonblocking");
-  }
+  TRY_STATUS(set_native_socket_is_blocking(fd, false));
 
   // TODO remove copypaste
   int flags = 1;
@@ -71,20 +67,7 @@ Status SocketFd::init(const IPAddress &address) {
 #endif
   };
 
-#ifdef TD_PORT_POSIX
-  int err = fcntl(fd, F_SETFL, O_NONBLOCK);
-  if (err == -1) {
-    auto fcntl_errno = errno;
-    return Status::PosixError(fcntl_errno, "Failed to make socket nonblocking");
-  }
-#endif
-#ifdef TD_PORT_WINDOWS
-  u_long iMode = 1;
-  int err = ioctlsocket(fd, FIONBIO, &iMode);
-  if (err != 0) {
-    return Status::WsaError("Failed to make socket nonblocking");
-  }
-#endif
+  TRY_STATUS(detail::set_native_socket_is_blocking(fd, false));
 
 #ifdef TD_PORT_POSIX
   int flags = 1;
