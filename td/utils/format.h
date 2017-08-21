@@ -5,6 +5,7 @@
 #include "td/utils/StringBuilder.h"
 
 #include <tuple>
+#include <utility>
 
 namespace td {
 namespace format {

@@ -4,6 +4,7 @@
 #include "td/utils/logging.h"
 
 #include <atomic>
+#include <memory>
 
 namespace td {
 // It is draft object pool implementaion

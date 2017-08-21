@@ -7,6 +7,8 @@ char disable_linker_warning_about_empty_file_select_cpp TD_UNUSED;
 #include "td/utils/logging.h"
 #include "td/utils/port/detail/Select.h"
 
+#include <utility>
+
 namespace td {
 namespace detail {
 

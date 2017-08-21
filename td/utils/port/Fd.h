@@ -9,6 +9,8 @@
 
 #if TD_PORT_WINDOWS
 #include "td/utils/port/IPAddress.h"
+
+#include <memory>
 #endif
 
 #if TD_PORT_POSIX

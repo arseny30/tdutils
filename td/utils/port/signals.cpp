@@ -10,6 +10,7 @@
 #endif
 
 #include <cerrno>
+#include <cstdint>
 #include <cstring>
 #include <ctime>
 #include <limits>
