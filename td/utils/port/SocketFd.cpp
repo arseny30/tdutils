@@ -28,7 +28,7 @@ Result<SocketFd> SocketFd::open(const IPAddress &address) {
 Result<SocketFd> SocketFd::from_native_fd(int fd) {
   auto fd_guard = ScopeExit() + [fd]() { ::close(fd); };
 
-  TRY_STATUS(set_native_socket_is_blocking(fd, false));
+  TRY_STATUS(detail::set_native_socket_is_blocking(fd, false));
 
   // TODO remove copypaste
   int flags = 1;

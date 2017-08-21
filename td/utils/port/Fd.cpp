@@ -49,7 +49,7 @@ Fd Fd::stdin_(0, Mode::Reference);
 
 Fd::Fd() = default;
 
-Fd::Fd(int fd, Mode mode) : fd_(fd), mode_(mode) {
+Fd::Fd(int fd, Mode mode) : mode_(mode), fd_(fd) {
   auto *info = get_info();
   int old_ref_cnt = info->refcnt.load(std::memory_order_relaxed);
   if (old_ref_cnt == 0) {

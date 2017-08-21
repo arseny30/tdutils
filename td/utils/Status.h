@@ -45,7 +45,7 @@
 #define OS_SOCKET_ERROR(message) [&](){ auto saved_error = ::WSAGetLastError(); return ::td::Status::WindowsError(saved_error, (message)); }()
 #endif
 #if TD_PORT_POSIX
-#define OS_ERROR(message) [&](){ auto saved_errno = ::errno; return ::td::Status::PosixError(saved_errno, (message)); }()
+#define OS_ERROR(message) [&](){ auto saved_errno = errno; return ::td::Status::PosixError(saved_errno, (message)); }()
 #define OS_SOCKET_ERROR(message) OS_ERROR(message)
 #endif
 
