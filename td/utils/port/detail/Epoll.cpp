@@ -1,12 +1,10 @@
-#include "td/utils/port/config.h"
+#include "td/utils/port/detail/Epoll.h"
 
 char disable_linker_warning_about_empty_file_epoll_cpp TD_UNUSED;
 
 #ifdef TD_POLL_EPOLL
 
 #include <unistd.h>
-
-#include "td/utils/port/detail/Epoll.h"
 
 namespace td {
 namespace detail {

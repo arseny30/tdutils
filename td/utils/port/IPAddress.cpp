@@ -1,5 +1,3 @@
-#include "td/utils/port/config.h"
-
 #include "td/utils/port/IPAddress.h"
 
 #include "td/utils/port/SocketFd.h"

@@ -1,7 +1,6 @@
-#include "td/utils/port/config.h"
+#include "td/utils/port/Stat.h"
 
 #include "td/utils/port/FileFd.h"
-#include "td/utils/port/Stat.h"
 
 #if TD_PORT_POSIX
 

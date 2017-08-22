@@ -1,10 +1,8 @@
-#include "td/utils/port/config.h"
+#include "td/utils/port/detail/EventFdWindows.h"
 
 char disable_linker_warning_about_empty_file_event_fd_windows_cpp TD_UNUSED;
 
 #ifdef TD_EVENTFD_WINDOWS
-
-#include "td/utils/port/detail/EventFdWindows.h"
 
 namespace td {
 namespace detail {

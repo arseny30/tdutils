@@ -1,10 +1,8 @@
-#include "td/utils/port/config.h"
+#include "td/utils/port/detail/KQueue.h"
 
 char disable_linker_warning_about_empty_file_kqueue_cpp TD_UNUSED;
 
 #ifdef TD_POLL_KQUEUE
-
-#include "td/utils/port/detail/KQueue.h"
 
 #include <unistd.h>
 

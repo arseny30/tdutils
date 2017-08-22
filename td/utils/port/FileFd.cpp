@@ -1,5 +1,3 @@
-#include "td/utils/port/config.h"
-
 #include "td/utils/port/FileFd.h"
 
 #if TD_PORT_POSIX

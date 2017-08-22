@@ -1,10 +1,8 @@
-#include "td/utils/port/config.h"
+#include "td/utils/port/detail/EventFdLinux.h"
 
 char disable_linker_warning_about_empty_file_event_fd_linux_cpp TD_UNUSED;
 
 #ifdef TD_EVENTFD_LINUX
-
-#include "td/utils/port/detail/EventFdLinux.h"
 
 #include <sys/eventfd.h>
 

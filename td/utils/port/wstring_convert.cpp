@@ -1,6 +1,4 @@
-#pragma once
-
-#include "td/utils/port/config.h"
+#include "td/utils/port/wstring_convert.h"
 
 char disable_linker_warning_about_empty_file_wstring_convert_cpp TD_UNUSED;
 

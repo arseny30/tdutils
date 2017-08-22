@@ -1,7 +1,6 @@
-#include "td/utils/port/config.h"
+#include "td/utils/port/ServerSocketFd.h"
 
 #include "td/utils/port/IPAddress.h"
-#include "td/utils/port/ServerSocketFd.h"
 
 #if TD_PORT_POSIX
 
