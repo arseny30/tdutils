@@ -8,11 +8,13 @@
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
 
+#include <string>
+
 namespace td {
 
-Result<wstring> to_wstring(Slice slice);
+Result<std::wstring> to_wstring(Slice slice);
 
-Result<string> from_wstring(const wstring &str);
+Result<string> from_wstring(const std::wstring &str);
 
 Result<string> from_wstring(const wchar_t *begin, size_t size);
 

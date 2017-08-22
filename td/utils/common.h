@@ -61,7 +61,6 @@
 namespace td {
 
 using string = std::string;
-using wstring = std::wstring;
 
 template <class ValueT>
 using vector = std::vector<ValueT>;
