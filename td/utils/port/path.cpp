@@ -222,7 +222,7 @@ Result<string> realpath(CSlice slice) {
   if (status == 0) {
     return OS_ERROR(PSLICE() << "GetFullPathNameW failed for \"" << slice << '"');
   }
-  TRY_RESULT(res, to_string(buf));
+  TRY_RESULT(res, from_wstring(buf));
   if (res.empty()) {
     return Status::Error("Empty path");
   }
@@ -269,7 +269,7 @@ CSlice get_temporary_dir() {
         auto error = OS_ERROR("GetTempPathW failed");
         LOG(FATAL) << error;
       }
-      auto rs = to_string(buf);
+      auto rs = from_wstring(buf);
       LOG_IF(FATAL, rs.is_error()) << "GetTempPathW failed: " << rs.error();
       temporary_dir = rs.ok();
     }

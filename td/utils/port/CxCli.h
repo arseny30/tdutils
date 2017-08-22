@@ -6,7 +6,7 @@
 #if TD_WINRT
 
 #include "td/utils/misc.h"    // for narrow_cast
-#include "td/utils/Status.h"  // for td::to_string and td::to_wstring
+#include "td/utils/Status.h"  // for td::from_wstring and td::to_wstring
 
 #include "collection.h"
 
@@ -64,7 +64,7 @@ private:
 };
 
 inline std::string string_to_unmanaged(String^ string) {
-  return td::to_string(string->Data(), string->Length()).ok();
+  return td::from_wstring(string->Data(), string->Length()).ok();
 }
 inline String^ string_from_unmanaged(const std::string &from) {
   auto tmp = td::to_wstring(from).ok();

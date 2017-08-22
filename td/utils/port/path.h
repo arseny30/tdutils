@@ -168,7 +168,7 @@ Status walk_path_dir(const wstring &dir_name, Func &&func) {
   WIN32_FIND_DATA file_data;
   auto handle = FindFirstFileExW(name.c_str(), FindExInfoStandard, &file_data, FindExSearchNameMatch, nullptr, 0);
   if (handle == INVALID_HANDLE_VALUE) {
-    return OS_ERROR(PSLICE() << "FindFirstFileEx" << tag("name", to_string(name).ok()));
+    return OS_ERROR(PSLICE() << "FindFirstFileEx" << tag("name", from_wstring(name).ok()));
   }
 
   SCOPE_EXIT {
@@ -176,7 +176,7 @@ Status walk_path_dir(const wstring &dir_name, Func &&func) {
   };
   while (true) {
     auto full_name = dir_name + L"\\" + file_data.cFileName;
-    TRY_RESULT(entry_name, to_string(full_name));
+    TRY_RESULT(entry_name, from_wstring(full_name));
     if (file_data.cFileName[0] != '.') {
       if ((file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
         TRY_STATUS(walk_path_dir(full_name, func));

@@ -8,7 +8,6 @@
 #include "td/utils/StringBuilder.h"
 
 #include <cerrno>
-#include <cstring>  // for strerror
 #include <new>
 #include <utility>
 
@@ -437,21 +436,21 @@ inline StringBuilder &operator<<(StringBuilder &string_builder, const Status &st
   return status.print(string_builder);
 }
 
-// TODO move to_string somewhere else
+// TODO move to_wstring/from_wstring somewhere else
 
 #if TD_PORT_WINDOWS
 template <class Facet>
-class usable_facet : public Facet {
+class UsableFacet : public Facet {
  public:
   template <class... Args>
-  explicit usable_facet(Args &&... args) : Facet(std::forward<Args>(args)...) {
+  explicit UsableFacet(Args &&... args) : Facet(std::forward<Args>(args)...) {
   }
-  ~usable_facet() = default;
+  ~UsableFacet() = default;
 };
 
 inline Result<wstring> to_wstring(Slice slice) {
   // TODO(perf): optimize
-  std::wstring_convert<usable_facet<std::codecvt_utf8_utf16<wchar_t>>> converter;
+  std::wstring_convert<UsableFacet<std::codecvt_utf8_utf16<wchar_t>>> converter;
   auto res = converter.from_bytes(slice.begin(), slice.end());
   if (converter.converted() != slice.size()) {
     return Status::Error("Wrong encoding");
@@ -459,8 +458,8 @@ inline Result<wstring> to_wstring(Slice slice) {
   return res;
 }
 
-inline Result<string> to_string(const wchar_t *begin, size_t size) {
-  std::wstring_convert<usable_facet<std::codecvt_utf8_utf16<wchar_t>>> converter;
+inline Result<string> from_wstring(const wchar_t *begin, size_t size) {
+  std::wstring_convert<UsableFacet<std::codecvt_utf8_utf16<wchar_t>>> converter;
   auto res = converter.to_bytes(begin, begin + size);
   if (converter.converted() != size) {
     return Status::Error("Wrong encoding");
@@ -468,34 +467,16 @@ inline Result<string> to_string(const wchar_t *begin, size_t size) {
   return res;
 }
 
-inline Result<string> to_string(const wstring &str) {
-  return to_string(str.data(), str.size());
+inline Result<string> from_wstring(const wstring &str) {
+  return from_wstring(str.data(), str.size());
 }
-inline Result<string> to_string(const wchar_t *begin) {
-  return to_string(begin, wcslen(begin));
-}
-
-inline string winerror_to_string(int code) {
-  const size_t size = 1000;
-  wchar_t wbuf[size];
-  auto res_size = ::FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,                 // It's a system error
-                                  nullptr,                                    // No string to be formatted needed
-                                  code,                                       // Hey Windows: Please explain this error!
-                                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),  // Do it in the standard language
-                                  wbuf,                                       // Put the message here
-                                  size - 1,                                   // Number of bytes to store the message
-                                  nullptr);
-  if (res_size == 0) {
-    return string("Unknown windows error");
-  }
-  while (res_size != 0 && (wbuf[res_size - 1] == '\n' || wbuf[res_size - 1] == '\r')) {
-    res_size--;
-  }
-  return to_string(wbuf, res_size).ok();
+inline Result<string> from_wstring(const wchar_t *begin) {
+  return from_wstring(begin, wcslen(begin));
 }
 #endif
 
 namespace detail {
+
 class SlicifySafe {
  public:
   Result<CSlice> operator&(Logger &logger) {
@@ -505,6 +486,7 @@ class SlicifySafe {
     return logger.as_cslice();
   }
 };
+
 class StringifySafe {
  public:
   Result<string> operator&(Logger &logger) {
@@ -514,5 +496,6 @@ class StringifySafe {
     return logger.as_cslice().str();
   }
 };
+
 }  // namespace detail
 }  // namespace td
