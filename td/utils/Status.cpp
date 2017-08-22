@@ -1,6 +1,16 @@
 #include "td/utils/Status.h"
 
-#include <cstring>  // for strerror
+#if TD_PORT_POSIX
+#include "td/utils/port/thread_local.h"
+
+#include <string.h>
+
+#include <cstring>
+#endif
+
+#if TD_PORT_WINDOWS
+#include "td/utils/port/wstring_convert.h"
+#endif
 
 namespace td {
 
@@ -8,7 +18,7 @@ namespace td {
 CSlice strerror_safe(int code) {
   const size_t size = 1000;
 
-  static TD_THREAD_LOCAL char *buf;  // static zero-initialized
+  static TD_THREAD_LOCAL char *buf;
   init_thread_local<char[]>(buf, size);
 
 #if !defined(__GLIBC__) || ((_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && !_GNU_SOURCE)
@@ -34,6 +44,5 @@ string winerror_to_string(int code) {
   return from_wstring(wbuf, res_size).ok();
 }
 #endif
-
 
 }  // namespace td

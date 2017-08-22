@@ -11,11 +11,6 @@
 #include <new>
 #include <utility>
 
-#if TD_PORT_WINDOWS
-#include <codecvt>
-#include <locale>
-#endif
-
 #define TRY_STATUS(status)               \
   {                                      \
     auto try_status = (status);          \
@@ -435,45 +430,6 @@ inline Result<Unit>::Result(Status &&status) : status_(std::move(status)) {
 inline StringBuilder &operator<<(StringBuilder &string_builder, const Status &status) {
   return status.print(string_builder);
 }
-
-// TODO move to_wstring/from_wstring somewhere else
-
-#if TD_PORT_WINDOWS
-template <class Facet>
-class UsableFacet : public Facet {
- public:
-  template <class... Args>
-  explicit UsableFacet(Args &&... args) : Facet(std::forward<Args>(args)...) {
-  }
-  ~UsableFacet() = default;
-};
-
-inline Result<wstring> to_wstring(Slice slice) {
-  // TODO(perf): optimize
-  std::wstring_convert<UsableFacet<std::codecvt_utf8_utf16<wchar_t>>> converter;
-  auto res = converter.from_bytes(slice.begin(), slice.end());
-  if (converter.converted() != slice.size()) {
-    return Status::Error("Wrong encoding");
-  }
-  return res;
-}
-
-inline Result<string> from_wstring(const wchar_t *begin, size_t size) {
-  std::wstring_convert<UsableFacet<std::codecvt_utf8_utf16<wchar_t>>> converter;
-  auto res = converter.to_bytes(begin, begin + size);
-  if (converter.converted() != size) {
-    return Status::Error("Wrong encoding");
-  }
-  return res;
-}
-
-inline Result<string> from_wstring(const wstring &str) {
-  return from_wstring(str.data(), str.size());
-}
-inline Result<string> from_wstring(const wchar_t *begin) {
-  return from_wstring(begin, wcslen(begin));
-}
-#endif
 
 namespace detail {
 

@@ -1,7 +1,9 @@
 #pragma once
+
 #include <chrono>
 
 namespace td {
+
 class ClocksBase {
  public:
   using Duration = double;
@@ -22,4 +24,5 @@ class ClocksDefault {
 };
 
 using Clocks = ClocksDefault;
+
 }  // namespace td

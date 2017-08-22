@@ -12,6 +12,7 @@
 
 #if TD_PORT_WINDOWS
 #include "td/utils/misc.h"  // for narrow_cast
+#include "td/utils/port/wstring_convert.h"
 #endif
 
 #include <cstring>

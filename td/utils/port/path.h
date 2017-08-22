@@ -1,4 +1,5 @@
 #pragma once
+
 #include "td/utils/port/config.h"
 
 #include "td/utils/common.h"
@@ -18,6 +19,10 @@
 
 #if TD_DARWIN
 #include <sys/syslimits.h>
+#endif
+
+#if TD_PORT_WINDOWS
+#include "td/utils/port/wstring_convert.h"
 #endif
 
 namespace td {

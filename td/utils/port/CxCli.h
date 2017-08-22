@@ -6,12 +6,12 @@
 #if TD_WINRT
 
 #include "td/utils/misc.h"    // for narrow_cast
-#include "td/utils/Status.h"  // for td::from_wstring and td::to_wstring
+#include "td/utils/port/wstring_convert.h"
 
 #include "collection.h"
 
-#include <mutex>
 #include <map>
+#include <mutex>
 #include <queue>
 
 #define REF_NEW ref new

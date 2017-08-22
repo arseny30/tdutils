@@ -26,6 +26,8 @@ set(TDUTILS_SOURCE
   td/utils/port/SocketFd.cpp
   td/utils/port/Stat.cpp
   td/utils/port/thread_local.cpp
+  td/utils/port/wstring_convert.cpp
+
   td/utils/port/detail/Epoll.cpp
   td/utils/port/detail/EventFdBsd.cpp
   td/utils/port/detail/EventFdLinux.cpp
@@ -47,13 +49,13 @@ set(TDUTILS_SOURCE
   td/utils/logging.cpp
   td/utils/MimeType.cpp
   td/utils/Random.cpp
+  td/utils/StackAllocator.cpp
+  td/utils/Status.cpp
   td/utils/Time.cpp
   td/utils/Timer.cpp
   td/utils/tl_parsers.cpp
   td/utils/unicode.cpp
   td/utils/utf8.cpp
-  td/utils/StackAllocator.cpp
-  td/utils/Status.cpp
 
   td/utils/port/Clocks.h
   td/utils/port/config.h
@@ -74,6 +76,8 @@ set(TDUTILS_SOURCE
   td/utils/port/Stat.h
   td/utils/port/thread.h
   td/utils/port/thread_local.h
+  td/utils/port/wstring_convert.h
+
   td/utils/port/detail/Epoll.h
   td/utils/port/detail/EventFdBsd.h
   td/utils/port/detail/EventFdLinux.h
