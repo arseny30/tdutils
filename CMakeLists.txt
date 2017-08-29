@@ -95,6 +95,7 @@ set(TDUTILS_SOURCE
   td/utils/BufferedFd.h
   td/utils/BufferedReader.h
   td/utils/ByteFlow.h
+  td/utils/ChangesProcessor.h
   td/utils/Closure.h
   td/utils/common.h
   td/utils/crypto.h
@@ -119,6 +120,7 @@ set(TDUTILS_SOURCE
   td/utils/Observer.h
   td/utils/optional.h
   td/utils/OptionsParser.h
+  td/utils/OrderedEventsProcessor.h
   td/utils/Parser.h
   td/utils/PathView.h
   td/utils/queue.h

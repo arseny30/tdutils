@@ -94,13 +94,6 @@ struct ListNode {
   }
 };
 
-struct UnreachableDeleter {
-  template <class T>
-  void operator()(T *) {
-    UNREACHABLE();
-  }
-};
-
 // 1. Allocates all objects in vector. (but vector never shrinks)
 // 2. Id is safe way to reach this object.
 // 3. All ids are unique.
@@ -716,124 +709,6 @@ class FloodControlStrict {
   size_t without_update_ = 0;
   std::vector<Event> events_;
   std::vector<Limit> limits_;
-};
-
-// Process changes after they are finished in order of addition
-template <class DataT>
-class ChangesProcessor {
- public:
-  using Id = uint64;
-
-  void clear() {
-    offset_ += data_array_.size();
-    ready_i_ = 0;
-    data_array_.clear();
-  }
-
-  template <class FromDataT>
-  Id add(FromDataT &&data) {
-    auto res = offset_ + data_array_.size();
-    data_array_.emplace_back(std::forward<DataT>(data), false);
-    return static_cast<Id>(res);
-  }
-
-  template <class F>
-  void finish(Id token, F &&func) {
-    size_t pos = static_cast<size_t>(token) - offset_;
-    if (pos >= data_array_.size()) {
-      return;
-    }
-    data_array_[pos].second = true;
-    while (ready_i_ < data_array_.size() && data_array_[ready_i_].second == true) {
-      func(std::move(data_array_[ready_i_].first));
-      ready_i_++;
-    }
-    try_compactify();
-  }
-
- private:
-  size_t offset_ = 1;
-  size_t ready_i_ = 0;
-  std::vector<std::pair<DataT, bool>> data_array_;
-  void try_compactify() {
-    if (ready_i_ > 5 && ready_i_ * 2 > data_array_.size()) {
-      data_array_.erase(data_array_.begin(), data_array_.begin() + ready_i_);
-      offset_ += ready_i_;
-      ready_i_ = 0;
-    }
-  }
-};
-
-// Process states in order defined by their Id
-template <class DataT>
-class OrderedEventsProcessor {
- public:
-  using SeqNo = uint64;
-
-  OrderedEventsProcessor() = default;
-  explicit OrderedEventsProcessor(SeqNo offset) : offset_(offset), begin_(offset_), end_(offset_) {
-  }
-
-  template <class FromDataT, class FunctionT>
-  void add(SeqNo seq_no, FromDataT &&data, FunctionT &&function) {
-    CHECK(seq_no >= begin_) << seq_no << ">=" << begin_;  // or ignore?
-
-    if (seq_no == begin_) {  // run now
-      begin_++;
-      function(seq_no, std::forward<FromDataT>(data));
-
-      while (begin_ < end_) {
-        auto &data_flag = data_array_[static_cast<size_t>(begin_ - offset_)];
-        if (!data_flag.second) {
-          break;
-        }
-        function(begin_, std::move(data_flag.first));
-        data_flag.second = false;
-        begin_++;
-      }
-      if (begin_ > end_) {
-        end_ = begin_;
-      }
-      if (begin_ == end_) {
-        offset_ = begin_;
-      }
-
-      // try_compactify
-      auto begin_pos = static_cast<size_t>(begin_ - offset_);
-      if (begin_pos > 5 && begin_pos * 2 > data_array_.size()) {
-        data_array_.erase(data_array_.begin(), data_array_.begin() + begin_pos);
-        offset_ = begin_;
-      }
-    } else {
-      auto pos = static_cast<size_t>(seq_no - offset_);
-      CHECK(pos <= 10000) << "pos = " << pos << ", seq_no = " << seq_no << ", offset_seq_no = " << offset_;
-      auto need_size = pos + 1;
-      if (data_array_.size() < need_size) {
-        data_array_.resize(need_size);
-      }
-      data_array_[pos].first = std::forward<FromDataT>(data);
-      data_array_[pos].second = true;
-      if (end_ < seq_no + 1) {
-        end_ = seq_no + 1;
-      }
-    }
-  }
-
-  bool has_events() const {
-    return begin_ != end_;
-  }
-  SeqNo max_unfinished_seq_no() {
-    return end_ - 1;
-  }
-  SeqNo max_finished_seq_no() {
-    return begin_ - 1;
-  }
-
- private:
-  SeqNo offset_ = 1;
-  SeqNo begin_ = 1;
-  SeqNo end_ = 1;
-  std::vector<std::pair<DataT, bool>> data_array_;
 };
 
 }  // namespace td
