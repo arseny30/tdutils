@@ -111,6 +111,7 @@ set(TDUTILS_SOURCE
   td/utils/int_types.h
   td/utils/invoke.h
   td/utils/JsonBuilder.h
+  td/utils/List.h
   td/utils/logging.h
   td/utils/MemoryLog.h
   td/utils/MimeType.h
