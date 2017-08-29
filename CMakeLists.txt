@@ -98,6 +98,7 @@ set(TDUTILS_SOURCE
   td/utils/ChangesProcessor.h
   td/utils/Closure.h
   td/utils/common.h
+  td/utils/Container.h
   td/utils/crypto.h
   td/utils/FileLog.h
   td/utils/filesystem.h
