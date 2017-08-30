@@ -20,7 +20,7 @@
 
 namespace td {
 
-#if TD_PORT_POSIX
+#if TD_PORT_POSIX && !TD_DARWIN_TV_OS && !TD_DARWIN_WATCH_OS
 static Status protect_memory(void *addr, size_t len) {
   if (mprotect(addr, len, PROT_NONE) != 0) {
     return OS_ERROR("mprotect failed");
