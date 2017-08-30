@@ -30,7 +30,7 @@ static Status protect_memory(void *addr, size_t len) {
 #endif
 
 Status setup_signals_alt_stack() {
-#if TD_PORT_POSIX
+#if TD_PORT_POSIX && !TD_DARWIN_TV_OS && !TD_DARWIN_WATCH_OS
   auto page_size = getpagesize();
   auto stack_size = (MINSIGSTKSZ + 16 * page_size - 1) / page_size * page_size;
 

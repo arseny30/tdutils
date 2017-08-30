@@ -13,12 +13,20 @@
   #define TD_WINDOWS 1
 #elif defined(__APPLE__)
   #include "TargetConditionals.h"
-  #if TARGET_IPHONE_SIMULATOR
-    // iOS/watchOS Simulator
-  #elif TARGET_OS_IPHONE
-    // iOS/watchOS device
+  #if TARGET_OS_IPHONE
+    // iOS/Apple Watch OS/Apple TV OS
+    #if TARGET_OS_IOS
+      #define TD_DARWIN_IOS 1
+    #elif TARGET_OS_TV
+      #define TD_DARWIN_TV_OS 1
+    #elif TARGET_OS_WATCH
+      #define TD_DARWIN_WATCH_OS 1
+    #else
+      #warning "Probably unsupported Apple iPhone platform. Feel free to try to compile"
+    #endif
   #elif TARGET_OS_MAC
     // Other kinds of Mac OS
+    #define TD_DARWIN_MAC 1
   #else
     #warning "Probably unsupported Apple platform. Feel free to try to compile"
   #endif
