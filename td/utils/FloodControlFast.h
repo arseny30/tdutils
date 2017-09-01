@@ -3,6 +3,8 @@
 #include "td/utils/common.h"
 #include "td/utils/TimedStat.h"
 
+#include <algorithm>
+
 namespace td {
 
 class FloodControlFast {

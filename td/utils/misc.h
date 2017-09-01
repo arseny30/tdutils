@@ -4,7 +4,7 @@
 #include "td/utils/logging.h"
 #include "td/utils/Slice.h"
 
-#include <algorithm>
+#include <cstdint>
 #include <cstdlib>
 #include <initializer_list>
 #include <iterator>
@@ -75,6 +75,13 @@ auto transform(T &&v, const Func &f) {
     result.push_back(f(std::move(x)));
   }
   return result;
+}
+
+template <class T>
+void reset(T &value) {
+  using std::swap;
+  std::decay_t<T> tmp;
+  swap(tmp, value);
 }
 
 template <class T>
@@ -302,6 +309,12 @@ R narrow_cast(const A &a) {
   CHECK((detail::is_same_signedness<RT, AT>::value) || ((static_cast<RT>(r) < RT{}) == (static_cast<AT>(a) < AT{})));
 
   return r;
+}
+
+template <int Alignment, class T>
+bool is_aligned_pointer(const T *pointer) {
+  static_assert(Alignment > 0 && (Alignment & (Alignment - 1)) == 0, "Wrong alignment");
+  return (reinterpret_cast<std::uintptr_t>(static_cast<const void *>(pointer)) & (Alignment - 1)) == 0;
 }
 
 }  // namespace td

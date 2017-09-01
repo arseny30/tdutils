@@ -8,6 +8,7 @@
 #include "td/utils/StringBuilder.h"
 
 #include <cerrno>
+#include <cstring>
 #include <new>
 #include <utility>
 

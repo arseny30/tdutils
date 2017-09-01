@@ -2,7 +2,7 @@
 
 #include "td/utils/buffer.h"  // for BufferSlice
 #include "td/utils/common.h"
-#include "td/utils/misc.h"  // narrow_cast
+#include "td/utils/misc.h"
 #include "td/utils/Slice.h"
 #include "td/utils/StackAllocator.h"
 #include "td/utils/Status.h"
