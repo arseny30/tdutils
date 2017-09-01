@@ -123,6 +123,7 @@ set(TDUTILS_SOURCE
   td/utils/misc.h
   td/utils/MovableValue.h
   td/utils/MpscPollableQueue.h
+  td/utils/Named.h
   td/utils/ObjectPool.h
   td/utils/Observer.h
   td/utils/optional.h

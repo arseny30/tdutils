@@ -15,19 +15,6 @@
 
 namespace td {
 
-class Named {
- public:
-  Slice get_name() const {
-    return name_;
-  }
-  void set_name(Slice name) {
-    name_ = name.str();
-  }
-
- private:
-  string name_;
-};
-
 inline char *str_dup(Slice str) {
   char *res = static_cast<char *>(std::malloc(str.size() + 1));
   if (res == nullptr) {
