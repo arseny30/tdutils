@@ -107,6 +107,8 @@ set(TDUTILS_SOURCE
   td/utils/crypto.h
   td/utils/FileLog.h
   td/utils/filesystem.h
+  td/utils/FloodControlFast.h
+  td/utils/FloodControlStrict.h
   td/utils/format.h
   td/utils/Gzip.h
   td/utils/GzipByteFlow.h
@@ -143,6 +145,7 @@ set(TDUTILS_SOURCE
   td/utils/StringBuilder.h
   td/utils/tests.h
   td/utils/Time.h
+  td/utils/TimedStat.h
   td/utils/Timer.h
   td/utils/tl_helpers.h
   td/utils/tl_parsers.h
