@@ -11,7 +11,7 @@ string mime_type_to_extension(Slice mime_type, Slice default_value) {
 
   const char *result = ::mime_type_to_extension(mime_type.data(), mime_type.size());
   if (result != nullptr) {
-    return string(1, '.') + result;
+    return result;
   }
 
   LOG(INFO) << "Unknown file mime type " << mime_type;
