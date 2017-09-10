@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.0.2)
 
-# DEPENDS ON:
-# ZLIB OPENSSL gperf
+if (NOT OPENSSL_LIBRARIES)
+  find_package(OpenSSL REQUIRED)
+endif()
+
+if (NOT ZLIB_LIBRARIES)
+  find_package(ZLIB REQUIRED)
+endif()
 
 add_subdirectory(generate)
 

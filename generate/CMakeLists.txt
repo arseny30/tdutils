@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0.2)
 
-# Generate files for mime types
+# Generate files for mime type <-> extension conversions
+# DEPENDS ON: gperf grep bash/powershell
+
 file(MAKE_DIRECTORY auto)
 
 set(TDMIME_SOURCE
