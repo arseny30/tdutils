@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.0.2)
-include_directories(".")
 
 # Generate files for mime types
 file(MAKE_DIRECTORY auto)

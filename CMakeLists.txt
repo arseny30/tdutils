@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.0.2)
 
 # DEPENDS ON:
 # ZLIB OPENSSL gperf
-find_package(ZLIB REQUIRED)
-include_directories(${ZLIB_INCLUDE_DIR})
 
 add_subdirectory(generate)
 
@@ -151,7 +149,6 @@ set(TDUTILS_SOURCE
 #RULES
 #LIBRARIES
 add_library(tdutils STATIC ${TDUTILS_SOURCE})
-target_include_directories(tdutils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 if (WIN32)
   target_link_libraries(tdutils PRIVATE ws2_32 Mswsock)
 endif()
@@ -159,3 +156,4 @@ if (NOT CMAKE_CROSSCOMPILING)
   add_dependencies(tdutils tdmime_auto)
 endif()
 target_link_libraries(tdutils PUBLIC ${ZLIB_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} PRIVATE ${OPENSSL_LIBRARIES})
+target_include_directories(tdutils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> ${ZLIB_INCLUDE_DIR} PRIVATE ${OPENSSL_INCLUDE_DIR})
