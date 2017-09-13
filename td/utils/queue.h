@@ -418,4 +418,4 @@ class PollQueue : public QueueT {
     }
   }
 };
-}  // end namespace td
+}  // namespace td

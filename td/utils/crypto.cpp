@@ -1,5 +1,6 @@
 #include "td/utils/crypto.h"
 
+#include "td/utils/BigNum.h"
 #include "td/utils/logging.h"
 #include "td/utils/misc.h"
 #include "td/utils/port/RwMutex.h"
@@ -7,7 +8,6 @@
 #include "td/utils/Random.h"
 
 #include <openssl/aes.h>
-#include <openssl/bn.h>
 #include <openssl/crypto.h>
 #include <openssl/evp.h>
 #include <openssl/md5.h>
@@ -21,18 +21,6 @@
 #include <utility>
 
 namespace td {
-
-static string BN_to_string(const BIGNUM *bn, int size = 0) {
-  int num_size = BN_num_bytes(bn);
-  if (size == 0) {
-    size = num_size;
-  } else {
-    CHECK(size >= num_size);
-  }
-  string res(size, 0);
-  BN_bn2bin(bn, reinterpret_cast<unsigned char *>(&res[size - num_size]));
-  return res;
-}
 
 template <class FromT>
 static string as_big_endian_string(const FromT &from) {
@@ -51,12 +39,6 @@ static string as_big_endian_string(const FromT &from) {
   std::reverse(res.begin(), res.end());
   return res;
 }
-
-// static void BN_print(Slice name, BIGNUM *num) {
-// char *p_dec = BN_bn2dec(num);
-// LOG(INFO) << tag(name, p_dec);
-// OPENSSL_free(p_dec);
-//}
 
 static uint64 gcd(uint64 a, uint64 b) {
   if (a == 0) {
@@ -148,65 +130,61 @@ uint64 pq_factorize(uint64 pq) {
 static int pq_factorize_big(Slice pq_str, string *p_str, string *q_str) {
   // TODO: qsieve?
   // do not work for pq == 1
-  BN_CTX *ctx = BN_CTX_new();
-  BIGNUM *pq = BN_new();
-  BIGNUM *a = BN_new();
-  BIGNUM *b = BN_new();
+  BigNumContext context;
+  BigNum a;
+  BigNum b;
+  BigNum p;
+  BigNum q;
+  BigNum one;
+  one.set_value(1);
 
-  BIGNUM *p = BN_new();
-  BIGNUM *q = BN_new();
-  BIGNUM *one = BN_new();
-  BN_one(one);
-
-  BN_bin2bn(pq_str.ubegin(), static_cast<int>(pq_str.size()), pq);
+  BigNum pq = BigNum::from_binary(pq_str);
 
   bool found = false;
   for (int i = 0, it = 0; !found && (i < 3 || it < 1000); i++) {
     int32 t = Random::fast(17, 32);
-    BN_set_word(a, Random::fast_uint32());
-    BN_copy(b, a);
+    a.set_value(Random::fast_uint32());
+    b = a;
 
     int32 lim = 1 << (i + 23);
     for (int j = 1; j < lim; j++) {
       it++;
-      BN_mod_mul(a, a, a, pq, ctx);
-      BN_add_word(a, t);
-      if (BN_cmp(a, b) > 0) {
-        BN_sub(q, a, b);
-      } else {
-        BN_sub(q, b, a);
+      BigNum::mod_mul(a, a, a, pq, context);
+      a += t;
+      if (BigNum::compare(a, pq) >= 0) {
+        BigNum tmp;
+        BigNum::sub(tmp, a, pq);
+        a = std::move(tmp);
       }
-      BN_gcd(p, q, pq, ctx);
-      if (BN_cmp(p, one) != 0) {
+      if (BigNum::compare(a, b) > 0) {
+        BigNum::sub(q, a, b);
+      } else {
+        BigNum::sub(q, b, a);
+      }
+      BigNum::gcd(p, q, pq, context);
+      if (BigNum::compare(p, one) != 0) {
         found = true;
         break;
       }
       if ((j & (j - 1)) == 0) {
-        BN_copy(b, a);
+        b = a;
       }
     }
   }
 
-  int result = -1;
   if (found) {
-    result = 0;
-
-    BN_div(q, nullptr, pq, p, ctx);
-    if (BN_cmp(p, q) > 0) {
+    BigNum::div(&q, nullptr, pq, p, context);
+    if (BigNum::compare(p, q) > 0) {
       std::swap(p, q);
     }
 
-    *p_str = BN_to_string(p);
-    *q_str = BN_to_string(q);
+    *p_str = p.to_binary();
+    *q_str = q.to_binary();
+
+    return 0;
   }
 
-  BN_free(one);
-  BN_free(p);
-  BN_free(q);
-  BN_free(b);
-  BN_free(a);
-  BN_CTX_free(ctx);
-  return result;
+  return -1;
 }
 
 int pq_factorize(Slice pq_str, string *p_str, string *q_str) {
@@ -503,4 +481,4 @@ void init_openssl_threads() {
 #endif
 }
 
-}  // end namespace td
+}  // namespace td

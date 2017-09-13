@@ -145,7 +145,7 @@ void KQueue::run(int timeout_ms) {
     Fd(static_cast<int>(event->ident), Fd::Mode::Reference).update_flags_notify(flags);
   }
 }
-}  // end namespace detail
-}  // end namespace td
+}  // namespace detail
+}  // namespace td
 
 #endif  // TD_POLL_KQUEUE

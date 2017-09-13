@@ -43,6 +43,7 @@ set(TDUTILS_SOURCE
   ${TDMIME_AUTO}
 
   td/utils/base64.cpp
+  td/utils/BigNum.cpp
   td/utils/buffer.cpp
   td/utils/crypto.cpp
   td/utils/filesystem.cpp
@@ -96,6 +97,7 @@ set(TDUTILS_SOURCE
   td/utils/AesCtrByteFlow.h
   td/utils/base64.h
   td/utils/benchmark.h
+  td/utils/BigNum.h
   td/utils/buffer.h
   td/utils/BufferedFd.h
   td/utils/BufferedReader.h
