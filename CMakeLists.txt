@@ -4,7 +4,7 @@ if (NOT OPENSSL_LIBRARIES)
   find_package(OpenSSL REQUIRED)
 endif()
 
-if (NOT ZLIB_LIBRARIES)
+if (NOT ZLIB_LIBRARIES AND NOT EMSCRIPTEN)
   find_package(ZLIB REQUIRED)
 endif()
 
