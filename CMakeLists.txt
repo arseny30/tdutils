@@ -38,6 +38,7 @@ set(TDUTILS_SOURCE
   td/utils/port/detail/EventFdLinux.cpp
   td/utils/port/detail/EventFdWindows.cpp
   td/utils/port/detail/KQueue.cpp
+  td/utils/port/detail/Poll.cpp
   td/utils/port/detail/Select.cpp
 
   ${TDMIME_AUTO}
@@ -89,6 +90,7 @@ set(TDUTILS_SOURCE
   td/utils/port/detail/EventFdLinux.h
   td/utils/port/detail/EventFdWindows.h
   td/utils/port/detail/KQueue.h
+  td/utils/port/detail/Poll.h
   td/utils/port/detail/Select.h
   td/utils/port/detail/ThreadPthread.h
   td/utils/port/detail/ThreadStl.h
