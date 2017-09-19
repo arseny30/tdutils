@@ -39,6 +39,8 @@
   #define TD_LINUX 1
 #elif defined(__CYGWIN__)
   #define TD_CYGWIN 1
+#elif defined(__EMSCRIPTEN__)
+   #define TD_EMSCRIPTEN 1
 #elif defined(__unix__)  // all unices not caught above
   #warning "Probably unsupported Unix platform. Feel free to try to recompile"
   #define TD_CYGWIN 1

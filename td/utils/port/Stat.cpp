@@ -40,7 +40,7 @@ Stat from_native_stat(const struct ::stat &buf) {
   res.mtime_nsec_ = buf.st_mtimespec.tv_sec * 1000000000ll + buf.st_mtimespec.tv_nsec;  // khm
   res.atime_nsec_ = buf.st_atimespec.tv_sec * 1000000000ll + buf.st_atimespec.tv_nsec;
 #else
-#if defined(_BSD_SOURCE) || defined(_SVID_SOURCE) || _POSIX_C_SOURCE >= 200809L || _XOPEN_SOURCE >= 700
+#if defined(_BSD_SOURCE) || defined(_SVID_SOURCE) || _POSIX_C_SOURCE >= 200809L || _XOPEN_SOURCE >= 700 || TD_EMSCRIPTEN
   res.mtime_nsec_ = buf.st_mtime * 1000000000ll + buf.st_mtim.tv_nsec;
   res.atime_nsec_ = buf.st_atime * 1000000000ll + buf.st_atim.tv_nsec;
 #else

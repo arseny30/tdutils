@@ -12,6 +12,11 @@
   #define TD_POLL_SELECT 1
   #define TD_EVENTFD_BSD 1
   #define TD_PORT_POSIX 1
+#elif TD_EMSCRIPTEN
+// FIXME
+  #define TD_POLL_SELECT 1
+  #define TD_EVENTFD_BSD 1
+  #define TD_PORT_POSIX 1
 #elif TD_DARWIN
   #define TD_POLL_KQUEUE 1
   #define TD_EVENTFD_BSD 1

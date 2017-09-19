@@ -116,7 +116,7 @@ Status ServerSocketFd::init(int32 port, CSlice addr) {
   linger ling = {0, 0};
 #if TD_PORT_POSIX
   int flags = 1;
-#if !TD_ANDROID && !TD_CYGWIN
+#if !TD_ANDROID && !TD_CYGWIN && !TD_EMSCRIPTEN
   setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, reinterpret_cast<const char *>(&flags), sizeof(flags));
 #endif
 #elif TD_PORT_WINDOWS
