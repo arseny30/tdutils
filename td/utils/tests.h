@@ -31,29 +31,68 @@ class Test : private ListNode {
   static void add_substr_filter(std::string str) {
     get_substr_filters()->push_back(std::move(str));
   }
+  static void set_stress_flag(bool flag) {
+    get_stress_flag() = flag;
+  }
   static void run_all() {
-    for (auto end = get_tests_list(), cur = end->next; cur != end; cur = cur->next) {
-      auto test = static_cast<td::Test *>(cur);
-      bool ok = true;
-      for (const auto &filter : *get_substr_filters()) {
-        if (test->name_.str().find(filter) == std::string::npos) {
-          ok = false;
-          break;
+    while (run_all_step()) {
+    }
+  }
+
+  static bool run_all_step() {
+    auto *state = get_state();
+    if (state->it == nullptr) {
+      state->end = get_tests_list();
+      state->it = state->end->next;
+    }
+
+    while (state->it != state->end) {
+      auto test = static_cast<td::Test *>(state->it);
+      if (!state->is_running) {
+        bool ok = true;
+        for (const auto &filter : *get_substr_filters()) {
+          if (test->name_.str().find(filter) == std::string::npos) {
+            ok = false;
+            break;
+          }
         }
-      }
-      if (!ok) {
-        continue;
+        if (!ok) {
+          state->it = state->it->next;
+          continue;
+        }
+        LOG(ERROR) << "Run test " << tag("name", test->name_);
+        state->start = Time::now();
+        state->is_running = true;
       }
 
-      LOG(ERROR) << "Run test " << tag("name", test->name_);
-      auto start = Time::now();
-      test->run();
-      LOG(ERROR) << format::as_time(Time::now() - start);
+      if (test->step()) {
+        break;
+      }
+
+      LOG(ERROR) << format::as_time(Time::now() - state->start);
+      state->is_running = false;
+      state->it = state->it->next;
     }
+
+    auto ret = state->it != state->end;
+    if (!ret) {
+      *state = State();
+    }
+    return ret || get_stress_flag();
   }
 
  private:
   CSlice name_;
+  struct State {
+    ListNode *it = nullptr;
+    bool is_running = false;
+    double start;
+    ListNode *end = nullptr;
+  };
+  static State *get_state() {
+    static State state;
+    return &state;
+  }
   static std::vector<std::string> *get_substr_filters() {
     static std::vector<std::string> substr_filters_;
     return &substr_filters_;
@@ -67,7 +106,19 @@ class Test : private ListNode {
     static bool is_ok = true;
     return is_ok;
   }
-  virtual void run() = 0;
+  static bool &get_stress_flag() {
+    static bool stress_flag = false;
+    return stress_flag;
+  }
+  virtual void run() {
+    while (step()) {
+    }
+  }
+
+  virtual bool step() {
+    run();
+    return false;
+  }
 };
 
 template <class T1, class T2>
