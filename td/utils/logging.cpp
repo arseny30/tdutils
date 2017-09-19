@@ -17,6 +17,8 @@
 #elif TD_TIZEN
 #include <dlog.h>
 #define DLOG_TAG "DLTD"
+#elif TD_EMSCRIPTEN
+#include <emscripten.h>
 #endif
 
 namespace td {
@@ -171,6 +173,23 @@ class DefaultLog : public LogInterface {
         dlog_print(DLOG_DEBUG, DLOG_TAG, slice.c_str());
         break;
     }
+#elif TD_EMSCRIPTEN
+    switch (log_level) {
+      case VERBOSITY_NAME(FATAL):
+        emscripten_log(
+            EM_LOG_ERROR | EM_LOG_CONSOLE | EM_LOG_C_STACK | EM_LOG_JS_STACK | EM_LOG_DEMANGLE | EM_LOG_FUNC_PARAMS,
+            "%s", slice.c_str());
+        break;
+      case VERBOSITY_NAME(ERROR):
+        emscripten_log(EM_LOG_ERROR | EM_LOG_CONSOLE, "%s", slice.c_str());
+        break;
+      case VERBOSITY_NAME(WARNING):
+        emscripten_log(EM_LOG_WARN | EM_LOG_CONSOLE, "%s", slice.c_str());
+        break;
+      default:
+        emscripten_log(EM_LOG_CONSOLE, "%s", slice.c_str());
+        break;
+    }
 #elif !TD_WINDOWS
     Slice color;
     switch (log_level) {
@@ -199,7 +218,7 @@ class DefaultLog : public LogInterface {
 
  private:
   // TODO MemoryLog
-};
+};  // namespace td
 static DefaultLog default_log;
 
 LogInterface *const default_log_interface = &default_log;
