@@ -4,10 +4,13 @@ char disable_linker_warning_about_empty_file_poll_cpp TD_UNUSED;
 
 #ifdef TD_POLL_POLL
 
-#include "td/utils/misc.h"
 #include "td/utils/format.h"
+#include "td/utils/logging.h"
+#include "td/utils/misc.h"
+
 namespace td {
 namespace detail {
+
 void Poll::init() {
 }
 
@@ -72,10 +75,11 @@ void Poll::run(int timeout_ms) {
     if (pollfd.revents) {
       LOG(FATAL) << "Unsupported poll events: " << pollfd.revents;
     }
-    // LOG(DEBUG) << "Epoll event " << tag("fd", event->data.fd) << tag("flags", format::as_binary(flags));
     Fd(pollfd.fd, Fd::Mode::Reference).update_flags_notify(flags);
   }
 }
+
 }  // namespace detail
 }  // namespace td
+
 #endif  // TD_POLL_POLL

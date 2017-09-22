@@ -22,6 +22,7 @@
 #endif
 
 namespace td {
+
 int VERBOSITY_NAME(level) = VERBOSITY_NAME(DEBUG) + 1;
 int VERBOSITY_NAME(net_query) = VERBOSITY_NAME(INFO);
 int VERBOSITY_NAME(td_requests) = VERBOSITY_NAME(DEBUG) + 1;
@@ -218,7 +219,7 @@ class DefaultLog : public LogInterface {
 
  private:
   // TODO MemoryLog
-};  // namespace td
+};
 static DefaultLog default_log;
 
 LogInterface *const default_log_interface = &default_log;

@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.0.2)
 
-if (NOT OPENSSL_LIBRARIES)
+if (NOT OPENSSL_FOUND)
   find_package(OpenSSL REQUIRED)
 endif()
 
-if (NOT ZLIB_LIBRARIES AND NOT EMSCRIPTEN)
+if (NOT ZLIB_FOUND)
   find_package(ZLIB REQUIRED)
 endif()
 

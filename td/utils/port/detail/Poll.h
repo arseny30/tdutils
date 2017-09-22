@@ -11,11 +11,11 @@
 #include "td/utils/port/PollBase.h"
 
 namespace td {
-
 namespace detail {
+
 class Poll final : public PollBase {
  private:
-  std::vector<struct pollfd> pollfds_;
+  std::vector<pollfd> pollfds_;
 
  public:
   Poll() = default;
@@ -37,6 +37,7 @@ class Poll final : public PollBase {
 
   void run(int timeout_ms) override;
 };
+
 }  // namespace detail
 }  // namespace td
 
