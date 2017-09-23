@@ -29,6 +29,7 @@ class ThreadStl {
       clear_thread_locals();
     });
   }
+
   void join() {
     thread_.join();
   }
