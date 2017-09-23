@@ -64,7 +64,7 @@ class WineventPoll final : public PollBase {
     auto status = WaitForMultipleObjects(narrow_cast<DWORD>(events.size()), events.data(), false, timeout_ms);
     if (status == WAIT_FAILED) {
       auto error = OS_ERROR("WaitForMultipleObjects failed");
-      LOG(FATAL) << error;
+      LOG(FATAL) << events.size() << " " << timeout_ms << " " << error;
     }
     for (size_t i = 0; i < events.size(); i++) {
       if (WaitForSingleObject(events[i], 0) == WAIT_OBJECT_0) {
@@ -87,4 +87,4 @@ class WineventPoll final : public PollBase {
 };
 }  // namespace detail
 }  // namespace td
-#endif  // TD_POLL_WINEVENT
+#endif

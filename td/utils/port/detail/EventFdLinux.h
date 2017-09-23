@@ -36,4 +36,4 @@ class EventFdLinux final : public EventFdBase {
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_EVENTFD_LINUX
+#endif

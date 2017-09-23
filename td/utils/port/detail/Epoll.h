@@ -33,4 +33,4 @@ class Epoll final : public PollBase {
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_POLL_EPOLL
+#endif

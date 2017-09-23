@@ -8,15 +8,20 @@
 #include "td/utils/port/detail/EventFdWindows.h"
 
 namespace td {
-#ifdef TD_EVENTFD_BSD
-using EventFd = detail::EventFdBsd;
-#endif  // TD_EVENTFD_BSD
 
-#ifdef TD_EVENTFD_LINUX
-using EventFd = detail::EventFdLinux;
-#endif  // TD_EVENTFD_LINUX
+// clang-format off
 
-#ifdef TD_EVENTFD_WINDOWS
-using EventFd = detail::EventFdWindows;
-#endif  // TD_EVENTFD_WINDOWS
+#if TD_EVENTFD_LINUX
+  using EventFd = detail::EventFdLinux;
+#elif TD_EVENTFD_BSD
+  using EventFd = detail::EventFdBsd;
+#elif TD_EVENTFD_WINDOWS
+  using EventFd = detail::EventFdWindows;
+#elif TD_EVENTFD_UNSUPPORTED
+#else
+  #error "EventFd's implementation is not defined"
+#endif
+
+// clang-format on
+
 }  // namespace td

@@ -42,4 +42,4 @@ void EventFdWindows::acquire() {
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_EVENTFD_WINDOWS
+#endif

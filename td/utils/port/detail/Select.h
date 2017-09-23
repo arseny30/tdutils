@@ -42,4 +42,4 @@ class Select final : public PollBase {
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_POLL_SELECT
+#endif
