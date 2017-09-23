@@ -1,5 +1,14 @@
 #include "td/utils/port/FileFd.h"
 
+#if TD_PORT_WINDOWS
+#include "td/utils/misc.h"  // for narrow_cast
+#include "td/utils/port/wstring_convert.h"
+#endif
+
+#include "td/utils/port/sleep.h"
+
+#include <cstring>
+
 #if TD_PORT_POSIX
 #include <fcntl.h>
 #include <sys/file.h>
@@ -7,13 +16,6 @@
 #include <sys/uio.h>
 #include <unistd.h>
 #endif
-
-#if TD_PORT_WINDOWS
-#include "td/utils/misc.h"  // for narrow_cast
-#include "td/utils/port/wstring_convert.h"
-#endif
-
-#include <cstring>
 
 namespace td {
 
@@ -298,7 +300,6 @@ Status FileFd::lock(FileFd::LockFlags flags, int32 max_tries) {
     lock.l_whence = SEEK_SET;
     if (fcntl(get_native_fd(), F_SETLK, &lock) == -1) {
       if (errno == EAGAIN && --max_tries > 0) {
-        usleep(100000);
 #elif TD_PORT_WINDOWS
     OVERLAPPED overlapped;
     std::memset(&overlapped, 0, sizeof(overlapped));
@@ -317,8 +318,8 @@ Status FileFd::lock(FileFd::LockFlags flags, int32 max_tries) {
 
     if (!result) {
       if (GetLastError() == ERROR_LOCK_VIOLATION && --max_tries > 0) {
-        Sleep(100);
 #endif
+        usleep_for(100000);
         continue;
       }
 

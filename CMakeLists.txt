@@ -29,6 +29,7 @@ set(TDUTILS_SOURCE
   td/utils/port/path.cpp
   td/utils/port/ServerSocketFd.cpp
   td/utils/port/signals.cpp
+  td/utils/port/sleep.cpp
   td/utils/port/SocketFd.cpp
   td/utils/port/Stat.cpp
   td/utils/port/thread_local.cpp
@@ -41,6 +42,7 @@ set(TDUTILS_SOURCE
   td/utils/port/detail/KQueue.cpp
   td/utils/port/detail/Poll.cpp
   td/utils/port/detail/Select.cpp
+  td/utils/port/detail/WineventPoll.cpp
 
   ${TDMIME_AUTO}
 
@@ -80,6 +82,7 @@ set(TDUTILS_SOURCE
   td/utils/port/RwMutex.h
   td/utils/port/ServerSocketFd.h
   td/utils/port/signals.h
+  td/utils/port/sleep.h
   td/utils/port/SocketFd.h
   td/utils/port/Stat.h
   td/utils/port/thread.h

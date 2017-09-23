@@ -4,6 +4,7 @@
 
 #ifdef TD_POLL_SELECT
 
+#include "td/utils/common.h"
 #include "td/utils/port/Fd.h"
 #include "td/utils/port/PollBase.h"
 
@@ -14,6 +15,13 @@ namespace detail {
 
 class Select final : public PollBase {
  public:
+  Select() = default;
+  Select(const Select &) = delete;
+  Select &operator=(const Select &) = delete;
+  Select(Select &&) = delete;
+  Select &operator=(Select &&) = delete;
+  ~Select() override = default;
+
   void init() override;
 
   void clear() override;
@@ -31,7 +39,7 @@ class Select final : public PollBase {
     Fd fd_ref;
     Fd::Flags flags;
   };
-  std::vector<FdInfo> fds_;
+  vector<FdInfo> fds_;
   fd_set all_fd_;
   fd_set read_fd_;
   fd_set write_fd_;

@@ -4,20 +4,16 @@
 
 #ifdef TD_POLL_POLL
 
-// Poll poll implementation (finally)
-#include <poll.h>
-
 #include "td/utils/common.h"
 #include "td/utils/port/Fd.h"
 #include "td/utils/port/PollBase.h"
+
+#include <poll.h>
 
 namespace td {
 namespace detail {
 
 class Poll final : public PollBase {
- private:
-  std::vector<pollfd> pollfds_;
-
  public:
   Poll() = default;
   Poll(const Poll &) = delete;
@@ -37,6 +33,9 @@ class Poll final : public PollBase {
   void unsubscribe_before_close(const Fd &fd) override;
 
   void run(int timeout_ms) override;
+
+ private:
+  vector<pollfd> pollfds_;
 };
 
 }  // namespace detail
