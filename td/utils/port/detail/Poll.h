@@ -42,4 +42,4 @@ class Poll final : public PollBase {
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_POLL_KQUEUE
+#endif

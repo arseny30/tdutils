@@ -62,4 +62,4 @@ void EventFdLinux::acquire() {
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_EVENTFD_LINUX
+#endif

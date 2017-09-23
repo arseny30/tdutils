@@ -47,4 +47,4 @@ namespace this_thread_stl = std::this_thread;
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_THREAD_STL
+#endif

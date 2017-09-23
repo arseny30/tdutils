@@ -3,6 +3,8 @@
 #include "td/utils/misc.h"
 #include "td/utils/port/EventFd.h"
 
+#if !TD_EVENTFD_UNSUPPORTED
+
 #if !TD_WINDOWS
 #include <poll.h>  // for pollfd, poll, POLLIN
 #include <sched.h>
@@ -92,4 +94,7 @@ class MpscPollableQueue {
   std::vector<ValueT> reader_vector_;
   size_t reader_pos_{0};
 };
+
 }  // namespace td
+
+#endif

@@ -71,11 +71,7 @@ TEST(Misc, errno_tls_bug) {
 // impl_.alloc(123);
 // CHECK(errno == 0);
 
-#if TD_EMSCRIPTEN
-  // Nor threads, nor EventFd are supported in emscrpiten
-  return;
-#endif
-
+#if !TD_THREAD_UNSUPPORTED && !TD_EVENTFD_UNSUPPORTED
   EventFd test_event_fd;
   test_event_fd.init();
   std::atomic<int> s(0);
@@ -108,6 +104,7 @@ TEST(Misc, errno_tls_bug) {
       thread.join();
     }
   }
+#endif
 }
 
 static string rand_string(int from, int to, int len) {
