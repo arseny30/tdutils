@@ -6,6 +6,7 @@ endif()
 
 if (NOT ZLIB_FOUND)
   find_package(ZLIB REQUIRED)
+  message(STATUS "Found ZLIB: ${ZLIB_INCLUDE_DIR} ${ZLIB_LIBRARIES}")
 endif()
 
 add_subdirectory(generate)
