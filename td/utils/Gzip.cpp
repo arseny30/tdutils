@@ -3,51 +3,71 @@
 #include <cstring>
 #include <limits>
 
+#include <zlib.h>
+
 namespace td {
+
+class Gzip::Impl {
+ public:
+  z_stream stream_;
+
+  // z_stream is not copyable nor movable
+  Impl() = default;
+  Impl(const Impl &other) = delete;
+  Impl &operator=(const Impl &other) = delete;
+  Impl(Impl &&other) = delete;
+  Impl &operator=(Impl &&other) = delete;
+  ~Impl() = default;
+};
+
 Status Gzip::init_encode() {
   CHECK(mode_ == Empty);
   init_common();
   mode_ = Encode;
-  int ret = deflateInit2(&stream_, 6, Z_DEFLATED, 15, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+  int ret = deflateInit2(&impl_->stream_, 6, Z_DEFLATED, 15, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
   if (ret != Z_OK) {
     return Status::Error("zlib deflate init failed");
   }
   return Status::OK();
 }
+
 Status Gzip::init_decode() {
   CHECK(mode_ == Empty);
   init_common();
   mode_ = Decode;
-  int ret = inflateInit2(&stream_, MAX_WBITS + 32);
+  int ret = inflateInit2(&impl_->stream_, MAX_WBITS + 32);
   if (ret != Z_OK) {
     return Status::Error("zlib inflate init failed");
   }
   return Status::OK();
 }
+
 void Gzip::set_input(Slice input) {
   CHECK(input_size_ == 0);
   CHECK(!close_input_flag_);
   CHECK(input.size() <= std::numeric_limits<uInt>::max());
-  CHECK(stream_.avail_in == 0);
+  CHECK(impl_->stream_.avail_in == 0);
   input_size_ = input.size();
-  stream_.avail_in = static_cast<uInt>(input.size());
-  stream_.next_in = reinterpret_cast<Bytef *>(const_cast<char *>(input.data()));
+  impl_->stream_.avail_in = static_cast<uInt>(input.size());
+  impl_->stream_.next_in = reinterpret_cast<Bytef *>(const_cast<char *>(input.data()));
 }
+
 void Gzip::set_output(MutableSlice output) {
   CHECK(output_size_ == 0);
   CHECK(output.size() <= std::numeric_limits<uInt>::max());
-  CHECK(stream_.avail_out == 0);
+  CHECK(impl_->stream_.avail_out == 0);
   output_size_ = output.size();
-  stream_.avail_out = static_cast<uInt>(output.size());
-  stream_.next_out = reinterpret_cast<Bytef *>(output.data());
+  impl_->stream_.avail_out = static_cast<uInt>(output.size());
+  impl_->stream_.next_out = reinterpret_cast<Bytef *>(output.data());
 }
+
 Result<Gzip::State> Gzip::run() {
   while (true) {
     int ret;
     if (mode_ == Decode) {
-      ret = inflate(&stream_, Z_NO_FLUSH);
+      ret = inflate(&impl_->stream_, Z_NO_FLUSH);
     } else {
-      ret = deflate(&stream_, close_input_flag_ ? Z_FINISH : Z_NO_FLUSH);
+      ret = deflate(&impl_->stream_, close_input_flag_ ? Z_FINISH : Z_NO_FLUSH);
     }
 
     if (ret == Z_OK) {
@@ -62,28 +82,48 @@ Result<Gzip::State> Gzip::run() {
     return Status::Error(PSLICE() << "zlib error " << ret);
   }
 }
+
+size_t Gzip::left_input() const {
+  return impl_->stream_.avail_in;
+}
+size_t Gzip::left_output() const {
+  return impl_->stream_.avail_out;
+}
+
 void Gzip::init_common() {
-  std::memset(&stream_, 0, sizeof(stream_));
-  stream_.zalloc = Z_NULL;
-  stream_.zfree = Z_NULL;
-  stream_.opaque = Z_NULL;
-  stream_.avail_in = 0;
-  stream_.next_in = nullptr;
-  stream_.avail_out = 0;
-  stream_.next_out = nullptr;
+  std::memset(&impl_->stream_, 0, sizeof(impl_->stream_));
+  impl_->stream_.zalloc = Z_NULL;
+  impl_->stream_.zfree = Z_NULL;
+  impl_->stream_.opaque = Z_NULL;
+  impl_->stream_.avail_in = 0;
+  impl_->stream_.next_in = nullptr;
+  impl_->stream_.avail_out = 0;
+  impl_->stream_.next_out = nullptr;
 
   input_size_ = 0;
   output_size_ = 0;
 
   close_input_flag_ = false;
 }
+
 void Gzip::clear() {
   if (mode_ == Decode) {
-    inflateEnd(&stream_);
+    inflateEnd(&impl_->stream_);
   } else if (mode_ == Encode) {
-    deflateEnd(&stream_);
+    deflateEnd(&impl_->stream_);
   }
   mode_ = Empty;
+}
+
+Gzip::Gzip() : impl_(make_unique<Impl>()) {
+}
+
+Gzip::Gzip(Gzip &&other) = default;
+
+Gzip &Gzip::operator=(Gzip &&other) = default;
+
+Gzip::~Gzip() {
+  clear();
 }
 
 BufferSlice gzdecode(Slice s) {
