@@ -608,7 +608,7 @@ Result<int32> get_json_object_int_field(JsonObject &object, Slice name, bool is_
   if (value.type() == JsonValue::Type::Null) {
     return default_value;
   }
-  return to_integer<int32>(value.get_number());
+  return to_integer_safe<int32>(value.get_number());
 }
 
 Result<double> get_json_object_double_field(JsonObject &object, Slice name, bool is_optional, double default_value) {
