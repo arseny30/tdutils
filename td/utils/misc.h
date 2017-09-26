@@ -3,6 +3,8 @@
 #include "td/utils/common.h"
 #include "td/utils/logging.h"
 #include "td/utils/Slice.h"
+#include "td/utils/Status.h"
+#include "td/utils/StringBuilder.h"
 
 #include <cstdint>
 #include <cstdlib>
@@ -250,6 +252,15 @@ std::enable_if_t<std::is_unsigned<T>::value, T> to_integer(Slice str) {
     integer_value = static_cast<T>(integer_value * 10 + (*begin++ - '0'));
   }
   return integer_value;
+}
+
+template <class T>
+Result<T> to_integer_safe(Slice str) {
+  auto res = to_integer<T>(str);
+  if (to_string(res) != str) {
+    return Status::Error(PSLICE() << "Can't parse \"" << str << "\" as number");
+  }
+  return res;
 }
 
 inline int hex_to_int(char c) {
