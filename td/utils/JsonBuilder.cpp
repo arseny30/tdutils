@@ -620,11 +620,22 @@ Result<double> get_json_object_double_field(JsonObject &object, Slice name, bool
 }
 
 Result<string> get_json_object_string_field(JsonObject &object, Slice name, bool is_optional, string default_value) {
-  TRY_RESULT(value, get_json_object_field(object, name, JsonValue::Type::String, is_optional));
-  if (value.type() == JsonValue::Type::Null) {
+  for (auto &field_value : object) {
+    if (field_value.first == name) {
+      if (field_value.second.type() == JsonValue::Type::String) {
+        return field_value.second.get_string().str();
+      }
+      if (field_value.second.type() == JsonValue::Type::Number) {
+        return field_value.second.get_number().str();
+      }
+
+      return Status::Error(400, PSLICE() << "Field \"" << name << "\" must be of type String");
+    }
+  }
+  if (is_optional) {
     return default_value;
   }
-  return value.get_string().str();
+  return Status::Error(400, PSLICE() << "Can't find field \"" << name << "\"");
 }
 
 }  // namespace td
