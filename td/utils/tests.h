@@ -138,15 +138,15 @@ void ASSERT_STREQ(const T1 &a, const T2 &b) {
 
 }  // namespace td
 
-#define TEST_NAME(a, b) TD_CONCAT(Test, TD_CONCAT(a, b))
+#define TEST_NAME(a, b) TD_CONCAT(Test, TD_CONCAT(_, TD_CONCAT(a, TD_CONCAT(_, b))))
 
 #define TEST(test_case_name, test_name) TEST_IMPL(TEST_NAME(test_case_name, test_name))
 
-#define TEST_IMPL(test_name)                                                       \
-  class test_name : public ::td::Test {                                            \
-   public:                                                                         \
-    using Test::Test;                                                              \
-    void run() final;                                                              \
-  };                                                                               \
-  test_name TD_CONCAT(test_instance_, TD_CONCAT(test_name, __LINE__))(#test_name); \
+#define TEST_IMPL(test_name)                                                                     \
+  class test_name : public ::td::Test {                                                          \
+   public:                                                                                       \
+    using Test::Test;                                                                            \
+    void run() final;                                                                            \
+  };                                                                                             \
+  test_name TD_CONCAT(test_instance_, TD_CONCAT(test_name, __LINE__))(TD_DEFINE_STR(test_name)); \
   void test_name::run()

@@ -45,6 +45,8 @@
 
 #define TD_DEBUG
 
+#define TD_DEFINE_STR_IMPL(x) #x
+#define TD_DEFINE_STR(x) TD_DEFINE_STR_IMPL(x)
 #define TD_CONCAT_IMPL(x, y) x##y
 #define TD_CONCAT(x, y) TD_CONCAT_IMPL(x, y)
 #define TD_ANONYMOUS_VARIABLE(var) TD_CONCAT(TD_CONCAT(var, _), __LINE__)

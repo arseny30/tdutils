@@ -55,8 +55,9 @@
 #define LOG(level, ...) LOG_IMPL(level, level, true, ::td::Slice(), __VA_ARGS__)
 #define LOG_IF(level, condition, ...) LOG_IMPL(level, level, condition, #condition, __VA_ARGS__)
 
-#define VLOG(level, ...) LOG_IMPL(DEBUG, level, true, #level, __VA_ARGS__)
-#define VLOG_IF(level, condition, ...) LOG_IMPL(DEBUG, level, condition, #level " " #condition, __VA_ARGS__)
+#define VLOG(level, ...) LOG_IMPL(DEBUG, level, true, TD_DEFINE_STR(level), __VA_ARGS__)
+#define VLOG_IF(level, condition, ...) \
+  LOG_IMPL(DEBUG, level, condition, TD_DEFINE_STR(level) " " #condition, __VA_ARGS__)
 
 #define LOG_ROTATE() ::td::log_interface->rotate()
 
