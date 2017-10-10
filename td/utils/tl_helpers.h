@@ -10,6 +10,7 @@
 #include "td/utils/tl_storers.h"
 
 #include <type_traits>
+#include <unordered_set>
 
 #define BEGIN_STORE_FLAGS() \
   uint32 flags_store = 0;   \
@@ -123,6 +124,28 @@ void parse(vector<T> &vec, Parser &parser) {
   vec = vector<T>(size);
   for (auto &val : vec) {
     parse(val, parser);
+  }
+}
+
+template <class Key, class Hash, class KeyEqual, class Allocator, class Storer>
+void store(const std::unordered_set<Key, Hash, KeyEqual, Allocator> &s, Storer &storer) {
+  storer.store_binary(narrow_cast<int32>(s.size()));
+  for (auto &val : s) {
+    store(val, storer);
+  }
+}
+template <class Key, class Hash, class KeyEqual, class Allocator, class Parser>
+void parse(std::unordered_set<Key, Hash, KeyEqual, Allocator> &s, Parser &parser) {
+  uint32 size = parser.fetch_int();
+  if (parser.get_left_len() < size) {
+    parser.set_error("Wrong set length");
+    return;
+  }
+  s.clear();
+  Key val;
+  for (uint32 i = 0; i < size; i++) {
+    parse(val, parser);
+    s.insert(std::move(val));
   }
 }
 

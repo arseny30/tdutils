@@ -61,7 +61,7 @@ inline string implode(vector<string> v, char delimiter = ' ') {
 
 template <class T, class Func>
 auto transform(const T &v, const Func &f) {
-  vector<decltype(f(v[0]))> result;
+  vector<decltype(f(*v.begin()))> result;
   result.reserve(v.size());
   for (auto &x : v) {
     result.push_back(f(x));
@@ -71,7 +71,7 @@ auto transform(const T &v, const Func &f) {
 
 template <class T, class Func>
 auto transform(T &&v, const Func &f) {
-  vector<decltype(f(std::move(v[0])))> result;
+  vector<decltype(f(std::move(*v.begin())))> result;
   result.reserve(v.size());
   for (auto &x : v) {
     result.push_back(f(std::move(x)));
