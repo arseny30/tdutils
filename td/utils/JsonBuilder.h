@@ -39,6 +39,13 @@ class JsonFalse {
   }
 };
 
+class JsonNull {
+ public:
+  friend StringBuilder &operator<<(StringBuilder &sb, JsonNull val) {
+    return sb << "null";
+  }
+};
+
 class JsonBool {
  public:
   explicit JsonBool(bool value) : value_(value) {
@@ -226,6 +233,10 @@ class JsonScope {
     return *this;
   }
   JsonScope &operator<<(JsonFalse x) {
+    *sb_ << x;
+    return *this;
+  }
+  JsonScope &operator<<(JsonNull x) {
     *sb_ << x;
     return *this;
   }
