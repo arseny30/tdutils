@@ -2,6 +2,7 @@
 
 #include "td/utils/common.h"
 #include "td/utils/logging.h"
+#include "td/utils/port/Fd.h"
 #include "td/utils/port/FileFd.h"
 #include "td/utils/port/path.h"
 

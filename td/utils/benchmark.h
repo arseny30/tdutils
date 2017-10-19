@@ -19,6 +19,7 @@
   void name##Bench::run(int n)
 
 namespace td {
+
 #if TD_MSVC
 
 #pragma optimize("", off)
@@ -29,10 +30,12 @@ void do_not_optimize_away(T &&datum) {
 #pragma optimize("", on)
 
 #else
+
 template <class T>
 void do_not_optimize_away(T &&datum) {
   asm volatile("" : "+r"(datum));
 }
+
 #endif
 
 class Benchmark {

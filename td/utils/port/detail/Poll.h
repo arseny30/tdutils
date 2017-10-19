@@ -8,6 +8,7 @@
 #include <poll.h>
 
 #include "td/utils/common.h"
+#include "td/utils/port/Fd.h"
 #include "td/utils/port/PollBase.h"
 
 namespace td {

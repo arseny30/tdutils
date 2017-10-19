@@ -7,6 +7,7 @@
 // Epoll poll implementation
 #include <sys/epoll.h>
 
+#include "td/utils/port/Fd.h"
 #include "td/utils/port/PollBase.h"
 
 namespace td {
