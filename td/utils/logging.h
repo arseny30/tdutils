@@ -26,7 +26,7 @@
 #include <cstdlib>
 #include <type_traits>
 
-#define PSTR_IMPL(...) ::td::Logger(::td::NullLog().ref(), 0).printf(__VA_ARGS__)
+#define PSTR_IMPL(...) ::td::Logger(::td::NullLog().ref(), 0, true).printf(__VA_ARGS__)
 #define PSLICE(...) ::td::detail::Slicify() & PSTR_IMPL(__VA_ARGS__)
 #define PSTRING(...) ::td::detail::Stringify() & PSTR_IMPL(__VA_ARGS__)
 #define PSLICE_SAFE(...) ::td::detail::SlicifySafe() & PSTR_IMPL(__VA_ARGS__)
