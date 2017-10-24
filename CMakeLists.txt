@@ -161,10 +161,11 @@ set(TDUTILS_SOURCE
 )
 
 set (TDUTILS_TESTS_SOURCE
-  tests/heap.cpp
-  tests/json.cpp
-  tests/misc.cpp
-  tests/variant.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/heap.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/json.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/misc.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/variant.cpp
+  PARENT_SCOPE
 )
 
 #RULES
@@ -179,5 +180,3 @@ endif()
 target_link_libraries(tdutils PUBLIC ${CMAKE_THREAD_LIBS_INIT} PRIVATE ${ZLIB_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARY})
 target_include_directories(tdutils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> PRIVATE ${ZLIB_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR})
 
-add_library(tdutils_tests OBJECT ${TDUTILS_TESTS_SOURCE})
-target_include_directories(tdutils_tests PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
