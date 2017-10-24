@@ -179,5 +179,5 @@ endif()
 target_link_libraries(tdutils PUBLIC ${CMAKE_THREAD_LIBS_INIT} PRIVATE ${ZLIB_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARY})
 target_include_directories(tdutils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> PRIVATE ${ZLIB_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR})
 
-add_library(tdutils_tests STATIC ${TDUTILS_TESTS_SOURCE})
-target_link_libraries(tdutils_tests PRIVATE tdutils)
+add_library(tdutils_tests OBJECT ${TDUTILS_TESTS_SOURCE})
+target_include_directories(tdutils_tests PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
