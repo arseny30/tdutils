@@ -160,6 +160,13 @@ set(TDUTILS_SOURCE
   td/utils/Variant.h
 )
 
+set (TDUTILS_TESTS_SOURCE
+  tests/heap.cpp
+  tests/json.cpp
+  tests/misc.cpp
+  tests/variant.cpp
+)
+
 #RULES
 #LIBRARIES
 add_library(tdutils STATIC ${TDUTILS_SOURCE})
@@ -171,3 +178,6 @@ if (NOT CMAKE_CROSSCOMPILING)
 endif()
 target_link_libraries(tdutils PUBLIC ${CMAKE_THREAD_LIBS_INIT} PRIVATE ${ZLIB_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARY})
 target_include_directories(tdutils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> PRIVATE ${ZLIB_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR})
+
+add_library(tdutils_tests STATIC ${TDUTILS_TESTS_SOURCE})
+target_link_libraries(tdutils_tests PRIVATE tdutils)
