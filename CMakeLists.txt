@@ -146,6 +146,7 @@ set(TDUTILS_SOURCE
   td/utils/ScopeGuard.h
   td/utils/Slice-decl.h
   td/utils/Slice.h
+  td/utils/SpinLock.h
   td/utils/StackAllocator.h
   td/utils/Status.h
   td/utils/Storer.h
