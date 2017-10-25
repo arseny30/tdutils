@@ -10,8 +10,9 @@
 #include <sched.h>
 #endif
 
-#include <mutex>
 #include <utility>
+
+#include <td/utils/SpinLock.h>
 
 namespace td {
 // interface like in PollableQueue
@@ -24,7 +25,7 @@ class MpscPollableQueue {
       return narrow_cast<int>(ready);
     }
 
-    std::lock_guard<std::mutex> guard(mutex_);
+    auto guard = lock_.lock();
     if (writer_vector_.empty()) {
       event_fd_.acquire();
       wait_event_fd_ = true;
@@ -43,7 +44,7 @@ class MpscPollableQueue {
     //nop
   }
   void writer_put(ValueT value) {
-    std::lock_guard<std::mutex> guard(mutex_);
+    auto guard = lock_.lock();
     writer_vector_.push_back(std::move(value));
     if (wait_event_fd_) {
       wait_event_fd_ = false;
@@ -87,7 +88,7 @@ class MpscPollableQueue {
 #endif
 
  private:
-  std::mutex mutex_;
+  SpinLock lock_;
   bool wait_event_fd_{false};
   EventFd event_fd_;
   std::vector<ValueT> writer_vector_;
