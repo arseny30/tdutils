@@ -5,11 +5,12 @@
 
 namespace td {
 
+void init_crypto();
+
 uint64 pq_factorize(uint64 pq);
 
 int pq_factorize(Slice pq_str, string *p_str, string *q_str);
 
-/*** AES ***/
 void aes_ige_xcrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag);
 void aes_ige_encrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to);
 void aes_ige_decrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to);
@@ -28,12 +29,10 @@ void aes_ctr_xcrypt(AesCtrState *state, Slice from, MutableSlice to, bool encryp
 void aes_ctr_encrypt(AesCtrState *state, Slice from, MutableSlice to);
 void aes_ctr_decrypt(AesCtrState *state, Slice from, MutableSlice to);
 
-// cbc
 void aes_cbc_xcrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag);
 void aes_cbc_encrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to);
 void aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to);
 
-/*** SHA-1 ***/
 void sha1(Slice data, unsigned char output[20]);
 
 uint32 crc32(Slice data);

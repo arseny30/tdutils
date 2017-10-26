@@ -22,6 +22,18 @@
 
 namespace td {
 
+void init_crypto() {
+  static bool is_inited = [] {
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    return OPENSSL_init_crypto(0, nullptr) != 0;
+#else
+    OpenSSL_add_all_algorithms();
+    return true;
+#endif
+  }();
+  CHECK(is_inited);
+}
+
 template <class FromT>
 static string as_big_endian_string(const FromT &from) {
   size_t size = sizeof(from);
@@ -317,7 +329,6 @@ void aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, Mutabl
   aes_cbc_xcrypt(aes_key, aes_iv, from, to, false);
 }
 
-/*** SHA-1 ***/
 void sha1(Slice data, unsigned char output[20]) {
   SHA1(data.ubegin(), data.size(), output);
 }
