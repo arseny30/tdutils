@@ -140,7 +140,7 @@ Status IPAddress::init_host_port(CSlice host, CSlice port) {
   std::memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_INET;  // TODO AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
-  LOG(INFO) << "Try to init ipv4 address with port " << port;
+  LOG(INFO) << "Try to init ipv4 address " << host << " with port " << port;
   auto s = getaddrinfo(host.c_str(), port.c_str(), &hints, &info);
   if (s != 0) {
     return Status::Error(PSLICE() << "getaddrinfo: " << gai_strerror(s));
@@ -174,10 +174,11 @@ Status IPAddress::init_sockaddr(sockaddr *addr, socklen_t len) {
   if (addr->sa_family == AF_INET6) {
     CHECK(len == sizeof(ipv6_addr_));
     std::memcpy(&ipv6_addr_, reinterpret_cast<sockaddr_in6 *>(addr), sizeof(ipv6_addr_));
+    LOG(INFO) << "Have ipv6 address " << get_ip_str() << " with port " << get_port();
   } else if (addr->sa_family == AF_INET) {
     CHECK(len == sizeof(ipv4_addr_));
     std::memcpy(&ipv4_addr_, reinterpret_cast<sockaddr_in *>(addr), sizeof(ipv4_addr_));
-    LOG(INFO) << "Have ipv4 address with port " << ntohs(ipv4_addr_.sin_port);
+    LOG(INFO) << "Have ipv4 address " << get_ip_str() << " with port " << get_port();
   } else {
     return Status::Error(PSLICE() << "Unknown " << tag("sa_family", addr->sa_family));
   }
