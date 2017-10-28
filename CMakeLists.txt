@@ -133,6 +133,7 @@ set(TDUTILS_SOURCE
   td/utils/misc.h
   td/utils/MovableValue.h
   td/utils/MpscPollableQueue.h
+  td/utils/MpscLinkQueue.h
   td/utils/Named.h
   td/utils/ObjectPool.h
   td/utils/Observer.h
@@ -165,6 +166,7 @@ set(TDUTILS_SOURCE
 )
 
 set (TDUTILS_TESTS_SOURCE
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/MpscLinkQueue.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/heap.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/json.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/misc.cpp
