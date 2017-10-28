@@ -1,6 +1,7 @@
 #pragma once
 #include <atomic>
 #include "td/utils/common.h"
+#include "td/utils/logging.h"
 namespace td {
 //NB: holder of the queue holds all responsibility of freeing it's nodes
 class MpscLinkQueueImpl {
@@ -9,30 +10,28 @@ class MpscLinkQueueImpl {
   class Reader;
 
   void push(Node *node) {
-    auto next = writer_node_.next_.load(std::memory_order_relaxed);
-    do {
-      node->next_.store(next, std::memory_order_relaxed);
-    } while (
-        !writer_node_.next_.compare_exchange_weak(next, node, std::memory_order_release, std::memory_order_relaxed));
+    node->next_ = head_.load(std::memory_order_relaxed);
+    while (!head_.compare_exchange_strong(node->next_, node, std::memory_order_release, std::memory_order_relaxed)) {
+    }
   }
 
   void push_unsafe(Node *node) {
-    node->next_.store(writer_node_.next_.load(std::memory_order_relaxed), std::memory_order_relaxed);
-    writer_node_.next_.store(node, std::memory_order_relaxed);
+    node->next_ = head_.load(std::memory_order_relaxed);
+    head_.store(node, std::memory_order_relaxed);
   }
 
   Reader pop_all() {
-    return Reader(writer_node_.next_.exchange(nullptr, std::memory_order_acquire));
+    return Reader(head_.exchange(nullptr, std::memory_order_acquire));
   }
 
   Reader pop_all_unsafe() {
-    return Reader(writer_node_.next_.exchange(nullptr, std::memory_order_relaxed));
+    return Reader(head_.exchange(nullptr, std::memory_order_relaxed));
   }
 
   class Node {
    private:
     friend class MpscLinkQueueImpl;
-    std::atomic<Node *> next_{nullptr};
+    Node *next_{nullptr};
   };
 
   class Reader {
@@ -40,7 +39,7 @@ class MpscLinkQueueImpl {
     Node *read() {
       auto old_head = head_;
       if (head_) {
-        head_ = head_->next_.load(std::memory_order_relaxed);
+        head_ = head_->next_;
       }
       return old_head;
     }
@@ -51,8 +50,8 @@ class MpscLinkQueueImpl {
       // Reverse list
       Node *head = nullptr;
       while (node) {
-        auto next = node->next_.load(std::memory_order_relaxed);
-        node->next_.store(head, std::memory_order_relaxed);
+        auto next = node->next_;
+        node->next_ = head;
         head = node;
         node = next;
       }
@@ -62,7 +61,7 @@ class MpscLinkQueueImpl {
   };
 
  private:
-  Node writer_node_;
+  std::atomic<Node *> head_{nullptr};
 };
 
 // Uses MpscLinkQueueImpl.
@@ -82,9 +81,9 @@ class MpscLinkQueue {
     Reader(MpscLinkQueueImpl::Reader impl) : impl_(std::move(impl)) {
     }
     ~Reader() {
-      CHECK(!pop());
+      CHECK(!read());
     }
-    Node pop() {
+    Node read() {
       auto node = impl_.read();
       if (!node) {
         return {};
