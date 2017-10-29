@@ -134,7 +134,7 @@ class Fd {
     Info &get_info(int32 id);
 
    private:
-    static constexpr int MAX_FD = 65536;
+    static constexpr int MAX_FD = 1 << 18;
     Info fd_array_[MAX_FD];
   };
   static InfoSet fd_info_set_;
