@@ -130,6 +130,10 @@ template <class T>
 void ASSERT_TRUE(const T &a) {
   CHECK(a);
 }
+template <class T>
+void ASSERT_FALSE(const T &a) {
+  CHECK(!a);
+}
 
 template <class T1, class T2>
 void ASSERT_STREQ(const T1 &a, const T2 &b) {
