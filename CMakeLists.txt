@@ -120,6 +120,7 @@ set(TDUTILS_SOURCE
   td/utils/format.h
   td/utils/Gzip.h
   td/utils/GzipByteFlow.h
+  td/utils/HazardPointers.h
   td/utils/Heap.h
   td/utils/Hints.h
   td/utils/HttpUrl.h
@@ -166,6 +167,7 @@ set(TDUTILS_SOURCE
 )
 
 set (TDUTILS_TESTS_SOURCE
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/HazardPointers.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/MpscLinkQueue.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/heap.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/json.cpp
