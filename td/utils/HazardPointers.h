@@ -1,3 +1,4 @@
+#pragma once
 #include "td/utils/logging.h"
 
 #include <atomic>
@@ -68,7 +69,7 @@ class HazardPointers {
       }
     }
   }
-  size_t to_delete_size_unsafe() {
+  size_t to_delete_size_unsafe() const {
     size_t res = 0;
     for (auto& thread : threads_) {
       res += thread.to_delete.size();

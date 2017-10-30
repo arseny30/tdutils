@@ -57,8 +57,8 @@ TEST(MpscLinkQueue, one_thread) {
 
 TEST(MpscLinkQueue, multi_thread) {
   td::MpscLinkQueue<QueueNode> queue;
-  int threads_n = 1;
-  int queries_n = 100000000;
+  int threads_n = 10;
+  int queries_n = 1000000;
   std::vector<int> next(threads_n);
   std::vector<td::thread> threads(threads_n);
   int thread_i = 0;
