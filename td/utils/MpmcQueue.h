@@ -17,38 +17,20 @@ class OneValue {
  public:
   bool set_value(T &value) {
     value_ = std::move(value);
-    auto old_state = state_.load(std::memory_order_relaxed);
-    while (true) {
-      Type new_state;
-      switch (old_state) {
-        case Empty:
-          new_state = Value;
-          break;
-        case Taken:
-          value = std::move(value_);
-          return false;
-        case Value:
-          return true;
-      }
-      state_.compare_exchange_strong(old_state, new_state, std::memory_order_acq_rel);
+    int state = Empty;
+    if (state_.compare_exchange_strong(state, Value)) {
+      return true;
     }
+    value = std::move(value_);
+    return false;
   }
   bool get_value(T &value) {
-    auto old_state = state_.load(std::memory_order_acquire);
-    while (true) {
-      Type new_state;
-      switch (old_state) {
-        case Empty:
-          new_state = Taken;
-          break;
-        case Taken:
-          return false;
-        case Value:
-          value = std::move(value_);
-          return true;
-      }
-      state_.compare_exchange_strong(old_state, new_state, std::memory_order_acq_rel);
+    auto old_state = state_.exchange(Taken);
+    if (old_state == Value) {
+      value = std::move(value_);
+      return true;
     }
+    return false;
   }
   void reset() {
     state_ = Empty;
@@ -72,11 +54,7 @@ class MpmcQueueBlock {
   //returns Ok or Closed
   PopStatus pop(T &value) {
     while (true) {
-      auto read_pos = read_pos_.load(std::memory_order_relaxed);
-      if (read_pos >= nodes_.size()) {
-        return PopStatus::Closed;
-      }
-      read_pos = read_pos_.fetch_add(1, std::memory_order_release);
+      auto read_pos = read_pos_.fetch_add(1, std::memory_order_release);
       if (read_pos >= nodes_.size()) {
         return PopStatus::Closed;
       }
@@ -92,10 +70,10 @@ class MpmcQueueBlock {
   PopStatus try_pop(T &value) {
     while (true) {
       auto read_pos = read_pos_.load(std::memory_order_relaxed);
-      auto write_pos = write_pos_.load(std::memory_order_relaxed);
       if (read_pos >= nodes_.size()) {
         return PopStatus::Closed;
       }
+      auto write_pos = write_pos_.load(std::memory_order_relaxed);
       if (write_pos <= read_pos) {
         return PopStatus::Empty;
       }
@@ -112,11 +90,7 @@ class MpmcQueueBlock {
   enum class PushStatus { Ok, Closed };
   PushStatus push(T &value) {
     while (true) {
-      auto write_pos = write_pos_.load(std::memory_order_relaxed);
-      if (write_pos >= nodes_.size()) {
-        return PushStatus::Closed;
-      }
-      write_pos = write_pos_.fetch_add(1, std::memory_order_release);
+      auto write_pos = write_pos_.fetch_add(1, std::memory_order_release);
       if (write_pos >= nodes_.size()) {
         return PushStatus::Closed;
       }
@@ -129,13 +103,13 @@ class MpmcQueueBlock {
  private:
   struct Node {
     OneValue<T> one_value;
-    char pad[64];
+    //char pad[128];
   };
+  std::atomic<uint64> write_pos_{0};
+  char pad2[128];
+  std::atomic<uint64> read_pos_{0};
+  char pad[128];
   std::vector<Node> nodes_;
-  char pad[64];
-  std::atomic<uint32> write_pos_{0};
-  char pad2[64];
-  std::atomic<uint32> read_pos_{0};
 };
 
 template <class T>
@@ -173,8 +147,7 @@ class MpmcQueue {
   using PushStatus = typename MpmcQueueBlock<T>::PushStatus;
   using PopStatus = typename MpmcQueueBlock<T>::PopStatus;
   void push(T value, size_t thread_id) {
-    bool loop_flag{true};
-    while (loop_flag) {
+    while (true) {
       auto lock = hazard_pointers_.protect(thread_id, 0, write_pos_);
       auto node = lock.get_ptr();
       auto status = node->block.push(value);
@@ -187,16 +160,39 @@ class MpmcQueue {
             auto new_node = new Node(block_size_);
             new_node->block.push(value);
             if (node->next_.compare_exchange_strong(next, new_node, std::memory_order_acq_rel)) {
-              next = new_node;
-              loop_flag = false;
+              write_pos_.compare_exchange_strong(node, new_node, std::memory_order_acq_rel);
+              return;
             } else {
-              auto status = new_node->block.pop(value);
-              CHECK(status == PopStatus::Ok);
+              new_node->block.pop(value);
+              //CHECK(status == PopStatus::Ok);
               delete new_node;
             }
           }
-          if (next != nullptr) {
-            write_pos_.compare_exchange_strong(node, next, std::memory_order_acq_rel);
+          //CHECK(next != nullptr);
+          write_pos_.compare_exchange_strong(node, next, std::memory_order_acq_rel);
+          break;
+        }
+      }
+    }
+  }
+
+  bool try_pop(T &value, size_t thread_id) {
+    while (true) {
+      auto lock = hazard_pointers_.protect(thread_id, 0, read_pos_);
+      auto node = lock.get_ptr();
+      auto status = node->block.try_pop(value);
+      switch (status) {
+        case PopStatus::Ok:
+          return true;
+        case PopStatus::Empty:
+          return false;
+        case PopStatus::Closed: {
+          auto next = node->next_.load(std::memory_order_acquire);
+          if (!next) {
+            return false;
+          }
+          if (read_pos_.compare_exchange_strong(node, next, std::memory_order_acq_rel)) {
+            hazard_pointers_.retire(thread_id, node);
           }
           break;
         }
@@ -205,31 +201,12 @@ class MpmcQueue {
   }
 
   T pop(size_t thread_id) {
-    Backoff backoff;
+    T value;
     while (true) {
-      auto lock = hazard_pointers_.protect(thread_id, 0, read_pos_);
-      auto node = lock.get_ptr();
-      T value;
-      auto status = node->block.pop(value);
-      switch (status) {
-        case PopStatus::Ok:
-          return value;
-        case PopStatus::Empty:
-          UNREACHABLE();
-        case PopStatus::Closed: {
-          auto next = node->next_.load(std::memory_order_acquire);
-          if (next == nullptr) {
-            backoff.next();
-            next = node->next_.load(std::memory_order_acquire);
-          }
-          if (next != nullptr) {
-            if (read_pos_.compare_exchange_strong(node, next, std::memory_order_acq_rel)) {
-              hazard_pointers_.retire(thread_id, node);
-            }
-          }
-          break;
-        }
+      if (try_pop(value, thread_id)) {
+        return value;
       }
+      td::this_thread::yield();
     }
   }
 
@@ -237,13 +214,17 @@ class MpmcQueue {
   struct Node {
     Node(size_t block_size) : block{block_size} {
     }
-    MpmcQueueBlock<T> block;
     std::atomic<Node *> next_{nullptr};
+    char pad[128];
+    MpmcQueueBlock<T> block;
+    char pad2[128];
   };
+  std::atomic<Node *> write_pos_;
+  char pad[128];
+  std::atomic<Node *> read_pos_;
+  char pad2[128];
   size_t block_size_;
   HazardPointers<Node, 1> hazard_pointers_;
-  std::atomic<Node *> write_pos_;
-  std::atomic<Node *> read_pos_;
 };
 
 }  // namespace td

@@ -91,11 +91,11 @@ class HazardPointers {
  private:
   struct ThreadData {
     std::array<std::atomic<T*>, MaxPointersN> hazard;
-    char pad[64];
+    char pad[128];
 
     // stupid gc
     std::vector<std::unique_ptr<T>> to_delete;
-    char pad2[64];
+    char pad2[128];
   };
   std::vector<ThreadData> threads_;
 };
