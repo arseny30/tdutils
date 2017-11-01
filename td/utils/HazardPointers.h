@@ -27,6 +27,9 @@ class HazardPointers {
     ~Lock() {
       reset();
     }
+    void drop() {
+      owned = false;
+    }
     void reset() {
       if (owned) {
         ptr.store(nullptr, std::memory_order_release);
@@ -40,7 +43,7 @@ class HazardPointers {
     CHECK(pos < MaxPointersN);
     auto& data = threads_[thread_id];
     auto& dest_ptr = data.hazard[pos];
-    CHECK(!dest_ptr.load(std::memory_order_relaxed));
+    //CHECK(!dest_ptr.load(std::memory_order_relaxed));
 
     T* saved = nullptr;
     while (true) {
@@ -91,12 +94,13 @@ class HazardPointers {
  private:
   struct ThreadData {
     std::array<std::atomic<T*>, MaxPointersN> hazard;
-    char pad[128];
+    char pad[TD_CONCURRENCY_PAD - sizeof(hazard)];
 
     // stupid gc
     std::vector<std::unique_ptr<T>> to_delete;
-    char pad2[128];
+    char pad2[TD_CONCURRENCY_PAD - sizeof(to_delete)];
   };
   std::vector<ThreadData> threads_;
+  char pad2[TD_CONCURRENCY_PAD - sizeof(threads_)];
 };
 }  // namespace td

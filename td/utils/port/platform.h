@@ -113,4 +113,6 @@ inline bool unlikely(bool x) {
   #undef TD_HAS_ATOMIC_SHARED_PTR
 #endif
 
+#define TD_CONCURRENCY_PAD 128
+
 // clang-format on

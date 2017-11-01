@@ -10,22 +10,66 @@
 #include "td/utils/logging.h"
 #include "td/utils/HazardPointers.h"
 #include "td/utils/port/thread.h"
+#include "td/utils/format.h"
 
 namespace td {
+struct MpmcStat {
+ public:
+  void alloc_ok(size_t thread_id) {
+    s(thread_id).alloc_ok_cnt++;
+  }
+  void alloc_error(size_t thread_id) {
+    s(thread_id).alloc_error_cnt++;
+  }
+  void push_loop_error(size_t thread_id) {
+    s(thread_id).push_loop_error_cnt++;
+  }
+  void push_loop_ok(size_t thread_id) {
+    s(thread_id).push_loop_ok_cnt++;
+  }
+  void dump() {
+    int alloc_ok_cnt = 0;
+    int alloc_error_cnt = 0;
+    int push_loop_error_cnt = 0;
+    int push_loop_ok_cnt = 0;
+    for (auto &d : arr) {
+      alloc_ok_cnt += d.alloc_ok_cnt;
+      alloc_error_cnt += d.alloc_error_cnt;
+      push_loop_error_cnt += d.push_loop_error_cnt;
+      push_loop_ok_cnt += d.push_loop_ok_cnt;
+    }
+    LOG(ERROR) << tag("alloc_ok_cnt", alloc_ok_cnt) << tag("alloc_error_cnt", alloc_error_cnt)
+               << tag("push_loop_error_cnt", push_loop_error_cnt) << tag("push_loop_ok_cnt", push_loop_ok_cnt);
+  }
+
+ private:
+  struct ThreadStat {
+    int alloc_ok_cnt{0};
+    int alloc_error_cnt{0};
+    int push_loop_ok_cnt{0};
+    int push_loop_error_cnt{0};
+    char pad[TD_CONCURRENCY_PAD - sizeof(int) * 4];
+  };
+  std::array<ThreadStat, 1024> arr;
+  ThreadStat &s(size_t thread_id) {
+    return arr[thread_id];
+  }
+};
+MpmcStat stat_;
 template <class T>
 class OneValue {
  public:
   bool set_value(T &value) {
     value_ = std::move(value);
     int state = Empty;
-    if (state_.compare_exchange_strong(state, Value)) {
+    if (state_.compare_exchange_strong(state, Value, std::memory_order_acq_rel)) {
       return true;
     }
     value = std::move(value_);
     return false;
   }
   bool get_value(T &value) {
-    auto old_state = state_.exchange(Taken);
+    auto old_state = state_.exchange(Taken, std::memory_order_acq_rel);
     if (old_state == Value) {
       value = std::move(value_);
       return true;
@@ -44,6 +88,31 @@ class OneValue {
 };
 
 template <class T>
+class OneValue<T *> {
+ public:
+  bool set_value(T *value) {
+    T *was = nullptr;
+    return state_.compare_exchange_strong(was, value, std::memory_order_acq_rel);
+  }
+  bool get_value(T *&value) {
+    value = state_.exchange(Taken(), std::memory_order_acq_rel);
+    return value != nullptr;
+  }
+  void reset() {
+    state_ = nullptr;
+  }
+  OneValue() {
+  }
+
+ private:
+  std::atomic<T *> state_{nullptr};
+  T *Taken() {
+    static T xxx;
+    return &xxx;
+  }
+};
+
+template <class T>
 class MpmcQueueBlock {
  public:
   MpmcQueueBlock(size_t size) : nodes_(size) {
@@ -54,7 +123,7 @@ class MpmcQueueBlock {
   //returns Ok or Closed
   PopStatus pop(T &value) {
     while (true) {
-      auto read_pos = read_pos_.fetch_add(1, std::memory_order_release);
+      auto read_pos = read_pos_.fetch_add(1, std::memory_order_relaxed);
       if (read_pos >= nodes_.size()) {
         return PopStatus::Closed;
       }
@@ -77,7 +146,7 @@ class MpmcQueueBlock {
       if (write_pos <= read_pos) {
         return PopStatus::Empty;
       }
-      read_pos = read_pos_.fetch_add(1, std::memory_order_release);
+      read_pos = read_pos_.fetch_add(1, std::memory_order_relaxed);
       if (read_pos >= nodes_.size()) {
         return PopStatus::Closed;
       }
@@ -90,26 +159,28 @@ class MpmcQueueBlock {
   enum class PushStatus { Ok, Closed };
   PushStatus push(T &value) {
     while (true) {
-      auto write_pos = write_pos_.fetch_add(1, std::memory_order_release);
+      auto write_pos = write_pos_.fetch_add(1, std::memory_order_relaxed);
       if (write_pos >= nodes_.size()) {
         return PushStatus::Closed;
       }
       if (nodes_[write_pos].one_value.set_value(value)) {
+        //stat_.push_loop_ok(0);
         return PushStatus::Ok;
       }
+      //stat_.push_loop_error(0);
     }
   }
 
  private:
   struct Node {
     OneValue<T> one_value;
-    //char pad[128];
   };
   std::atomic<uint64> write_pos_{0};
-  char pad2[128];
+  char pad[TD_CONCURRENCY_PAD - sizeof(write_pos_)];
   std::atomic<uint64> read_pos_{0};
-  char pad[128];
+  char pad2[TD_CONCURRENCY_PAD - sizeof(read_pos_)];
   std::vector<Node> nodes_;
+  char pad3[TD_CONCURRENCY_PAD - sizeof(nodes_)];
 };
 
 template <class T>
@@ -130,11 +201,21 @@ class MpmcQueue {
       }
     }
   };
+  explicit MpmcQueue(size_t threads_n) : MpmcQueue(1024, threads_n) {
+  }
+  static std::string get_description() {
+    return "Mpmc queue (fetch and add array queue)";
+  }
   MpmcQueue(size_t block_size, size_t threads_n) : block_size_{block_size}, hazard_pointers_{threads_n} {
     auto node = std::make_unique<Node>(block_size_);
     write_pos_ = node.get();
     read_pos_ = node.get();
     node.release();
+  }
+
+  ~MpmcQueue() {
+    //stat_.dump();
+    //stat_ = MpmcStat();
   }
 
   size_t hazard_pointers_to_delele_size_unsafe() const {
@@ -160,9 +241,11 @@ class MpmcQueue {
             auto new_node = new Node(block_size_);
             new_node->block.push(value);
             if (node->next_.compare_exchange_strong(next, new_node, std::memory_order_acq_rel)) {
+              //stat_.alloc_ok(thread_id);
               write_pos_.compare_exchange_strong(node, new_node, std::memory_order_acq_rel);
               return;
             } else {
+              //stat_.alloc_error(thread_id);
               new_node->block.pop(value);
               //CHECK(status == PopStatus::Ok);
               delete new_node;
@@ -173,6 +256,7 @@ class MpmcQueue {
           break;
         }
       }
+      lock.drop();
     }
   }
 
@@ -192,11 +276,13 @@ class MpmcQueue {
             return false;
           }
           if (read_pos_.compare_exchange_strong(node, next, std::memory_order_acq_rel)) {
+            lock.reset();
             hazard_pointers_.retire(thread_id, node);
           }
           break;
         }
       }
+      lock.drop();
     }
   }
 
@@ -215,16 +301,17 @@ class MpmcQueue {
     Node(size_t block_size) : block{block_size} {
     }
     std::atomic<Node *> next_{nullptr};
-    char pad[128];
+    char pad[TD_CONCURRENCY_PAD - sizeof(next_)];
     MpmcQueueBlock<T> block;
-    char pad2[128];
+    //Got pad in MpmcQueueBlock
   };
   std::atomic<Node *> write_pos_;
-  char pad[128];
+  char pad[TD_CONCURRENCY_PAD - sizeof(write_pos_)];
   std::atomic<Node *> read_pos_;
-  char pad2[128];
+  char pad2[TD_CONCURRENCY_PAD - sizeof(read_pos_)];
   size_t block_size_;
   HazardPointers<Node, 1> hazard_pointers_;
+  //Got pad in HazardPointers
 };
 
 }  // namespace td
