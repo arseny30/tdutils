@@ -11,6 +11,7 @@
 #include "td/utils/HazardPointers.h"
 #include "td/utils/port/thread.h"
 #include "td/utils/format.h"
+#include "td/utils/ScopeGuard.h"
 
 namespace td {
 struct MpmcStat {
@@ -138,20 +139,16 @@ class MpmcQueueBlock {
   //returns Ok, Empty or Closed
   PopStatus try_pop(T &value) {
     while (true) {
-      auto read_pos = read_pos_.load(std::memory_order_relaxed);
-      if (read_pos >= nodes_.size()) {
-        return PopStatus::Closed;
-      }
-      auto write_pos = write_pos_.load(std::memory_order_relaxed);
-      if (write_pos <= read_pos) {
-        return PopStatus::Empty;
-      }
-      read_pos = read_pos_.fetch_add(1, std::memory_order_relaxed);
+      auto read_pos = read_pos_.fetch_add(1, std::memory_order_relaxed);
       if (read_pos >= nodes_.size()) {
         return PopStatus::Closed;
       }
       if (nodes_[read_pos].one_value.get_value(value)) {
         return PopStatus::Ok;
+      }
+      auto write_pos = write_pos_.load(std::memory_order_relaxed);
+      if (write_pos <= read_pos + 1) {
+        return PopStatus::Empty;
       }
     }
   }
@@ -184,36 +181,27 @@ class MpmcQueueBlock {
 };
 
 template <class T>
-class MpmcQueue {
+class MpmcQueueOld {
  public:
-  class Backoff {
-   private:
-    int cnt = 0;
-
-   public:
-    bool next() {
-      cnt++;
-      if (cnt < 1) {  // 50
-        return true;
-      } else {
-        td::this_thread::yield();
-        return cnt < 3;  // 500
-      }
-    }
-  };
-  explicit MpmcQueue(size_t threads_n) : MpmcQueue(1024, threads_n) {
+  explicit MpmcQueueOld(size_t threads_n) : MpmcQueueOld(1024, threads_n) {
   }
   static std::string get_description() {
     return "Mpmc queue (fetch and add array queue)";
   }
-  MpmcQueue(size_t block_size, size_t threads_n) : block_size_{block_size}, hazard_pointers_{threads_n} {
+  MpmcQueueOld(size_t block_size, size_t threads_n) : block_size_{block_size}, hazard_pointers_{threads_n} {
     auto node = std::make_unique<Node>(block_size_);
     write_pos_ = node.get();
     read_pos_ = node.get();
     node.release();
   }
 
-  ~MpmcQueue() {
+  ~MpmcQueueOld() {
+    auto *ptr = read_pos_.load(std::memory_order_relaxed);
+    while (ptr) {
+      auto *to_delete = ptr;
+      ptr = ptr->next_.load(std::memory_order_relaxed);
+      delete to_delete;
+    }
     //stat_.dump();
     //stat_ = MpmcStat();
   }
@@ -227,10 +215,11 @@ class MpmcQueue {
 
   using PushStatus = typename MpmcQueueBlock<T>::PushStatus;
   using PopStatus = typename MpmcQueueBlock<T>::PopStatus;
+
   void push(T value, size_t thread_id) {
+    auto hazard_ptr_holder = hazard_pointers_.get_holder(thread_id, 0);
     while (true) {
-      auto lock = hazard_pointers_.protect(thread_id, 0, write_pos_);
-      auto node = lock.get_ptr();
+      auto node = hazard_ptr_holder.protect(write_pos_);
       auto status = node->block.push(value);
       switch (status) {
         case PushStatus::Ok:
@@ -256,14 +245,13 @@ class MpmcQueue {
           break;
         }
       }
-      lock.drop();
     }
   }
 
   bool try_pop(T &value, size_t thread_id) {
+    auto hazard_ptr_holder = hazard_pointers_.get_holder(thread_id, 0);
     while (true) {
-      auto lock = hazard_pointers_.protect(thread_id, 0, read_pos_);
-      auto node = lock.get_ptr();
+      auto node = hazard_ptr_holder.protect(read_pos_);
       auto status = node->block.try_pop(value);
       switch (status) {
         case PopStatus::Ok:
@@ -276,13 +264,12 @@ class MpmcQueue {
             return false;
           }
           if (read_pos_.compare_exchange_strong(node, next, std::memory_order_acq_rel)) {
-            lock.reset();
+            hazard_ptr_holder.clear();
             hazard_pointers_.retire(thread_id, node);
           }
           break;
         }
       }
-      lock.drop();
     }
   }
 
@@ -314,4 +301,130 @@ class MpmcQueue {
   //Got pad in HazardPointers
 };
 
+template <class T>
+class MpmcQueue {
+ public:
+  explicit MpmcQueue(size_t threads_n) : MpmcQueue(1024, threads_n) {
+  }
+  static std::string get_description() {
+    return "NEW Mpmc queue (fetch and add array queue)";
+  }
+  MpmcQueue(size_t block_size, size_t threads_n) : hazard_pointers_{threads_n} {
+    auto node = std::make_unique<Node>();
+    write_pos_ = node.get();
+    read_pos_ = node.get();
+    node.release();
+  }
+
+  ~MpmcQueue() {
+    auto *ptr = read_pos_.load(std::memory_order_relaxed);
+    while (ptr) {
+      auto *to_delete = ptr;
+      ptr = ptr->next.load(std::memory_order_relaxed);
+      delete to_delete;
+    }
+  }
+
+  size_t hazard_pointers_to_delele_size_unsafe() const {
+    return hazard_pointers_.to_delete_size_unsafe();
+  }
+  void gc(size_t thread_id) {
+    hazard_pointers_.retire(thread_id);
+  }
+
+  void push(T value, size_t thread_id) {
+    SCOPE_EXIT {
+      hazard_pointers_.clear(thread_id, 0);
+    };
+    while (true) {
+      auto node = hazard_pointers_.protect(thread_id, 0, write_pos_);
+      auto &block = node->block;
+      auto pos = block.write_pos++;
+      if (pos >= block.data.size()) {
+        auto next = node->next.load();
+        if (next == nullptr) {
+          auto new_node = new Node{};
+          new_node->block.write_pos++;
+          new_node->block.data[0].set_value(value);
+          Node *null = nullptr;
+          if (node->next.compare_exchange_strong(null, new_node)) {
+            write_pos_.compare_exchange_strong(node, new_node);
+            return;
+          } else {
+            new_node->block.data[0].get_value(value);
+            delete new_node;
+          }
+        } else {
+          write_pos_.compare_exchange_strong(node, next);
+        }
+      } else {
+        if (block.data[pos].set_value(value)) {
+          return;
+        }
+      }
+    }
+  }
+
+  bool try_pop(T &value, size_t thread_id) {
+    SCOPE_EXIT {
+      hazard_pointers_.clear(thread_id, 0);
+    };
+    while (true) {
+      auto node = hazard_pointers_.protect(thread_id, 0, read_pos_);
+      auto &block = node->block;
+      if (block.write_pos <= block.read_pos && node->next == nullptr) {
+        return false;
+      }
+      auto pos = block.read_pos++;
+      if (pos >= block.data.size()) {
+        auto next = node->next.load();
+        if (!next) {
+          return false;
+        }
+        if (read_pos_.compare_exchange_strong(node, next)) {
+          hazard_pointers_.clear(thread_id, 0);
+          hazard_pointers_.retire(thread_id, node);
+        }
+      } else {
+        if (block.data[pos].get_value(value)) {
+          return true;
+        }
+      }
+    }
+  }
+
+  T pop(size_t thread_id) {
+    T value;
+    while (true) {
+      if (try_pop(value, thread_id)) {
+        return value;
+      }
+      td::this_thread::yield();
+    }
+  }
+
+ private:
+  struct Block {
+    std::atomic<uint64> write_pos{0};
+    char pad[TD_CONCURRENCY_PAD - sizeof(write_pos)];
+    std::atomic<uint64> read_pos{0};
+    char pad2[TD_CONCURRENCY_PAD - sizeof(read_pos)];
+    std::array<OneValue<T>, 1024> data;
+    char pad3[TD_CONCURRENCY_PAD];
+  };
+  struct Node {
+    Node() {
+    }
+    Block block;
+    std::atomic<Node *> next{nullptr};
+    char pad[TD_CONCURRENCY_PAD - sizeof(next)];
+    //Got pad in MpmcQueueBlock
+  };
+  std::atomic<Node *> write_pos_;
+  char pad[TD_CONCURRENCY_PAD - sizeof(write_pos_)];
+  std::atomic<Node *> read_pos_;
+  char pad2[TD_CONCURRENCY_PAD - sizeof(read_pos_)];
+  HazardPointers<Node, 1> hazard_pointers_;
+  //Got pad in HazardPointers
+};  // namespace td
 }  // namespace td

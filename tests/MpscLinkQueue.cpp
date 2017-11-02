@@ -73,7 +73,7 @@ TEST(MpscLinkQueue, multi_thread) {
 
   int active_threads = threads_n;
   while (active_threads) {
-    auto reader = queue.pop_all_unsafe();
+    auto reader = queue.pop_all();
     while (auto value = reader.read()) {
       auto x = value.value().value();
       auto thread_id = x % threads_n;

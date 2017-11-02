@@ -15,14 +15,14 @@ TEST(HazardPointers, stress) {
   int id = 0;
   for (auto &thread : threads) {
     thread = td::thread([&, thread_id = id ] {
+      auto holder = hazard_pointers.get_holder(thread_id, 0);
       for (int i = 0; i < 1000000; i++) {
         auto &node = nodes[td::Random::fast(0, threads_n - 1)];
-        auto lock = hazard_pointers.protect(thread_id, 0, node.name_);
-        auto *str = lock.get_ptr();
+        auto *str = holder.protect(node.name_);
         if (str) {
           CHECK(*str == "one" || *str == "twotwo");
         }
-        lock.reset();
+        holder.clear();
         if (td::Random::fast(0, 5) == 0) {
           std::string *new_str = new std::string(td::Random::fast(0, 1) == 0 ? "one" : "twotwo");
           if (node.name_.compare_exchange_strong(str, new_str, std::memory_order_acq_rel)) {
