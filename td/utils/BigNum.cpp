@@ -1,4 +1,5 @@
 #include "td/utils/BigNum.h"
+#if TD_HAS_OPENSSL && TD_HAS_ZLIB
 
 #include <openssl/bn.h>
 #include <openssl/crypto.h>
@@ -238,3 +239,4 @@ int BigNum::compare(const BigNum &a, const BigNum &b) {
 }
 
 }  // namespace td
+#endif  // TD_HAS_OPENSSL && TD_HAS_ZLIB

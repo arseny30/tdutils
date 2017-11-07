@@ -1,0 +1,3 @@
+#pragma once
+#cmakedefine01 TD_HAS_OPENSSL
+#cmakedefine01 TD_HAS_ZLIB

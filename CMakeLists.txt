@@ -1,13 +1,21 @@
 cmake_minimum_required(VERSION 3.0.2)
 
 if (NOT OPENSSL_FOUND)
-  find_package(OpenSSL REQUIRED)
+  find_package(OpenSSL)
+endif()
+if (OPENSSL_FOUND)
+  set(TD_HAS_OPENSSL 1)
 endif()
 
 if (NOT ZLIB_FOUND)
-  find_package(ZLIB REQUIRED)
+  find_package(ZLIB)
+endif()
+if (ZLIB_FOUND)
+  set(TD_HAS_ZLIB 1)
   message(STATUS "Found ZLIB: ${ZLIB_INCLUDE_DIR} ${ZLIB_LIBRARIES}")
 endif()
+
+configure_file(td/utils/config.h.in td/utils/config.h @ONLY)
 
 add_subdirectory(generate)
 
@@ -181,6 +189,17 @@ endif()
 if (NOT CMAKE_CROSSCOMPILING)
   add_dependencies(tdutils tdmime_auto)
 endif()
-target_link_libraries(tdutils PUBLIC ${CMAKE_THREAD_LIBS_INIT} PRIVATE ${ZLIB_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARY})
-target_include_directories(tdutils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> PRIVATE ${ZLIB_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR})
+
+target_link_libraries(tdutils PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+target_include_directories(tdutils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+
+if (OPENSSL_FOUND) 
+  target_link_libraries(tdutils PRIVATE ${OPENSSL_CRYPTO_LIBRARY})
+  target_include_directories(tdutils PRIVATE ${OPENSSL_INCLUDE_DIR})
+endif()
+
+if (ZLIB_FOUND)
+  target_link_libraries(tdutils PRIVATE ${ZLIB_LIBRARIES})
+  target_include_directories(tdutils PRIVATE ${ZLIB_INCLUDE_DIR})
+endif()
 

@@ -1,4 +1,5 @@
 #include "td/utils/crypto.h"
+#if TD_HAS_OPENSSL && TD_HAS_ZLIB
 
 #include "td/utils/BigNum.h"
 #include "td/utils/logging.h"
@@ -482,3 +483,4 @@ void init_openssl_threads() {
 }
 
 }  // namespace td
+#endif  // TD_HAS_OPENSSL && TD_HAS_ZLIB

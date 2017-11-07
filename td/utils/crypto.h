@@ -1,10 +1,9 @@
 #pragma once
-
 #include "td/utils/common.h"
+#if TD_HAS_OPENSSL && TD_HAS_ZLIB
 #include "td/utils/Slice.h"
 
 namespace td {
-
 uint64 pq_factorize(uint64 pq);
 
 int pq_factorize(Slice pq_str, string *p_str, string *q_str);
@@ -63,3 +62,4 @@ void hmac_sha256(Slice key, Slice message, MutableSlice dest);
 void init_openssl_threads();
 
 }  // namespace td
+#endif  // TD_HAS_OPENSSL && TD_HAS_ZLIB
