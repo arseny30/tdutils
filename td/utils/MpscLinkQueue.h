@@ -20,12 +20,12 @@ class MpscLinkQueueImpl {
     head_.store(node, std::memory_order_relaxed);
   }
 
-  Reader pop_all() {
-    return Reader(head_.exchange(nullptr, std::memory_order_acquire));
+  void pop_all(Reader &reader) {
+    return reader.add(head_.exchange(nullptr, std::memory_order_acquire));
   }
 
-  Reader pop_all_unsafe() {
-    return Reader(head_.exchange(nullptr, std::memory_order_relaxed));
+  void pop_all_unsafe(Reader &reader) {
+    return reader.add(head_.exchange(nullptr, std::memory_order_relaxed));
   }
 
   class Node {
@@ -46,8 +46,12 @@ class MpscLinkQueueImpl {
 
    private:
     friend class MpscLinkQueueImpl;
-    Reader(Node *node) {
+    void add(Node *node) {
+      if (node == nullptr) {
+        return;
+      }
       // Reverse list
+      Node *tail = node;
       Node *head = nullptr;
       while (node) {
         auto next = node->next_;
@@ -55,9 +59,15 @@ class MpscLinkQueueImpl {
         head = node;
         node = next;
       }
-      head_ = head;
+      if (head_ == nullptr) {
+        head_ = head;
+      } else {
+        tail_->next_ = head;
+      }
+      tail_ = tail;
     }
-    Node *head_;
+    Node *head_{nullptr};
+    Node *tail_{nullptr};
   };
 
  private:
@@ -78,8 +88,6 @@ class MpscLinkQueue {
   }
   class Reader {
    public:
-    Reader(MpscLinkQueueImpl::Reader impl) : impl_(std::move(impl)) {
-    }
     ~Reader() {
       CHECK(!read());
     }
@@ -93,13 +101,17 @@ class MpscLinkQueue {
 
    private:
     MpscLinkQueueImpl::Reader impl_;
+    friend class MpscLinkQueue;
+    MpscLinkQueueImpl::Reader &impl() {
+      return impl_;
+    }
   };
 
-  Reader pop_all() {
-    return Reader(impl_.pop_all());
+  void pop_all(Reader &reader) {
+    return impl_.pop_all(reader.impl());
   }
-  Reader pop_all_unsafe() {
-    return Reader(impl_.pop_all_unsafe());
+  void pop_all_unsafe(Reader &reader) {
+    return impl_.pop_all_unsafe(reader.impl());
   }
 
  private:

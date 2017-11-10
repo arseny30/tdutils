@@ -33,12 +33,23 @@ TEST(MpscLinkQueue, one_thread) {
     queue.push(create_node(1));
     queue.push(create_node(2));
     queue.push(create_node(3));
-    auto reader = queue.pop_all();
+    td::MpscLinkQueue<QueueNode>::Reader reader;
+    queue.pop_all(reader);
+    queue.push(create_node(4));
+    queue.pop_all(reader);
     std::vector<int> v;
     while (auto node = reader.read()) {
       v.push_back(node.value().value());
     }
-    CHECK((v == std::vector<int>{1, 2, 3})) << td::format::as_array(v);
+    CHECK((v == std::vector<int>{1, 2, 3, 4})) << td::format::as_array(v);
+
+    v.clear();
+    queue.push(create_node(5));
+    queue.pop_all(reader);
+    while (auto node = reader.read()) {
+      v.push_back(node.value().value());
+    }
+    CHECK((v == std::vector<int>{5})) << td::format::as_array(v);
   }
 
   {
@@ -46,7 +57,8 @@ TEST(MpscLinkQueue, one_thread) {
     queue.push_unsafe(create_node(2));
     queue.push_unsafe(create_node(1));
     queue.push_unsafe(create_node(0));
-    auto reader = queue.pop_all_unsafe();
+    td::MpscLinkQueue<QueueNode>::Reader reader;
+    queue.pop_all_unsafe(reader);
     std::vector<int> v;
     while (auto node = reader.read()) {
       v.push_back(node.value().value());
@@ -72,8 +84,10 @@ TEST(MpscLinkQueue, multi_thread) {
   }
 
   int active_threads = threads_n;
+
+  td::MpscLinkQueue<QueueNode>::Reader reader;
   while (active_threads) {
-    auto reader = queue.pop_all();
+    queue.pop_all(reader);
     while (auto value = reader.read()) {
       auto x = value.value().value();
       auto thread_id = x % threads_n;
