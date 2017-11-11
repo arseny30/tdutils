@@ -2,7 +2,7 @@
 
 #include "td/utils/common.h"
 
-#if TD_HAS_OPENSSL
+#if TD_HAVE_OPENSSL
 
 #include "td/utils/Slice.h"
 

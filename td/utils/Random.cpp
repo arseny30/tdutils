@@ -1,6 +1,6 @@
 #include "td/utils/Random.h"
 
-#if TD_HAS_OPENSSL
+#if TD_HAVE_OPENSSL
 #include <openssl/rand.h>
 #endif
 
@@ -11,7 +11,7 @@
 
 namespace td {
 
-#if TD_HAS_OPENSSL
+#if TD_HAVE_OPENSSL
 void Random::secure_bytes(MutableSlice dest) {
   Random::secure_bytes(dest.ubegin(), dest.size());
 }

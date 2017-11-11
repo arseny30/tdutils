@@ -12,7 +12,7 @@ REGISTER_TESTS(pq)
 
 using namespace td;
 
-#if TD_HAS_OPENSSL
+#if TD_HAVE_OPENSSL
 static bool is_prime(uint64 x) {
   for (uint64 d = 2; d < x && d * d <= x; d++) {
     if (x % d == 0) {
@@ -95,12 +95,12 @@ TEST(CryptoPQ, hands) {
   ASSERT_EQ(3ull, td::pq_factorize(7 * 3));
   ASSERT_EQ(179424611ull, td::pq_factorize(179424611ull * 179424673ull));
 
-#if TD_HAS_OPENSSL
+#if TD_HAVE_OPENSSL
   test_pq(4294467311, 4294467449);
 #endif
 }
 
-#if TD_HAS_OPENSSL
+#if TD_HAVE_OPENSSL
 TEST(CryptoPQ, generated_slow) {
   for (int i = 0; i < 100000; i++) {
     test_pq(2, 2);

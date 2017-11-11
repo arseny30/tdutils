@@ -7,7 +7,7 @@ namespace td {
 
 uint64 pq_factorize(uint64 pq);
 
-#if TD_HAS_OPENSSL
+#if TD_HAVE_OPENSSL
 int pq_factorize(Slice pq_str, string *p_str, string *q_str);
 
 /*** AES ***/
@@ -61,7 +61,7 @@ void hmac_sha256(Slice key, Slice message, MutableSlice dest);
 void init_openssl_threads();
 #endif
 
-#if TD_HAS_ZLIB
+#if TD_HAVE_ZLIB
 uint32 crc32(Slice data);
 #endif
 

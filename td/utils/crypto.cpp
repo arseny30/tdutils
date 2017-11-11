@@ -7,7 +7,7 @@
 #include "td/utils/port/thread.h"
 #include "td/utils/Random.h"
 
-#if TD_HAS_OPENSSL
+#if TD_HAVE_OPENSSL
 #include <openssl/aes.h>
 #include <openssl/crypto.h>
 #include <openssl/evp.h>
@@ -16,7 +16,7 @@
 #include <openssl/hmac.h>
 #endif
 
-#if TD_HAS_ZLIB
+#if TD_HAVE_ZLIB
 #include <zlib.h>
 #endif
 
@@ -113,7 +113,7 @@ uint64 pq_factorize(uint64 pq) {
   return g;
 }
 
-#if TD_HAS_OPENSSL
+#if TD_HAVE_OPENSSL
 template <class FromT>
 static string as_big_endian_string(const FromT &from) {
   size_t size = sizeof(from);
@@ -415,7 +415,7 @@ void init_openssl_threads() {
 }
 #endif
 
-#if TD_HAS_ZLIB
+#if TD_HAVE_ZLIB
 uint32 crc32(Slice data) {
   return static_cast<uint32>(::crc32(0, data.ubegin(), static_cast<uint32>(data.size())));
 }

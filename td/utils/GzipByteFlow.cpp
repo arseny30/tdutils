@@ -4,7 +4,7 @@ char disable_linker_warning_about_empty_file_gzipbyteflow_cpp TD_UNUSED;
 
 namespace td {
 
-#if TD_HAS_ZLIB
+#if TD_HAVE_ZLIB
 void GzipByteFlow::loop() {
   while (true) {
     if (gzip_.need_input()) {

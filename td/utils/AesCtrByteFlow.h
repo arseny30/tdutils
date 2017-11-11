@@ -5,7 +5,7 @@
 
 namespace td {
 
-#if TD_HAS_OPENSSL
+#if TD_HAVE_OPENSSL
 class AesCtrByteFlow : public ByteFlowInplaceBase {
  public:
   void init(const UInt256 &key, const UInt128 &iv) {

@@ -5,7 +5,7 @@
 
 namespace td {
 
-#if TD_HAS_ZLIB
+#if TD_HAVE_ZLIB
 class GzipByteFlow final : public ByteFlowBase {
  public:
   GzipByteFlow() = default;

@@ -132,7 +132,7 @@ static std::vector<string> rand_split(string str) {
   return res;
 }
 
-#if TD_HAS_OPENSSL
+#if TD_HAVE_OPENSSL
 TEST(Misc, Sha256) {
   string s = rand_string(0, 255, 10000);
   UInt256 baseline;
