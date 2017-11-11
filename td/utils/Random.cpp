@@ -2,7 +2,7 @@
 
 #if TD_HAS_OPENSSL
 #include <openssl/rand.h>
-#endif  // TD_HAS_OPENSSL
+#endif
 
 #include <algorithm>
 #include <cstring>
@@ -60,7 +60,7 @@ int64 Random::secure_int64() {
   secure_bytes(reinterpret_cast<unsigned char *>(&res), sizeof(int64));
   return res;
 }
-#endif  // TD_HAS_OPENSSL
+#endif
 
 static unsigned int rand_device_helper() {
   static TD_THREAD_LOCAL std::random_device *rd;

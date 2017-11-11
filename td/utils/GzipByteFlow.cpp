@@ -1,6 +1,10 @@
 #include "td/utils/GzipByteFlow.h"
 
+char disable_linker_warning_about_empty_file_gzipbyteflow_cpp TD_UNUSED;
+
 namespace td {
+
+#if TD_HAS_ZLIB
 void GzipByteFlow::loop() {
   while (true) {
     if (gzip_.need_input()) {
@@ -46,4 +50,6 @@ void GzipByteFlow::loop() {
   }
 }
 constexpr size_t GzipByteFlow::MIN_UPDATE_SIZE;
+#endif
+
 }  // namespace td

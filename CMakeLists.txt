@@ -176,6 +176,7 @@ set (TDUTILS_TESTS_SOURCE
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/heap.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/json.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/misc.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/pq.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/variant.cpp
   PARENT_SCOPE
 )

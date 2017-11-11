@@ -1,5 +1,8 @@
 #include "td/utils/Gzip.h"
 
+char disable_linker_warning_about_empty_file_gzip_cpp TD_UNUSED;
+
+#if TD_HAS_ZLIB
 #include <cstring>
 #include <limits>
 
@@ -175,4 +178,6 @@ BufferSlice gzencode(Slice s, double k) {
   message.confirm_append(gzip.flush_output());
   return message.as_buffer_slice();
 }
+
 }  // namespace td
+#endif

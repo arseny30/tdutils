@@ -1,8 +1,11 @@
 #pragma once
+
 #include "td/utils/ByteFlow.h"
 #include "td/utils/crypto.h"
 
 namespace td {
+
+#if TD_HAS_OPENSSL
 class AesCtrByteFlow : public ByteFlowInplaceBase {
  public:
   void init(const UInt256 &key, const UInt128 &iv) {
@@ -41,4 +44,6 @@ class AesCtrByteFlow : public ByteFlowInplaceBase {
   UInt256 key_;
   AesCtrState state_;
 };
+#endif
+
 }  // namespace td

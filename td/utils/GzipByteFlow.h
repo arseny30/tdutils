@@ -5,6 +5,7 @@
 
 namespace td {
 
+#if TD_HAS_ZLIB
 class GzipByteFlow final : public ByteFlowBase {
  public:
   GzipByteFlow() = default;
@@ -28,5 +29,6 @@ class GzipByteFlow final : public ByteFlowBase {
   size_t uncommited_size_ = 0;
   static constexpr size_t MIN_UPDATE_SIZE = 1 << 14;
 };
+#endif
 
 }  // namespace td

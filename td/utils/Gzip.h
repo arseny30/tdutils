@@ -1,5 +1,8 @@
 #pragma once
 
+#include "td/utils/common.h"
+
+#if TD_HAS_ZLIB
 #include "td/utils/buffer.h"
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
@@ -89,4 +92,7 @@ class Gzip {
 BufferSlice gzdecode(Slice s);
 
 BufferSlice gzencode(Slice s, double k = 0.9);
+
 }  // namespace td
+
+#endif

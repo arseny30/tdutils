@@ -132,6 +132,7 @@ static std::vector<string> rand_split(string str) {
   return res;
 }
 
+#if TD_HAS_OPENSSL
 TEST(Misc, Sha256) {
   string s = rand_string(0, 255, 10000);
   UInt256 baseline;
@@ -147,6 +148,7 @@ TEST(Misc, Sha256) {
   sha256_final(&state, MutableSlice(result.raw, 32));
   ASSERT_TRUE(baseline == result);
 }
+#endif
 
 TEST(Misc, base64) {
   for (int l = 0; l < 300000; l += l / 20 + 1) {
