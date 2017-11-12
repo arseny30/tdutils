@@ -88,7 +88,4 @@ bool init_thread_local(P &raw_ptr, ArgsT &&... args) {
   return true;
 }
 
-void set_thread_id(int32 id);
-int32 get_thread_id();
-
 }  // namespace td
