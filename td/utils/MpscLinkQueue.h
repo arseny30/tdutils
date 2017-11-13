@@ -43,6 +43,13 @@ class MpscLinkQueueImpl {
       }
       return old_head;
     }
+    void delay(Node *node) {
+      node->next_ = head_;
+      if (!head_) {
+        tail_ = node;
+      }
+      head_ = node;
+    }
 
    private:
     friend class MpscLinkQueueImpl;
@@ -97,6 +104,9 @@ class MpscLinkQueue {
         return {};
       }
       return Node::from_mpsc_link_queue_node(node);
+    }
+    void delay(Node node) {
+      impl_.delay(node.to_mpsc_link_queue_node());
     }
 
    private:
