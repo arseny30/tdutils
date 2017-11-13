@@ -42,6 +42,7 @@ set(TDUTILS_SOURCE
   td/utils/port/detail/KQueue.cpp
   td/utils/port/detail/Poll.cpp
   td/utils/port/detail/Select.cpp
+  td/utils/port/detail/ThreadIdGuard.cpp
   td/utils/port/detail/WineventPoll.cpp
 
   ${TDMIME_AUTO}
@@ -96,6 +97,7 @@ set(TDUTILS_SOURCE
   td/utils/port/detail/KQueue.h
   td/utils/port/detail/Poll.h
   td/utils/port/detail/Select.h
+  td/utils/port/detail/ThreadIdGuard.h
   td/utils/port/detail/ThreadPthread.h
   td/utils/port/detail/ThreadStl.h
   td/utils/port/detail/WineventPoll.h

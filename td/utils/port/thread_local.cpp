@@ -2,6 +2,8 @@
 
 #include "td/utils/logging.h"
 
+#include <mutex>
+
 namespace td {
 
 namespace detail {
@@ -32,5 +34,4 @@ void set_thread_id(int32 id) {
 int32 get_thread_id() {
   return detail::thread_id_;
 }
-
 }  // namespace td

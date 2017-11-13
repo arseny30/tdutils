@@ -6,6 +6,8 @@
 #include "td/utils/common.h"
 #include "td/utils/invoke.h"
 
+#include "td/utils/port/detail/ThreadIdGuard.h"
+
 #include <thread>
 #include <tuple>
 #include <type_traits>
@@ -25,6 +27,7 @@ class ThreadStl {
   explicit ThreadStl(Function &&f, Args &&... args) {
     thread_ = std::thread([args = std::make_tuple(decay_copy(std::forward<Function>(f)),
                                                   decay_copy(std::forward<Args>(args))...)]() mutable {
+      ThreadIdGuard thread_id_guard;
       invoke_tuple(std::move(args));
       clear_thread_locals();
     });
