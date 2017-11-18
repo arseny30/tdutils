@@ -81,4 +81,4 @@ void EventFdBsd::acquire() {
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_EVENTFD_BSD
+#endif

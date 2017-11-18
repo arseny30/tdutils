@@ -4,20 +4,24 @@
 
 #ifdef TD_POLL_EPOLL
 
-// Epoll poll implementation
-#include <sys/epoll.h>
-
+#include "td/utils/common.h"
 #include "td/utils/port/Fd.h"
 #include "td/utils/port/PollBase.h"
 
+#include <sys/epoll.h>
+
 namespace td {
 namespace detail {
-class Epoll final : public PollBase {
- private:
-  int epoll_fd = -1;
-  vector<struct epoll_event> events;
 
+class Epoll final : public PollBase {
  public:
+  Epoll() = default;
+  Epoll(const Epoll &) = delete;
+  Epoll &operator=(const Epoll &) = delete;
+  Epoll(Epoll &&) = delete;
+  Epoll &operator=(Epoll &&) = delete;
+  ~Epoll() override = default;
+
   void init() override;
 
   void clear() override;
@@ -29,8 +33,13 @@ class Epoll final : public PollBase {
   void unsubscribe_before_close(const Fd &fd) override;
 
   void run(int timeout_ms) override;
+
+ private:
+  int epoll_fd = -1;
+  vector<struct epoll_event> events;
 };
+
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_POLL_EPOLL
+#endif

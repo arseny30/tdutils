@@ -1,6 +1,9 @@
 #pragma once
 
 #include "td/utils/common.h"
+
+#if TD_HAVE_OPENSSL
+
 #include "td/utils/Slice.h"
 
 namespace td {
@@ -95,3 +98,5 @@ class BigNum {
 };
 
 }  // namespace td
+
+#endif

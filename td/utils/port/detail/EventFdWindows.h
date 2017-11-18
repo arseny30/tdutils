@@ -38,4 +38,4 @@ class EventFdWindows final : public EventFdBase {
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_EVENTFD_WINDOWS
+#endif

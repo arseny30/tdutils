@@ -84,23 +84,23 @@
   #define TD_UNUSED
 #endif
 
-#define TD_HAS_ATOMIC_SHARED_PTR 1
+#define TD_HAVE_ATOMIC_SHARED_PTR 1
 
 // No atomic operations on std::shared_ptr in libstdc++ before 5.0
 // see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57250
 #ifdef __GLIBCXX__
-  #undef TD_HAS_ATOMIC_SHARED_PTR
+  #undef TD_HAVE_ATOMIC_SHARED_PTR
 #endif
 
 // Also no atomic operations on std::shared_ptr when clang __has_feature(cxx_atomic) is defined and zero
 #if defined(__has_feature)
   #if !__has_feature(cxx_atomic)
-    #undef TD_HAS_ATOMIC_SHARED_PTR
+    #undef TD_HAVE_ATOMIC_SHARED_PTR
   #endif
 #endif
 
-#ifdef TD_HAS_ATOMIC_SHARED_PTR // unfortunately we can't check for __GLIBCXX__ here, it is not defined yet
-  #undef TD_HAS_ATOMIC_SHARED_PTR
+#ifdef TD_HAVE_ATOMIC_SHARED_PTR // unfortunately we can't check for __GLIBCXX__ here, it is not defined yet
+  #undef TD_HAVE_ATOMIC_SHARED_PTR
 #endif
 
 // clang-format on

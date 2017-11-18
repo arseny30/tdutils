@@ -1,7 +1,9 @@
 #pragma once
 
-#include "td/utils/port/EventFd.h"  // for EventFd
-#include "td/utils/port/thread.h"   // for EventFd
+#include "td/utils/port/EventFd.h"
+#include "td/utils/port/thread.h"
+
+#if !TD_THREAD_UNSUPPORTED && !TD_EVENTFD_UNSUPPORTED
 
 #if !TD_WINDOWS
 #include <poll.h>  // for pollfd, poll, POLLIN
@@ -13,6 +15,7 @@
 #include <utility>
 
 namespace td {
+
 class Backoff {
  private:
   int cnt = 0;
@@ -418,4 +421,57 @@ class PollQueue : public QueueT {
     }
   }
 };
+
 }  // namespace td
+
+#else
+
+#include "td/utils/logging.h"
+
+namespace td {
+
+// dummy implementation which shouldn't be used
+
+template <class T>
+class PollQueue {
+ public:
+  using ValueType = T;
+
+  void init() {
+    UNREACHABLE();
+  }
+
+  template <class PutValueType>
+  void writer_put(PutValueType &&value) {
+    UNREACHABLE();
+  }
+
+  void writer_flush() {
+    UNREACHABLE();
+  }
+
+  int reader_wait_nonblock() {
+    UNREACHABLE();
+    return 0;
+  }
+
+  ValueType reader_get_unsafe() {
+    UNREACHABLE();
+    return ValueType();
+  }
+
+  void reader_flush() {
+    UNREACHABLE();
+  }
+
+  PollQueue() = default;
+  PollQueue(const PollQueue &) = delete;
+  PollQueue &operator=(const PollQueue &) = delete;
+  PollQueue(PollQueue &&) = delete;
+  PollQueue &operator=(PollQueue &&) = delete;
+  ~PollQueue() = default;
+};
+
+}  // namespace td
+
+#endif

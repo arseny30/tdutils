@@ -4,31 +4,18 @@
 
 #ifdef TD_POLL_KQUEUE
 
-// KQueue poll implementation
-#include <sys/event.h>
-
 #include "td/utils/common.h"
 #include "td/utils/port/Fd.h"
 #include "td/utils/port/PollBase.h"
 
 #include <cstdint>
 
+#include <sys/event.h>
+
 namespace td {
 namespace detail {
+
 class KQueue final : public PollBase {
- private:
-  vector<struct kevent> events;
-  int changes_n;
-  int kq;
-
-  int update(int nevents, const timespec *timeout, bool may_fail = false);
-
-  void invalidate(const Fd &fd);
-
-  void flush_changes(bool may_fail = false);
-
-  void add_change(std::uintptr_t ident, int16 filter, uint16 flags, uint32 fflags, std::intptr_t data, void *udata);
-
  public:
   KQueue();
   KQueue(const KQueue &) = delete;
@@ -48,8 +35,22 @@ class KQueue final : public PollBase {
   void unsubscribe_before_close(const Fd &fd) override;
 
   void run(int timeout_ms) override;
+
+ private:
+  vector<struct kevent> events;
+  int changes_n;
+  int kq;
+
+  int update(int nevents, const timespec *timeout, bool may_fail = false);
+
+  void invalidate(const Fd &fd);
+
+  void flush_changes(bool may_fail = false);
+
+  void add_change(std::uintptr_t ident, int16 filter, uint16 flags, uint32 fflags, std::intptr_t data, void *udata);
 };
+
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_POLL_KQUEUE
+#endif

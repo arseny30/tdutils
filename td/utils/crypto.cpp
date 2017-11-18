@@ -7,50 +7,24 @@
 #include "td/utils/port/thread.h"
 #include "td/utils/Random.h"
 
+#if TD_HAVE_OPENSSL
 #include <openssl/aes.h>
 #include <openssl/crypto.h>
 #include <openssl/evp.h>
 #include <openssl/md5.h>
 #include <openssl/sha.h>
 #include <openssl/hmac.h>
+#endif
 
-#include <zlib.h>  // for crc32
+#if TD_HAVE_ZLIB
+#include <zlib.h>
+#endif
 
 #include <algorithm>
 #include <cstring>
 #include <utility>
 
 namespace td {
-
-void init_crypto() {
-  static bool is_inited = [] {
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-    return OPENSSL_init_crypto(0, nullptr) != 0;
-#else
-    OpenSSL_add_all_algorithms();
-    return true;
-#endif
-  }();
-  CHECK(is_inited);
-}
-
-template <class FromT>
-static string as_big_endian_string(const FromT &from) {
-  size_t size = sizeof(from);
-  string res(size, '\0');
-
-  auto ptr = reinterpret_cast<const unsigned char *>(&from);
-  std::memcpy(&res[0], ptr, size);
-
-  size_t i = size;
-  while (i && res[i - 1] == 0) {
-    i--;
-  }
-
-  res.resize(i);
-  std::reverse(res.begin(), res.end());
-  return res;
-}
 
 static uint64 gcd(uint64 a, uint64 b) {
   if (a == 0) {
@@ -139,6 +113,37 @@ uint64 pq_factorize(uint64 pq) {
   return g;
 }
 
+#if TD_HAVE_OPENSSL
+void init_crypto() {
+  static bool is_inited = [] {
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    return OPENSSL_init_crypto(0, nullptr) != 0;
+#else
+    OpenSSL_add_all_algorithms();
+    return true;
+#endif
+  }();
+  CHECK(is_inited);
+}
+
+template <class FromT>
+static string as_big_endian_string(const FromT &from) {
+  size_t size = sizeof(from);
+  string res(size, '\0');
+
+  auto ptr = reinterpret_cast<const unsigned char *>(&from);
+  std::memcpy(&res[0], ptr, size);
+
+  size_t i = size;
+  while (i && res[i - 1] == 0) {
+    i--;
+  }
+
+  res.resize(i);
+  std::reverse(res.begin(), res.end());
+  return res;
+}
+
 static int pq_factorize_big(Slice pq_str, string *p_str, string *q_str) {
   // TODO: qsieve?
   // do not work for pq == 1
@@ -202,8 +207,7 @@ static int pq_factorize_big(Slice pq_str, string *p_str, string *q_str) {
 int pq_factorize(Slice pq_str, string *p_str, string *q_str) {
   size_t size = pq_str.size();
   if (static_cast<int>(size) > 8 || (static_cast<int>(size) == 8 && (pq_str.begin()[0] & 128) != 0)) {
-    int res = pq_factorize_big(pq_str, p_str, q_str);
-    return res;
+    return pq_factorize_big(pq_str, p_str, q_str);
   }
 
   auto ptr = pq_str.ubegin();
@@ -368,6 +372,66 @@ void md5(Slice input, MutableSlice output) {
   MD5(input.ubegin(), input.size(), output.ubegin());
 }
 
+void pbkdf2_sha256(Slice password, Slice salt, int iteration_count, MutableSlice dest) {
+  PKCS5_PBKDF2_HMAC(password.data(), narrow_cast<int>(password.size()), salt.ubegin(), narrow_cast<int>(salt.size()),
+                    iteration_count, EVP_sha256(), narrow_cast<int>(dest.size()), dest.ubegin());
+}
+
+void hmac_sha256(Slice key, Slice message, MutableSlice dest) {
+  CHECK(dest.size() == 256 / 8);
+  unsigned int len = 0;
+  HMAC(EVP_sha256(), key.ubegin(), narrow_cast<int>(key.size()), message.ubegin(), narrow_cast<int>(message.size()),
+       dest.ubegin(), &len);
+  CHECK(len == dest.size());
+}
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+namespace {
+std::vector<RwMutex> &openssl_mutexes() {
+  static std::vector<RwMutex> mutexes(CRYPTO_num_locks());
+  return mutexes;
+}
+
+void openssl_threadid_callback(CRYPTO_THREADID *thread_id) {
+  static TD_THREAD_LOCAL int id;
+  CRYPTO_THREADID_set_pointer(thread_id, &id);
+}
+
+void openssl_locking_function(int mode, int n, const char *file, int line) {
+  auto &mutexes = openssl_mutexes();
+  if (mode & CRYPTO_LOCK) {
+    if (mode & CRYPTO_READ) {
+      mutexes[n].lock_read_unsafe();
+    } else {
+      mutexes[n].lock_write_unsafe();
+    }
+  } else {
+    if (mode & CRYPTO_READ) {
+      mutexes[n].unlock_read_unsafe();
+    } else {
+      mutexes[n].unlock_write_unsafe();
+    }
+  }
+}
+}  // namespace
+#endif
+
+void init_openssl_threads() {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+  if (CRYPTO_get_locking_callback() == nullptr) {
+    CRYPTO_THREADID_set_callback(openssl_threadid_callback);
+    CRYPTO_set_locking_callback(openssl_locking_function);
+  }
+#endif
+}
+#endif
+
+#if TD_HAVE_ZLIB
+uint32 crc32(Slice data) {
+  return static_cast<uint32>(::crc32(0, data.ubegin(), static_cast<uint32>(data.size())));
+}
+#endif
+
 static const uint64 crc64_table[256] = {
     0x0000000000000000, 0xb32e4cbe03a75f6f, 0xf4843657a840a05b, 0x47aa7ae9abe7ff34, 0x7bd0c384ff8f5e33,
     0xc8fe8f3afc28015c, 0x8f54f5d357cffe68, 0x3c7ab96d5468a107, 0xf7a18709ff1ebc66, 0x448fcbb7fcb9e309,
@@ -422,7 +486,7 @@ static const uint64 crc64_table[256] = {
     0x28532e49984f3e05, 0x9b7d62f79be8616a, 0xa707db9acf80c06d, 0x14299724cc279f02, 0x5383edcd67c06036,
     0xe0ada17364673f59};
 
-uint64 crc64_partial(Slice data, uint64 crc) {
+static uint64 crc64_partial(Slice data, uint64 crc) {
   const char *p = data.begin();
   for (auto len = data.size(); len > 0; len--) {
     crc = crc64_table[(crc ^ *p++) & 0xff] ^ (crc >> 8);
@@ -432,64 +496,6 @@ uint64 crc64_partial(Slice data, uint64 crc) {
 
 uint64 crc64(Slice data) {
   return crc64_partial(data, static_cast<uint64>(-1)) ^ static_cast<uint64>(-1);
-}
-
-uint32 crc32(Slice data) {
-  auto res = static_cast<uint32>(::crc32(0, data.ubegin(), static_cast<uint32>(data.size())));
-  return res;
-}
-
-void pbkdf2_sha256(Slice password, Slice salt, int iteration_count, MutableSlice dest) {
-  PKCS5_PBKDF2_HMAC(password.data(), narrow_cast<int>(password.size()), salt.ubegin(), narrow_cast<int>(salt.size()),
-                    iteration_count, EVP_sha256(), narrow_cast<int>(dest.size()), dest.ubegin());
-}
-
-void hmac_sha256(Slice key, Slice message, MutableSlice dest) {
-  CHECK(dest.size() == 256 / 8);
-  unsigned int len = 0;
-  HMAC(EVP_sha256(), key.ubegin(), narrow_cast<int>(key.size()), message.ubegin(), narrow_cast<int>(message.size()),
-       dest.ubegin(), &len);
-  CHECK(len == dest.size());
-}
-
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-namespace {
-std::vector<RwMutex> &openssl_mutexes() {
-  static std::vector<RwMutex> mutexes(CRYPTO_num_locks());
-  return mutexes;
-}
-
-void openssl_threadid_callback(CRYPTO_THREADID *thread_id) {
-  static TD_THREAD_LOCAL int id;
-  CRYPTO_THREADID_set_pointer(thread_id, &id);
-}
-
-void openssl_locking_function(int mode, int n, const char *file, int line) {
-  auto &mutexes = openssl_mutexes();
-  if (mode & CRYPTO_LOCK) {
-    if (mode & CRYPTO_READ) {
-      mutexes[n].lock_read_unsafe();
-    } else {
-      mutexes[n].lock_write_unsafe();
-    }
-  } else {
-    if (mode & CRYPTO_READ) {
-      mutexes[n].unlock_read_unsafe();
-    } else {
-      mutexes[n].unlock_write_unsafe();
-    }
-  }
-}
-}  // namespace
-#endif
-
-void init_openssl_threads() {
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-  if (CRYPTO_get_locking_callback() == nullptr) {
-    CRYPTO_THREADID_set_callback(openssl_threadid_callback);
-    CRYPTO_set_locking_callback(openssl_locking_function);
-  }
-#endif
 }
 
 }  // namespace td

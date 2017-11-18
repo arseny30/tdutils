@@ -3,88 +3,44 @@
 #include "td/utils/port/config.h"
 
 #ifdef TD_POLL_WINEVENT
+
 #include "td/utils/common.h"
-#include "td/utils/misc.h"
 #include "td/utils/port/Fd.h"
 #include "td/utils/port/PollBase.h"
-#include "td/utils/Status.h"
-
-#include <utility>
 
 namespace td {
 namespace detail {
+
 class WineventPoll final : public PollBase {
  public:
-  void init() override {
-    clear();
-  }
+  WineventPoll() = default;
+  WineventPoll(const WineventPoll &) = delete;
+  WineventPoll &operator=(const WineventPoll &) = delete;
+  WineventPoll(WineventPoll &&) = delete;
+  WineventPoll &operator=(WineventPoll &&) = delete;
+  ~WineventPoll() override = default;
 
-  void clear() override {
-    fds_.clear();
-  }
+  void init() override;
 
-  void subscribe(const Fd &fd, Fd::Flags flags) override {
-    for (auto &it : fds_) {
-      if (it.fd_ref.get_key() == fd.get_key()) {
-        it.flags = flags;
-        return;
-      }
-    }
-    fds_.push_back({fd.clone(), flags});
-  }
+  void clear() override;
 
-  void unsubscribe(const Fd &fd) override {
-    for (auto it = fds_.begin(); it != fds_.end(); ++it) {
-      if (it->fd_ref.get_key() == fd.get_key()) {
-        std::swap(*it, fds_.back());
-        fds_.pop_back();
-        return;
-      }
-    }
-  }
+  void subscribe(const Fd &fd, Fd::Flags flags) override;
 
-  void unsubscribe_before_close(const Fd &fd) override {
-    unsubscribe(fd);
-  }
+  void unsubscribe(const Fd &fd) override;
 
-  void run(int timeout_ms) override {
-    std::vector<std::pair<size_t, Fd::Flag>> events_desc;
-    std::vector<HANDLE> events;
-    for (size_t i = 0; i < fds_.size(); i++) {
-      auto &fd_info = fds_[i];
-      if (fd_info.flags & Fd::Flag::Write) {
-        events_desc.emplace_back(i, Fd::Flag::Write);
-        events.push_back(fd_info.fd_ref.get_write_event());
-      }
-      if (fd_info.flags & Fd::Flag::Read) {
-        events_desc.emplace_back(i, Fd::Flag::Read);
-        events.push_back(fd_info.fd_ref.get_read_event());
-      }
-    }
-    auto status = WaitForMultipleObjects(narrow_cast<DWORD>(events.size()), events.data(), false, timeout_ms);
-    if (status == WAIT_FAILED) {
-      auto error = OS_ERROR("WaitForMultipleObjects failed");
-      LOG(FATAL) << error;
-    }
-    for (size_t i = 0; i < events.size(); i++) {
-      if (WaitForSingleObject(events[i], 0) == WAIT_OBJECT_0) {
-        auto &fd = fds_[events_desc[i].first].fd_ref;
-        if (events_desc[i].second == Fd::Flag::Read) {
-          fd.on_read_event();
-        } else {
-          fd.on_write_event();
-        }
-      }
-    }
-  }
+  void unsubscribe_before_close(const Fd &fd) override;
+
+  void run(int timeout_ms) override;
 
  private:
   struct FdInfo {
     Fd fd_ref;
     Fd::Flags flags;
   };
-  std::vector<FdInfo> fds_;
+  vector<FdInfo> fds_;
 };
+
 }  // namespace detail
 }  // namespace td
-#endif  // TD_POLL_WINEVENT
+
+#endif

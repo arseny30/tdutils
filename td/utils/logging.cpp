@@ -211,6 +211,10 @@ class DefaultLog : public LogInterface {
     TsCerr() << slice;
 #endif
     if (log_level == VERBOSITY_NAME(FATAL)) {
+      auto f = default_log_on_fatal_error;
+      if (f) {
+        f(slice);
+      }
       std::abort();
     }
   }
@@ -224,5 +228,6 @@ static DefaultLog default_log;
 
 LogInterface *const default_log_interface = &default_log;
 LogInterface *log_interface = default_log_interface;
+OnFatalErrorF default_log_on_fatal_error = nullptr;
 
 }  // namespace td

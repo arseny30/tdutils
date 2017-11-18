@@ -7,10 +7,13 @@ namespace td {
 
 class Random {
  public:
+#if TD_HAVE_OPENSSL
   static void secure_bytes(MutableSlice dest);
   static void secure_bytes(unsigned char *ptr, size_t size);
   static int32 secure_int32();
   static int64 secure_int64();
+#endif
+
   static uint32 fast_uint32();
   static uint64 fast_uint64();
 

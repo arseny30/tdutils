@@ -5,9 +5,10 @@
 
 namespace td {
 
-void init_crypto();
-
 uint64 pq_factorize(uint64 pq);
+
+#if TD_HAVE_OPENSSL
+void init_crypto();
 
 int pq_factorize(Slice pq_str, string *p_str, string *q_str);
 
@@ -35,9 +36,6 @@ void aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, Mutabl
 
 void sha1(Slice data, unsigned char output[20]);
 
-uint32 crc32(Slice data);
-uint64 crc64(Slice data);
-
 void sha256(Slice data, MutableSlice output);
 
 struct Sha256StateImpl;
@@ -60,5 +58,12 @@ void pbkdf2_sha256(Slice password, Slice salt, int iteration_count, MutableSlice
 void hmac_sha256(Slice key, Slice message, MutableSlice dest);
 
 void init_openssl_threads();
+#endif
+
+#if TD_HAVE_ZLIB
+uint32 crc32(Slice data);
+#endif
+
+uint64 crc64(Slice data);
 
 }  // namespace td

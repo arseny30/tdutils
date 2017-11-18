@@ -141,6 +141,8 @@ class NullLog : public LogInterface {
 
 extern LogInterface *const default_log_interface;
 extern LogInterface *log_interface;
+typedef void (*OnFatalErrorF)(CSlice msg);
+extern OnFatalErrorF default_log_on_fatal_error;
 
 #define TC_RED "\e[1;31m"
 #define TC_BLUE "\e[1;34m"

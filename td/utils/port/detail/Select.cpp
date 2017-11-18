@@ -110,4 +110,4 @@ void Select::run(int timeout_ms) {
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_POLL_SELECT
+#endif

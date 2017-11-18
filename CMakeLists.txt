@@ -1,13 +1,21 @@
 cmake_minimum_required(VERSION 3.0.2)
 
 if (NOT OPENSSL_FOUND)
-  find_package(OpenSSL REQUIRED)
+  find_package(OpenSSL)
+endif()
+if (OPENSSL_FOUND)
+  set(TD_HAVE_OPENSSL 1)
 endif()
 
 if (NOT ZLIB_FOUND)
-  find_package(ZLIB REQUIRED)
+  find_package(ZLIB)
+endif()
+if (ZLIB_FOUND)
+  set(TD_HAVE_ZLIB 1)
   message(STATUS "Found ZLIB: ${ZLIB_INCLUDE_DIR} ${ZLIB_LIBRARIES}")
 endif()
+
+configure_file(td/utils/config.h.in td/utils/config.h @ONLY)
 
 add_subdirectory(generate)
 
@@ -29,6 +37,7 @@ set(TDUTILS_SOURCE
   td/utils/port/path.cpp
   td/utils/port/ServerSocketFd.cpp
   td/utils/port/signals.cpp
+  td/utils/port/sleep.cpp
   td/utils/port/SocketFd.cpp
   td/utils/port/Stat.cpp
   td/utils/port/thread_local.cpp
@@ -41,6 +50,7 @@ set(TDUTILS_SOURCE
   td/utils/port/detail/KQueue.cpp
   td/utils/port/detail/Poll.cpp
   td/utils/port/detail/Select.cpp
+  td/utils/port/detail/WineventPoll.cpp
 
   ${TDMIME_AUTO}
 
@@ -80,6 +90,7 @@ set(TDUTILS_SOURCE
   td/utils/port/RwMutex.h
   td/utils/port/ServerSocketFd.h
   td/utils/port/signals.h
+  td/utils/port/sleep.h
   td/utils/port/SocketFd.h
   td/utils/port/Stat.h
   td/utils/port/thread.h
@@ -143,6 +154,7 @@ set(TDUTILS_SOURCE
   td/utils/ScopeGuard.h
   td/utils/Slice-decl.h
   td/utils/Slice.h
+  td/utils/SpinLock.h
   td/utils/StackAllocator.h
   td/utils/Status.h
   td/utils/Storer.h
@@ -164,6 +176,7 @@ set (TDUTILS_TESTS_SOURCE
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/heap.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/json.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/misc.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/pq.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/variant.cpp
   PARENT_SCOPE
 )
@@ -177,6 +190,17 @@ endif()
 if (NOT CMAKE_CROSSCOMPILING)
   add_dependencies(tdutils tdmime_auto)
 endif()
-target_link_libraries(tdutils PUBLIC ${CMAKE_THREAD_LIBS_INIT} PRIVATE ${ZLIB_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARY})
-target_include_directories(tdutils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> PRIVATE ${ZLIB_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR})
+
+target_link_libraries(tdutils PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+target_include_directories(tdutils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+
+if (OPENSSL_FOUND) 
+  target_link_libraries(tdutils PRIVATE ${OPENSSL_CRYPTO_LIBRARY})
+  target_include_directories(tdutils PRIVATE ${OPENSSL_INCLUDE_DIR})
+endif()
+
+if (ZLIB_FOUND)
+  target_link_libraries(tdutils PRIVATE ${ZLIB_LIBRARIES})
+  target_include_directories(tdutils PRIVATE ${ZLIB_INCLUDE_DIR})
+endif()
 

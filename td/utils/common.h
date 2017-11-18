@@ -1,5 +1,6 @@
 #pragma once
 
+#include "td/utils/config.h"
 #include "td/utils/port/platform.h"
 
 // clang-format off

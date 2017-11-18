@@ -73,4 +73,4 @@ inline ThreadPthread::id get_id() {
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_THREAD_PTHREAD
+#endif

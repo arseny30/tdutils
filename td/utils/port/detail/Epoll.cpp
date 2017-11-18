@@ -4,6 +4,8 @@ char disable_linker_warning_about_empty_file_epoll_cpp TD_UNUSED;
 
 #ifdef TD_POLL_EPOLL
 
+#include "td/utils/logging.h"
+
 #include <unistd.h>
 
 namespace td {
@@ -98,4 +100,4 @@ void Epoll::run(int timeout_ms) {
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_POLL_EPOLL
+#endif

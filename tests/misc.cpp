@@ -4,16 +4,13 @@
 #include "td/utils/port/EventFd.h"
 #include "td/utils/port/FileFd.h"
 #include "td/utils/port/path.h"
+#include "td/utils/port/sleep.h"
 #include "td/utils/port/Stat.h"
 #include "td/utils/port/thread.h"
 #include "td/utils/Random.h"
 #include "td/utils/tests.h"
 
 #include <atomic>
-
-#if !TD_WINDOWS
-#include <unistd.h>
-#endif
 
 using namespace td;
 
@@ -38,7 +35,8 @@ TEST(Misc, update_atime_saves_mtime) {
       tests_wa++;
       info.mtime_nsec_ = new_info.mtime_nsec_;
     }
-    usleep(Random::fast(0, 1000));
+    ASSERT_EQ(info.mtime_nsec_, new_info.mtime_nsec_);
+    usleep_for(Random::fast(0, 1000));
   }
   if (tests_wa > 0) {
     LOG(ERROR) << "Access time was unexpectedly updated " << tests_wa << " times";
@@ -55,7 +53,7 @@ TEST(Misc, update_atime_change_atime) {
   r_file.move_as_ok().close();
   auto info = stat(name).ok();
   // not enough for fat and e.t.c.
-  usleep(5000000);
+  usleep_for(5000000);
   update_atime(name).ensure();
   auto new_info = stat(name).ok();
   if (info.atime_nsec_ == new_info.atime_nsec_) {
@@ -71,11 +69,7 @@ TEST(Misc, errno_tls_bug) {
 // impl_.alloc(123);
 // CHECK(errno == 0);
 
-#if TD_EMSCRIPTEN
-  // Nor threads, nor EventFd are supported in emscrpiten
-  return;
-#endif
-
+#if !TD_THREAD_UNSUPPORTED && !TD_EVENTFD_UNSUPPORTED
   EventFd test_event_fd;
   test_event_fd.init();
   std::atomic<int> s(0);
@@ -108,6 +102,7 @@ TEST(Misc, errno_tls_bug) {
       thread.join();
     }
   }
+#endif
 }
 
 static string rand_string(int from, int to, int len) {
@@ -137,6 +132,7 @@ static std::vector<string> rand_split(string str) {
   return res;
 }
 
+#if TD_HAVE_OPENSSL
 TEST(Misc, Sha256) {
   string s = rand_string(0, 255, 10000);
   UInt256 baseline;
@@ -152,6 +148,7 @@ TEST(Misc, Sha256) {
   sha256_final(&state, MutableSlice(result.raw, 32));
   ASSERT_TRUE(baseline == result);
 }
+#endif
 
 TEST(Misc, base64) {
   for (int l = 0; l < 300000; l += l / 20 + 1) {

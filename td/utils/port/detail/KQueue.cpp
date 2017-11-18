@@ -4,9 +4,11 @@ char disable_linker_warning_about_empty_file_kqueue_cpp TD_UNUSED;
 
 #ifdef TD_POLL_KQUEUE
 
-#include <unistd.h>
+#include "td/utils/logging.h"
 
 #include <utility>
+
+#include <unistd.h>
 
 namespace td {
 namespace detail {
@@ -148,4 +150,4 @@ void KQueue::run(int timeout_ms) {
 }  // namespace detail
 }  // namespace td
 
-#endif  // TD_POLL_KQUEUE
+#endif
