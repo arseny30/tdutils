@@ -186,12 +186,6 @@ class Status {
       LOG(FATAL) << "Expected Status::Error";
     }
   }
-  Status &log_ensure() {
-    if (!is_ok()) {
-      LOG(ERROR) << "FAILED: " << to_string();
-    }
-    return *this;
-  }
 
   void ignore() const {
     // nop
@@ -368,10 +362,6 @@ class Result {
   }
   void ensure_error() const {
     status_.ensure_error();
-  }
-  Result &log_ensure() {
-    status_.log_ensure();
-    return *this;
   }
   void ignore() const {
     status_.ignore();
