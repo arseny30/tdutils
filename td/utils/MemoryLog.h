@@ -20,16 +20,17 @@ class MemoryLog : public LogInterface {
 
   void append(CSlice new_slice, int log_level) override {
     auto slice = new_slice;
-    if (!slice.empty() && slice.back() == '\n') {
+    slice.truncate(MAX_OUTPUT_SIZE);
+    while (!slice.empty() && slice.back() == '\n') {
       slice.remove_suffix(1);
     }
-    slice.truncate(MAX_OUTPUT_SIZE);
     size_t slice_size = slice.size();
     CHECK(slice_size * 3 < buffer_size);
     size_t pad_size = ((slice_size + 15) & ~15) - slice_size;
     size_t magic_size = 16;
     uint32 total_size = static_cast<uint32>(slice_size + pad_size + magic_size);
     uint32 real_pos = pos_.fetch_add(total_size, std::memory_order_relaxed);
+    CHECK((total_size & 15) == 0);
 
     uint32 start_pos = real_pos & (buffer_size - 1);
     uint32 end_pos = start_pos + total_size;
@@ -44,7 +45,11 @@ class MemoryLog : public LogInterface {
       std::memcpy(&buffer_[second], "                            ", pad_size);
     }
 
-    std::snprintf(&buffer_[start_pos], 16, "\nLOG:%08x: ", real_pos);
+    CHECK((start_pos & 15) == 0);
+    CHECK(start_pos + magic_size <= buffer_size);
+    buffer_[start_pos] = '\n';
+    size_t printed = std::snprintf(&buffer_[start_pos + 1], magic_size - 1, "LOG:%08x: ", real_pos);
+    CHECK(printed == magic_size - 2);
     buffer_[start_pos + magic_size - 1] = ' ';
   }
 
