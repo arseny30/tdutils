@@ -45,7 +45,7 @@ class MpmcWaiter {
 
   int stop_wait(int yields, uint32 worker_id) {
     if (yields > RoundsTillSleepy) {
-      state_.exchange(State::awake(), std::memory_order_release);
+      notify_cold();
     }
     return 0;
   }
