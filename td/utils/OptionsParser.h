@@ -8,7 +8,9 @@
 #include <functional>
 #include <string>
 
+#if !TD_WINDOWS
 #include <getopt.h>
+#endif
 
 namespace td {
 class OptionsParser {
@@ -44,6 +46,9 @@ class OptionsParser {
   }
 
   Result<int> run(int argc, char *argv[]) WARN_UNUSED_RESULT {
+#if TD_WINDOWS
+    return -1;
+#else
     // use getopt. long keys are not supported for now
     char buff[1024];
     StringBuilder sb(buff);
@@ -104,6 +109,7 @@ class OptionsParser {
       }
     }
     return optind;
+#endif
   }
 
   friend StringBuilder &operator<<(StringBuilder &sb, const OptionsParser &o) {

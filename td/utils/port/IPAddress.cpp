@@ -114,7 +114,7 @@ Status IPAddress::init_ipv6_as_ipv4_port(CSlice ipv4, int port) {
 Status IPAddress::init_ipv4_port(CSlice ipv4, int port) {
   is_valid_ = false;
   if (port <= 0 || port >= (1 << 16)) {
-    return Status::Error(PSLICE() << "Invalid [port=" << port << "[");
+    return Status::Error(PSLICE() << "Invalid [port=" << port << "]");
   }
   std::memset(&ipv4_addr_, 0, sizeof(ipv4_addr_));
   ipv4_addr_.sin_family = AF_INET;
