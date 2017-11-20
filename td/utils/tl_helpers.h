@@ -90,6 +90,10 @@ void parse(double &x, Parser &parser) {
 }
 
 template <class Storer>
+void store(Slice x, Storer &storer) {
+  storer.store_string(x);
+}
+template <class Storer>
 void store(const string &x, Storer &storer) {
   storer.store_string(x);
 }
