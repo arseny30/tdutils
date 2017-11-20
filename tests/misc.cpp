@@ -64,10 +64,10 @@ TEST(Misc, update_atime_change_atime) {
 #endif
 
 TEST(Misc, errno_tls_bug) {
-// That's a problem that should be avoided
-// errno = 0;
-// impl_.alloc(123);
-// CHECK(errno == 0);
+  // That's a problem that should be avoided
+  // errno = 0;
+  // impl_.alloc(123);
+  // CHECK(errno == 0);
 
 #if !TD_THREAD_UNSUPPORTED && !TD_EVENTFD_UNSUPPORTED
   EventFd test_event_fd;

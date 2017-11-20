@@ -304,8 +304,8 @@ T clamp(T value, T min_value, T max_value) {
 
 namespace detail {
 template <class T, class U>
-struct is_same_signedness : public std::integral_constant<bool, std::is_signed<T>::value == std::is_signed<U>::value> {
-};
+struct is_same_signedness
+    : public std::integral_constant<bool, std::is_signed<T>::value == std::is_signed<U>::value> {};
 
 template <class T, class Enable = void>
 struct safe_undeflying_type {
@@ -350,7 +350,9 @@ struct overload<F> : public F {
   }
 };
 template <class F, class... Fs>
-struct overload<F, Fs...> : public overload<F>, overload<Fs...> {
+struct overload<F, Fs...>
+    : public overload<F>
+    , overload<Fs...> {
   overload(F f, Fs... fs) : overload<F>(f), overload<Fs...>(fs...) {
   }
   using overload<F>::operator();
