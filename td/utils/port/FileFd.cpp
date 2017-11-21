@@ -19,6 +19,52 @@
 
 namespace td {
 
+namespace {
+
+struct PrintFlags {
+  int32 flags;
+};
+
+StringBuilder &operator<<(StringBuilder &sb, const PrintFlags &print_flags) {
+  auto flags = print_flags.flags;
+  if (flags & ~(FileFd::Write | FileFd::Read | FileFd::Truncate | FileFd::Create | FileFd::Append | FileFd::CreateNew)) {
+    return sb << "opened with invalid flags " << flags;
+  }
+
+  if (flags & FileFd::Create) {
+    sb << "opened/created ";
+  } else if (flags & FileFd::CreateNew) {
+    sb << "created ";
+  } else {
+    sb << "opened ";
+  }
+
+  if ((flags & FileFd::Write) && (flags & FileFd::Read)) {
+    if (flags & FileFd::Append) {
+      sb << "for reading and appending";
+    } else {
+      sb << "for reading and writing";
+    }
+  } else if (flags & FileFd::Write) {
+    if (flags & FileFd::Append) {
+      sb << "for appending";
+    } else {
+      sb << "for writing";
+    }
+  } else if (flags & FileFd::Read) {
+    sb << "for reading";
+  } else {
+    sb << "for nothing";
+  }
+
+  if (flags & FileFd::Truncate) {
+    sb << " with truncation";
+  }
+  return sb;
+}
+
+}
+
 const Fd &FileFd::get_fd() const {
   return fd_;
 }
@@ -28,53 +74,48 @@ Fd &FileFd::get_fd() {
 }
 
 Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
+  if (flags & ~(Write | Read | Truncate | Create | Append | CreateNew)) {
+    return Status::Error(PSLICE() << "File \"" << filepath << "\" has failed to be " << PrintFlags{flags});
+  }
+
+  if ((flags & (Write | Read)) == 0) {
+    return Status::Error(PSLICE() << "File \"" << filepath << "\" can't be " << PrintFlags{flags});
+  }
+
 #if TD_PORT_POSIX
-  int32 initial_flags = flags;
   int native_flags = 0;
 
   if ((flags & Write) && (flags & Read)) {
     native_flags |= O_RDWR;
   } else if (flags & Write) {
     native_flags |= O_WRONLY;
-  } else if (flags & Read) {
-    native_flags |= O_RDONLY;
   } else {
-    return Status::Error(PSLICE() << "Failed to open file \"" << filepath << "\" with invalid flags " << flags);
+    CHECK(flags & Read);
+    native_flags |= O_RDONLY;
   }
-  flags &= ~(Write | Read);
 
   if (flags & Truncate) {
     native_flags |= O_TRUNC;
-    flags &= ~Truncate;
   }
 
   if (flags & Create) {
     native_flags |= O_CREAT;
-    flags &= ~Create;
   } else if (flags & CreateNew) {
     native_flags |= O_CREAT;
     native_flags |= O_EXCL;
-    flags &= ~CreateNew;
   }
 
   if (flags & Append) {
     native_flags |= O_APPEND;
-    flags &= ~Append;
-  }
-
-  if (flags) {
-    return Status::Error(PSLICE() << "Failed to open file \"" << filepath << "\" with unknown flags " << initial_flags);
   }
 
   int native_fd = skip_eintr([&] { return ::open(filepath.c_str(), native_flags, static_cast<mode_t>(mode)); });
   if (native_fd < 0) {
-    return OS_ERROR(PSLICE() << "Failed to open file \"" << filepath << "\" with flags " << initial_flags);
+    return OS_ERROR(PSLICE() << "File \"" << filepath << "\" can't be " << PrintFlags{flags});
   }
 
   FileFd result;
   result.fd_ = Fd(native_fd, Fd::Mode::Owner);
-  result.fd_.update_flags(Fd::Flag::Write);
-  return std::move(result);
 #elif TD_PORT_WINDOWS
   // TODO: support modes
   auto r_filepath = to_wstring(filepath);
@@ -87,53 +128,36 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
     desired_access |= GENERIC_READ | GENERIC_WRITE;
   } else if (flags & Write) {
     desired_access |= GENERIC_WRITE;
-  } else if (flags & Read) {
-    desired_access |= GENERIC_READ;
   } else {
-    return Status::Error(PSLICE() << "Failed to open file \"" << filepath << "\" with invalid flags " << flags);
+    CHECK(flags & Read);
+    desired_access |= GENERIC_READ;
   }
-  flags &= ~(Write | Read);
 
   // TODO: share mode
   DWORD share_mode = FILE_SHARE_READ | FILE_SHARE_DELETE | FILE_SHARE_WRITE;
 
   DWORD creation_disposition = 0;
   if (flags & Create) {
-    flags &= ~Create;
     if (flags & Truncate) {
-      flags &= ~Truncate;
       creation_disposition = CREATE_ALWAYS;
     } else {
       creation_disposition = OPEN_ALWAYS;
     }
   } else if (flags & CreateNew) {
-    flags &= ~CreateNew;
-    flags &= ~Truncate;
     creation_disposition = CREATE_NEW;
   } else {
     if (flags & Truncate) {
-      flags &= ~Truncate;
       creation_disposition = TRUNCATE_EXISTING;
     } else {
       creation_disposition = OPEN_EXISTING;
     }
   }
 
-  bool append_flag = false;
-  if (flags & Append) {
-    append_flag = true;
-    flags &= ~Append;
-  }
-
-  if (flags) {
-    return Status::Error(PSLICE() << "Failed to open file \"" << filepath << "\" with unknown flags " << flags);
-  }
-
   auto handle = CreateFile2(w_filepath.c_str(), desired_access, share_mode, creation_disposition, nullptr);
   if (handle == INVALID_HANDLE_VALUE) {
-    return OS_ERROR(PSLICE() << "Failed to open file \"" << filepath << "\" with flags " << flags);
+    return OS_ERROR(PSLICE() << "File \"" << filepath << "\" can't be " << PrintFlags{flags});
   }
-  if (append_flag) {
+  if (flags & Append) {
     LARGE_INTEGER offset;
     offset.QuadPart = 0;
     auto set_pointer_res = SetFilePointerEx(handle, offset, nullptr, FILE_END);
@@ -145,9 +169,9 @@ Result<FileFd> FileFd::open(CSlice filepath, int32 flags, int32 mode) {
   }
   FileFd result;
   result.fd_ = Fd::create_file_fd(handle);
+#endif
   result.fd_.update_flags(Fd::Flag::Write);
   return std::move(result);
-#endif
 }
 
 Result<size_t> FileFd::write(Slice slice) {
