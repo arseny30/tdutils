@@ -27,7 +27,8 @@ struct PrintFlags {
 
 StringBuilder &operator<<(StringBuilder &sb, const PrintFlags &print_flags) {
   auto flags = print_flags.flags;
-  if (flags & ~(FileFd::Write | FileFd::Read | FileFd::Truncate | FileFd::Create | FileFd::Append | FileFd::CreateNew)) {
+  if (flags &
+      ~(FileFd::Write | FileFd::Read | FileFd::Truncate | FileFd::Create | FileFd::Append | FileFd::CreateNew)) {
     return sb << "opened with invalid flags " << flags;
   }
 
@@ -63,7 +64,7 @@ StringBuilder &operator<<(StringBuilder &sb, const PrintFlags &print_flags) {
   return sb;
 }
 
-}
+}  // namespace
 
 const Fd &FileFd::get_fd() const {
   return fd_;
