@@ -383,7 +383,7 @@ Result<JsonValue> do_json_decode(Parser &parser, int32 max_depth) {
       parser.skip_whitespaces();
       std::vector<std::pair<MutableSlice, JsonValue> > res;
       if (parser.try_skip('}')) {
-        return JsonValue::create_object(std::move(res));
+        return JsonValue::make_object(std::move(res));
       }
       while (true) {
         if (parser.empty()) {
@@ -407,7 +407,7 @@ Result<JsonValue> do_json_decode(Parser &parser, int32 max_depth) {
         }
         return Status::Error("Unexpected symbol");
       }
-      return JsonValue::create_object(std::move(res));
+      return JsonValue::make_object(std::move(res));
     }
     case '-':
     case '+':

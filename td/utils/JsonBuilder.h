@@ -518,7 +518,7 @@ class JsonValue : public Jsonable {
     return res;
   }
 
-  static JsonValue create_object(JsonObject c) {
+  static JsonValue make_object(JsonObject c) {
     JsonValue res;
     res.init_object(std::move(c));
     return res;
