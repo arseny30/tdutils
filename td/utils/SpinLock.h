@@ -1,37 +1,39 @@
 #pragma once
 
-#include <td/utils/port/thread.h>
 #include <atomic>
 
-namespace td {
-namespace detail {
-class InfBackoff {
- private:
-  int cnt = 0;
+#include "td/utils/port/thread.h"
 
- public:
-  bool next() {
-    cnt++;
-    if (cnt < 50) {
-      return true;
-    } else {
-      td::this_thread::yield();
-      return true;
-    }
-  }
-};
-}  // namespace detail
+namespace td {
+
 class SpinLock {
- public:
   struct Unlock {
     void operator()(SpinLock *ptr) {
       ptr->unlock();
     }
   };
+
+  class InfBackoff {
+   private:
+    int cnt = 0;
+
+   public:
+    bool next() {
+      cnt++;
+      if (cnt < 50) {
+        return true;
+      } else {
+        td::this_thread::yield();
+        return true;
+      }
+    }
+  };
+
+ public:
   using Lock = std::unique_ptr<SpinLock, Unlock>;
 
   Lock lock() {
-    detail::InfBackoff backoff;
+    InfBackoff backoff;
     while (!try_lock()) {
       backoff.next();
     }
@@ -47,4 +49,5 @@ class SpinLock {
     flag_.clear(std::memory_order_release);
   }
 };
+
 }  // namespace td

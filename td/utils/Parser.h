@@ -1,6 +1,7 @@
 #pragma once
-#include "td/utils/logging.h"
+
 #include "td/utils/format.h"
+#include "td/utils/logging.h"
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
 
@@ -8,11 +9,11 @@
 #include <utility>
 
 namespace td {
+
 class Parser {
  public:
   explicit Parser(MutableSlice data) : ptr_(data.begin()), end_(data.end()), status_() {
   }
-  ~Parser() = default;
   Parser(Parser &&other) : ptr_(other.ptr_), end_(other.end_), status_(std::move(other.status_)) {
     other.clear();
   }
@@ -28,6 +29,7 @@ class Parser {
   }
   Parser(const Parser &) = delete;
   Parser &operator=(const Parser &) = delete;
+  ~Parser() = default;
 
   bool empty() const {
     return ptr_ == end_;

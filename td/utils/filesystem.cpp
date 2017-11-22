@@ -1,7 +1,6 @@
 #include "td/utils/filesystem.h"
 
 #include "td/utils/buffer.h"
-#include "td/utils/format.h"
 #include "td/utils/port/FileFd.h"
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"

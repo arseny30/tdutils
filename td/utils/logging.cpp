@@ -220,9 +220,6 @@ class DefaultLog : public LogInterface {
   }
   void rotate() override {
   }
-
- private:
-  // TODO MemoryLog
 };
 static DefaultLog default_log;
 
