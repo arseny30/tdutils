@@ -19,7 +19,7 @@ class MemoryLog : public LogInterface {
   }
 
   void append(CSlice new_slice, int log_level) override {
-    auto slice = new_slice;
+    Slice slice = new_slice;
     slice.truncate(MAX_OUTPUT_SIZE);
     while (!slice.empty() && slice.back() == '\n') {
       slice.remove_suffix(1);

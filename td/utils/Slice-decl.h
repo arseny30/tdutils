@@ -119,6 +119,9 @@ bool operator!=(const Slice &a, const Slice &b);
 class MutableCSlice : public MutableSlice {
   struct private_tag {};
 
+  MutableSlice &remove_suffix(size_t suffix_len) = delete;
+  MutableSlice &truncate(size_t size) = delete;
+
  public:
   MutableCSlice() = delete;
   MutableCSlice(string &s) : MutableSlice(s) {
@@ -138,6 +141,9 @@ class MutableCSlice : public MutableSlice {
 
 class CSlice : public Slice {
   struct private_tag {};
+
+  Slice &remove_suffix(size_t suffix_len) = delete;
+  Slice &truncate(size_t size) = delete;
 
  public:
   explicit CSlice(const MutableSlice &other) : Slice(other) {
