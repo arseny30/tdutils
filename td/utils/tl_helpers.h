@@ -2,6 +2,7 @@
 
 #include "td/utils/buffer.h"  // for BufferSlice
 #include "td/utils/common.h"
+#include "td/utils/logging.h"
 #include "td/utils/misc.h"
 #include "td/utils/Slice.h"
 #include "td/utils/StackAllocator.h"
@@ -36,90 +37,90 @@
 #define END_PARSE_FLAGS() CHECK(bit_offset_parse < 32)
 
 namespace td {
-template <class Storer>
-void store(bool x, Storer &storer) {
+template <class StorerT>
+void store(bool x, StorerT &storer) {
   storer.store_binary(static_cast<int32>(x));
 }
-template <class Parser>
-void parse(bool &x, Parser &parser) {
+template <class ParserT>
+void parse(bool &x, ParserT &parser) {
   x = parser.fetch_int() != 0;
 }
 
-template <class Storer>
-void store(int32 x, Storer &storer) {
+template <class StorerT>
+void store(int32 x, StorerT &storer) {
   storer.store_binary(x);
 }
-template <class Parser>
-void parse(int32 &x, Parser &parser) {
+template <class ParserT>
+void parse(int32 &x, ParserT &parser) {
   x = parser.fetch_int();
 }
 
-template <class Storer>
-void store(uint32 x, Storer &storer) {
+template <class StorerT>
+void store(uint32 x, StorerT &storer) {
   storer.store_binary(x);
 }
-template <class Parser>
-void parse(uint32 &x, Parser &parser) {
+template <class ParserT>
+void parse(uint32 &x, ParserT &parser) {
   x = static_cast<uint32>(parser.fetch_int());
 }
 
-template <class Storer>
-void store(int64 x, Storer &storer) {
+template <class StorerT>
+void store(int64 x, StorerT &storer) {
   storer.store_binary(x);
 }
-template <class Parser>
-void parse(int64 &x, Parser &parser) {
+template <class ParserT>
+void parse(int64 &x, ParserT &parser) {
   x = parser.fetch_long();
 }
-template <class Storer>
-void store(uint64 x, Storer &storer) {
+template <class StorerT>
+void store(uint64 x, StorerT &storer) {
   storer.store_binary(x);
 }
-template <class Parser>
-void parse(uint64 &x, Parser &parser) {
+template <class ParserT>
+void parse(uint64 &x, ParserT &parser) {
   x = static_cast<uint64>(parser.fetch_long());
 }
 
-template <class Storer>
-void store(double x, Storer &storer) {
+template <class StorerT>
+void store(double x, StorerT &storer) {
   storer.store_binary(x);
 }
-template <class Parser>
-void parse(double &x, Parser &parser) {
+template <class ParserT>
+void parse(double &x, ParserT &parser) {
   x = parser.fetch_double();
 }
 
-template <class Storer>
-void store(Slice x, Storer &storer) {
+template <class StorerT>
+void store(Slice x, StorerT &storer) {
   storer.store_string(x);
 }
-template <class Storer>
-void store(const string &x, Storer &storer) {
+template <class StorerT>
+void store(const string &x, StorerT &storer) {
   storer.store_string(x);
 }
-template <class Parser>
-void parse(string &x, Parser &parser) {
+template <class ParserT>
+void parse(string &x, ParserT &parser) {
   x = parser.template fetch_string<string>();
 }
 
-template <class Storer>
-void store(const BufferSlice &x, Storer &storer) {
+template <class StorerT>
+void store(const BufferSlice &x, StorerT &storer) {
   storer.store_string(x);
 }
-template <class Parser>
-void parse(BufferSlice &x, Parser &parser) {
+template <class ParserT>
+void parse(BufferSlice &x, ParserT &parser) {
   x = parser.template fetch_string<BufferSlice>();
 }
 
-template <class T, class Storer>
-void store(const vector<T> &vec, Storer &storer) {
+template <class T, class StorerT>
+void store(const vector<T> &vec, StorerT &storer) {
   storer.store_binary(narrow_cast<int32>(vec.size()));
   for (auto &val : vec) {
     store(val, storer);
   }
 }
-template <class T, class Parser>
-void parse(vector<T> &vec, Parser &parser) {
+template <class T, class ParserT>
+void parse(vector<T> &vec, ParserT &parser) {
   uint32 size = parser.fetch_int();
   if (parser.get_left_len() < size) {
     parser.set_error("Wrong vector length");
@@ -131,15 +132,15 @@ void parse(vector<T> &vec, Parser &parser) {
   }
 }
 
-template <class Key, class Hash, class KeyEqual, class Allocator, class Storer>
-void store(const std::unordered_set<Key, Hash, KeyEqual, Allocator> &s, Storer &storer) {
+template <class Key, class Hash, class KeyEqual, class Allocator, class StorerT>
+void store(const std::unordered_set<Key, Hash, KeyEqual, Allocator> &s, StorerT &storer) {
   storer.store_binary(narrow_cast<int32>(s.size()));
   for (auto &val : s) {
     store(val, storer);
   }
 }
-template <class Key, class Hash, class KeyEqual, class Allocator, class Parser>
-void parse(std::unordered_set<Key, Hash, KeyEqual, Allocator> &s, Parser &parser) {
+template <class Key, class Hash, class KeyEqual, class Allocator, class ParserT>
+void parse(std::unordered_set<Key, Hash, KeyEqual, Allocator> &s, ParserT &parser) {
   uint32 size = parser.fetch_int();
   if (parser.get_left_len() < size) {
     parser.set_error("Wrong set length");
@@ -153,23 +154,23 @@ void parse(std::unordered_set<Key, Hash, KeyEqual, Allocator> &s, Parser &parser
   }
 }
 
-template <class T, class Storer>
-std::enable_if_t<std::is_enum<T>::value> store(const T &val, Storer &storer) {
+template <class T, class StorerT>
+std::enable_if_t<std::is_enum<T>::value> store(const T &val, StorerT &storer) {
   store(static_cast<int32>(val), storer);
 }
-template <class T, class Parser>
-std::enable_if_t<std::is_enum<T>::value> parse(T &val, Parser &parser) {
+template <class T, class ParserT>
+std::enable_if_t<std::is_enum<T>::value> parse(T &val, ParserT &parser) {
   int32 result;
   parse(result, parser);
   val = static_cast<T>(result);
 }
 
-template <class T, class Storer>
-std::enable_if_t<!std::is_enum<T>::value> store(const T &val, Storer &storer) {
+template <class T, class StorerT>
+std::enable_if_t<!std::is_enum<T>::value> store(const T &val, StorerT &storer) {
   val.store(storer);
 }
-template <class T, class Parser>
-std::enable_if_t<!std::is_enum<T>::value> parse(T &val, Parser &parser) {
+template <class T, class ParserT>
+std::enable_if_t<!std::is_enum<T>::value> parse(T &val, ParserT &parser) {
   val.parse(parser);
 }
 

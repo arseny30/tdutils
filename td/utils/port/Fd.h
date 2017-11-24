@@ -3,7 +3,6 @@
 #include "td/utils/port/config.h"
 
 #include "td/utils/common.h"
-#include "td/utils/port/Stat.h"
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
 
@@ -156,14 +155,7 @@ class Fd {
 #if TD_PORT_WINDOWS
   class FdImpl;
 
-  enum class Type {
-    Empty,
-    EventFd,
-    FileFd,
-    StdinFileFd,
-    SocketFd,
-    ServerSocketFd,
-  };
+  enum class Type { Empty, EventFd, FileFd, StdinFileFd, SocketFd, ServerSocketFd };
 
   Fd(Type type, Mode mode, HANDLE handle);
   Fd(Type type, Mode mode, SOCKET sock, int socket_family);

@@ -36,7 +36,6 @@
 // clang-format on
 
 #include "td/utils/int_types.h"
-#include "td/utils/port/thread_local.h"
 
 #include <memory>
 #include <string>

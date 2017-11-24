@@ -5,6 +5,7 @@
 
 #include "td/utils/common.h"
 #include "td/utils/invoke.h"
+#include "td/utils/port/thread_local.h"
 
 #include <thread>
 #include <tuple>

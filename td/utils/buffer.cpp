@@ -1,5 +1,7 @@
 #include "td/utils/buffer.h"
 
+#include "td/utils/port/thread_local.h"
+
 #include <new>
 
 namespace td {

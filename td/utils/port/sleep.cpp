@@ -1,5 +1,7 @@
 #include "td/utils/port/sleep.h"
 
+#include "td/utils/port/config.h"
+
 #if TD_PORT_POSIX
 #if _POSIX_C_SOURCE >= 199309L
 #include <time.h>

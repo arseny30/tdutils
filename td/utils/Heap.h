@@ -1,6 +1,7 @@
 #pragma once
 
 #include "td/utils/common.h"
+#include "td/utils/logging.h"
 
 #include <algorithm>
 

@@ -4,7 +4,7 @@
 #include "td/utils/logging.h"
 #include "td/utils/misc.h"
 #include "td/utils/port/RwMutex.h"
-#include "td/utils/port/thread.h"
+#include "td/utils/port/thread_local.h"
 #include "td/utils/Random.h"
 
 #if TD_HAVE_OPENSSL

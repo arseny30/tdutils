@@ -1,6 +1,8 @@
 #pragma once
 
 #include "td/utils/common.h"
+#include "td/utils/logging.h"
+#include "td/utils/port/thread_local.h"
 #include "td/utils/Slice.h"
 
 #include <algorithm>

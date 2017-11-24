@@ -1,5 +1,7 @@
 #include "td/utils/StackAllocator.h"
 
+#include "td/utils/port/thread_local.h"
+
 namespace td {
 
 StackAllocator::Impl &StackAllocator::impl() {

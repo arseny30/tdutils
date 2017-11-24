@@ -2,6 +2,7 @@
 
 #include "td/utils/common.h"
 #include "td/utils/invoke.h"  // for tuple_for_each
+#include "td/utils/Slice.h"
 #include "td/utils/StringBuilder.h"
 
 #include <tuple>

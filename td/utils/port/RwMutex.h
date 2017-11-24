@@ -3,6 +3,7 @@
 #include "td/utils/port/config.h"
 
 #include "td/utils/common.h"
+#include "td/utils/logging.h"
 #include "td/utils/Status.h"
 
 #if TD_PORT_POSIX

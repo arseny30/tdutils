@@ -80,7 +80,7 @@ auto transform(T &&v, const Func &f) {
 }
 
 template <class T>
-void reset(T &value) {
+void reset_to_empty(T &value) {
   using std::swap;
   std::decay_t<T> tmp;
   swap(tmp, value);
@@ -99,7 +99,7 @@ auto append(vector<T> &destination, vector<T> &&source) {
   }
   destination.reserve(destination.size() + source.size());
   std::move(source.begin(), source.end(), std::back_inserter(destination));
-  reset(source);
+  reset_to_empty(source);
 }
 
 inline bool begins_with(Slice str, Slice prefix) {

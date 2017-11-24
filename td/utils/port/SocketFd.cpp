@@ -1,5 +1,7 @@
 #include "td/utils/port/SocketFd.h"
 
+#include "td/utils/logging.h"
+
 #if TD_PORT_WINDOWS
 #include "td/utils/misc.h"
 #endif

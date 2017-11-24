@@ -1,5 +1,7 @@
 #pragma once
 
+#include "td/utils/logging.h"
+
 #include <utility>
 
 namespace td {

@@ -5,7 +5,9 @@
 #include "td/utils/port/wstring_convert.h"
 #endif
 
+#include "td/utils/logging.h"
 #include "td/utils/port/sleep.h"
+#include "td/utils/StringBuilder.h"
 
 #include <cstring>
 

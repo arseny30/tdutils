@@ -1,5 +1,7 @@
 #include "td/utils/MimeType.h"
 
+#include "td/utils/logging.h"
+
 const char *extension_to_mime_type(const char *extension, size_t extension_len);  // auto-generated
 const char *mime_type_to_extension(const char *mime_type, size_t mime_type_len);  // auto-generated
 

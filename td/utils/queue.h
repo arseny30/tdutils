@@ -16,6 +16,7 @@
 
 namespace td {
 
+namespace detail {
 class Backoff {
  private:
   int cnt = 0;
@@ -52,6 +53,8 @@ class InfBackoff {
     }
   }
 };
+
+}  // namespace detail
 
 template <class T, int P = 10>
 class SPSCBlockQueue {
@@ -282,7 +285,7 @@ class SPSCChainQueue {
   }
 };
 
-template <class T, class QueueT = SPSCChainQueue<T>, class BackoffT = Backoff>
+template <class T, class QueueT = SPSCChainQueue<T>, class BackoffT = detail::Backoff>
 class BackoffQueue : public QueueT {
  public:
   using ValueType = T;
@@ -307,7 +310,7 @@ class BackoffQueue : public QueueT {
 };
 
 template <class T, class QueueT = SPSCChainQueue<T> >
-using InfBackoffQueue = BackoffQueue<T, QueueT, InfBackoff>;
+using InfBackoffQueue = BackoffQueue<T, QueueT, detail::InfBackoff>;
 
 template <class T, class QueueT = BackoffQueue<T> >
 class PollQueue : public QueueT {

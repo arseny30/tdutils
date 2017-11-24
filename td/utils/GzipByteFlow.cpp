@@ -2,9 +2,11 @@
 
 char disable_linker_warning_about_empty_file_gzipbyteflow_cpp TD_UNUSED;
 
+#if TD_HAVE_ZLIB
+#include "td/utils/logging.h"
+
 namespace td {
 
-#if TD_HAVE_ZLIB
 void GzipByteFlow::loop() {
   while (true) {
     if (gzip_.need_input()) {
@@ -49,7 +51,9 @@ void GzipByteFlow::loop() {
     on_output_updated();
   }
 }
+
 constexpr size_t GzipByteFlow::MIN_UPDATE_SIZE;
-#endif
 
 }  // namespace td
+
+#endif

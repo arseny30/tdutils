@@ -5,6 +5,7 @@
 #include "td/utils/port/Fd.h"
 #include "td/utils/port/FileFd.h"
 #include "td/utils/port/path.h"
+#include "td/utils/Slice.h"
 
 #include <cstdlib>
 #include <limits>

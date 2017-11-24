@@ -4,6 +4,7 @@
 #include "td/utils/common.h"
 #include "td/utils/crypto.h"
 #include "td/utils/format.h"
+#include "td/utils/logging.h"
 
 #include <limits>
 #include <utility>

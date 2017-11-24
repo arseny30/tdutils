@@ -1,7 +1,10 @@
 #pragma once
 
 #include "td/utils/ByteFlow.h"
+#include "td/utils/common.h"
 #include "td/utils/crypto.h"
+#include "td/utils/Slice.h"
+#include "td/utils/Status.h"
 
 namespace td {
 

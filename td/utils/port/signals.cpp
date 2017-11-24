@@ -1,5 +1,7 @@
 #include "td/utils/port/signals.h"
 
+#include "td/utils/port/config.h"
+
 #if TD_PORT_POSIX
 #include <signal.h>
 #include <sys/mman.h>

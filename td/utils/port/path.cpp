@@ -196,8 +196,6 @@ Result<string> mkdtemp(CSlice dir, Slice prefix) {
 
 #if TD_PORT_WINDOWS
 
-#include "td/utils/misc.h"
-
 Status mkdir(CSlice dir, int32 mode) {
   TRY_RESULT(wdir, to_wstring(dir));
   auto status = CreateDirectoryW(wdir.c_str(), nullptr);

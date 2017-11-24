@@ -1,8 +1,11 @@
 #pragma once
 
+#include "td/utils/port/config.h"
+
 #include "td/utils/common.h"
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
+#include "td/utils/StringBuilder.h"
 
 #if !TD_WINDOWS
 #include <arpa/inet.h>
