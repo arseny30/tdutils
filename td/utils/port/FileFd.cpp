@@ -184,7 +184,7 @@ Result<size_t> FileFd::write(Slice slice) {
   int native_fd = get_native_fd();
   auto write_res = skip_eintr([&] { return ::write(native_fd, slice.begin(), slice.size()); });
   if (write_res >= 0) {
-    return static_cast<size_t>(write_res);
+    return narrow_cast<size_t>(write_res);
   }
 
   auto write_errno = errno;
@@ -210,7 +210,7 @@ Result<size_t> FileFd::read(MutableSlice slice) {
   auto read_errno = errno;
 
   if (read_res >= 0) {
-    if (static_cast<size_t>(read_res) < slice.size()) {
+    if (narrow_cast<size_t>(read_res) < slice.size()) {
       fd_.clear_flags(Read);
     }
     return static_cast<size_t>(read_res);
@@ -230,17 +230,17 @@ Result<size_t> FileFd::read(MutableSlice slice) {
 #endif
 }
 
-Result<size_t> FileFd::pwrite(Slice slice, int64 offset_i64) {
-  TRY_RESULT(offset, narrow_cast_safe<off_t>(offset_i64));
+Result<size_t> FileFd::pwrite(Slice slice, int64 offset) {
   if (offset < 0) {
-    return Status::Error("Negative offset");
+    return Status::Error("Offset should be non-negative");
   }
 #if TD_PORT_POSIX
+  TRY_RESULT(offset_off_t, narrow_cast_safe<off_t>(offset));
   CHECK(!fd_.empty());
   int native_fd = get_native_fd();
-  auto pwrite_res = skip_eintr([&] { return ::pwrite(native_fd, slice.begin(), slice.size(), offset); });
+  auto pwrite_res = skip_eintr([&] { return ::pwrite(native_fd, slice.begin(), slice.size(), offset_off_t); });
   if (pwrite_res >= 0) {
-    return static_cast<size_t>(pwrite_res);
+    return narrow_cast<size_t>(pwrite_res);
   }
 
   auto pwrite_errno = errno;
@@ -258,9 +258,8 @@ Result<size_t> FileFd::pwrite(Slice slice, int64 offset_i64) {
   DWORD bytes_written = 0;
   OVERLAPPED overlapped;
   std::memset(&overlapped, 0, sizeof(overlapped));
-  auto pos64 = static_cast<uint64>(offset);
-  overlapped.Offset = static_cast<DWORD>(pos64);
-  overlapped.OffsetHigh = static_cast<DWORD>(pos64 >> 32);
+  overlapped.Offset = static_cast<DWORD>(offset);
+  overlapped.OffsetHigh = static_cast<DWORD>(offset >> 32);
   auto res =
       WriteFile(fd_.get_io_handle(), slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_written, &overlapped);
   if (!res) {
@@ -270,17 +269,17 @@ Result<size_t> FileFd::pwrite(Slice slice, int64 offset_i64) {
 #endif
 }
 
-Result<size_t> FileFd::pread(MutableSlice slice, int64 offset_i64) {
-  TRY_RESULT(offset, narrow_cast_safe<off_t>(offset_i64));
+Result<size_t> FileFd::pread(MutableSlice slice, int64 offset) {
   if (offset < 0) {
-    return Status::Error("Negative offset");
+    return Status::Error("Offset should be non-negative");
   }
 #if TD_PORT_POSIX
+  TRY_RESULT(offset_off_t, narrow_cast_safe<off_t>(offset));
   CHECK(!fd_.empty());
   int native_fd = get_native_fd();
-  auto pread_res = skip_eintr([&] { return ::pread(native_fd, slice.begin(), slice.size(), offset); });
+  auto pread_res = skip_eintr([&] { return ::pread(native_fd, slice.begin(), slice.size(), offset_off_t); });
   if (pread_res >= 0) {
-    return static_cast<size_t>(pread_res);
+    return narrow_cast<size_t>(pread_res);
   }
 
   auto pread_errno = errno;
@@ -298,9 +297,8 @@ Result<size_t> FileFd::pread(MutableSlice slice, int64 offset_i64) {
   DWORD bytes_read = 0;
   OVERLAPPED overlapped;
   std::memset(&overlapped, 0, sizeof(overlapped));
-  auto pos64 = static_cast<uint64>(offset);
-  overlapped.Offset = static_cast<DWORD>(pos64);
-  overlapped.OffsetHigh = static_cast<DWORD>(pos64 >> 32);
+  overlapped.Offset = static_cast<DWORD>(offset);
+  overlapped.OffsetHigh = static_cast<DWORD>(offset >> 32);
   auto res = ReadFile(fd_.get_io_handle(), slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_read, &overlapped);
   if (!res) {
     return OS_ERROR("Failed to pread");
@@ -433,11 +431,11 @@ Status FileFd::sync() {
   return Status::OK();
 }
 
-Status FileFd::seek(int64 position_i64) {
-  TRY_RESULT(position, narrow_cast_safe<int64>(position_i64));
+Status FileFd::seek(int64 position) {
   CHECK(!empty());
 #if TD_PORT_POSIX
-  if (skip_eintr([&] { return ::lseek(fd_.get_native_fd(), position, SEEK_SET); }) < 0) {
+  TRY_RESULT(position_off_t, narrow_cast_safe<int64>(position));
+  if (skip_eintr([&] { return ::lseek(fd_.get_native_fd(), position_off_t, SEEK_SET); }) < 0) {
 #elif TD_PORT_WINDOWS
   LARGE_INTEGER offset;
   offset.QuadPart = position;
@@ -448,11 +446,11 @@ Status FileFd::seek(int64 position_i64) {
   return Status::OK();
 }
 
-Status FileFd::truncate_to_current_position(int64 current_position_i64) {
-  TRY_RESULT(current_position, narrow_cast_safe<int64>(current_position_i64));
+Status FileFd::truncate_to_current_position(int64 current_position) {
   CHECK(!empty());
 #if TD_PORT_POSIX
-  if (skip_eintr([&] { return ::ftruncate(fd_.get_native_fd(), current_position); }) < 0) {
+  TRY_RESULT(current_position_off_t, narrow_cast_safe<off_t>(current_position));
+  if (skip_eintr([&] { return ::ftruncate(fd_.get_native_fd(), current_position_off_t); }) < 0) {
 #elif TD_PORT_WINDOWS
   if (SetEndOfFile(fd_.get_io_handle()) == 0) {
 #endif

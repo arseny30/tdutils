@@ -276,7 +276,7 @@ Result<size_t> Fd::write_unsafe(Slice slice) {
   auto write_res = skip_eintr([&] { return ::write(native_fd, slice.begin(), slice.size()); });
   auto write_errno = errno;
   if (write_res >= 0) {
-    return static_cast<size_t>(write_res);
+    return narrow_cast<size_t>(write_res);
   }
   return Status::PosixError(write_errno, PSLICE("Write to [fd=%d] has failed", native_fd));
 }
@@ -286,7 +286,7 @@ Result<size_t> Fd::write(Slice slice) {
   auto write_res = skip_eintr([&] { return ::write(native_fd, slice.begin(), slice.size()); });
   auto write_errno = errno;
   if (write_res >= 0) {
-    return static_cast<size_t>(write_res);
+    return narrow_cast<size_t>(write_res);
   }
 
   if (write_errno == EAGAIN
@@ -334,7 +334,7 @@ Result<size_t> Fd::read(MutableSlice slice) {
       clear_flags(Read);
       update_flags(Close);
     }
-    return static_cast<size_t>(read_res);
+    return narrow_cast<size_t>(read_res);
   }
   if (read_errno == EAGAIN
 #if EAGAIN != EWOULDBLOCK
