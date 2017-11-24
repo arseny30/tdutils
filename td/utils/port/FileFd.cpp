@@ -6,6 +6,7 @@
 #endif
 
 #include "td/utils/logging.h"
+#include "td/utils/misc.h"
 #include "td/utils/port/sleep.h"
 #include "td/utils/StringBuilder.h"
 
@@ -229,7 +230,11 @@ Result<size_t> FileFd::read(MutableSlice slice) {
 #endif
 }
 
-Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
+Result<size_t> FileFd::pwrite(Slice slice, int64 offset_i64) {
+  TRY_RESULT(offset, narrow_cast_safe<off_t>(offset_i64));
+  if (offset < 0) {
+    return Status::Error("Negative offset");
+  }
 #if TD_PORT_POSIX
   CHECK(!fd_.empty());
   int native_fd = get_native_fd();
@@ -265,7 +270,11 @@ Result<size_t> FileFd::pwrite(Slice slice, off_t offset) {
 #endif
 }
 
-Result<size_t> FileFd::pread(MutableSlice slice, off_t offset) {
+Result<size_t> FileFd::pread(MutableSlice slice, int64 offset_i64) {
+  TRY_RESULT(offset, narrow_cast_safe<off_t>(offset_i64));
+  if (offset < 0) {
+    return Status::Error("Negative offset");
+  }
 #if TD_PORT_POSIX
   CHECK(!fd_.empty());
   int native_fd = get_native_fd();
@@ -378,7 +387,7 @@ void FileFd::update_flags(Fd::Flags mask) {
   fd_.update_flags(mask);
 }
 
-off_t FileFd::get_size() {
+int64 FileFd::get_size() {
   return stat().size_;
 }
 
@@ -406,7 +415,7 @@ Stat FileFd::stat() {
     auto error = OS_ERROR("Stat failed");
     LOG(FATAL) << error;
   }
-  res.size_ = narrow_cast<off_t>(standard_info.EndOfFile.QuadPart);
+  res.size_ = standard_info.EndOfFile.QuadPart;
 
   return res;
 #endif
@@ -424,7 +433,8 @@ Status FileFd::sync() {
   return Status::OK();
 }
 
-Status FileFd::seek(off_t position) {
+Status FileFd::seek(int64 position_i64) {
+  TRY_RESULT(position, narrow_cast_safe<int64>(position_i64));
   CHECK(!empty());
 #if TD_PORT_POSIX
   if (skip_eintr([&] { return ::lseek(fd_.get_native_fd(), position, SEEK_SET); }) < 0) {
@@ -438,7 +448,8 @@ Status FileFd::seek(off_t position) {
   return Status::OK();
 }
 
-Status FileFd::truncate_to_current_position(off_t current_position) {
+Status FileFd::truncate_to_current_position(int64 current_position_i64) {
+  TRY_RESULT(current_position, narrow_cast_safe<int64>(current_position_i64));
   CHECK(!empty());
 #if TD_PORT_POSIX
   if (skip_eintr([&] { return ::ftruncate(fd_.get_native_fd(), current_position); }) < 0) {

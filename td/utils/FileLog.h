@@ -26,7 +26,7 @@ class FileLog : public LogInterface {
         std::abort();
       }
       auto written = r_size.ok();
-      size_ += static_cast<off_t>(written);
+      size_ += static_cast<int64>(written);
       slice.remove_prefix(written);
     }
     if (log_level == VERBOSITY_NAME(FATAL)) {
@@ -49,7 +49,7 @@ class FileLog : public LogInterface {
     do_rotate();
   }
 
-  void init(string path, off_t rotate_threshold = DEFAULT_ROTATE_THRESHOLD) {
+  void init(string path, int64 rotate_threshold = DEFAULT_ROTATE_THRESHOLD) {
     path_ = std::move(path);
 
     auto r_fd = FileFd::open(path_, FileFd::Create | FileFd::Write | FileFd::Append);
@@ -63,8 +63,8 @@ class FileLog : public LogInterface {
  private:
   FileFd fd_;
   string path_;
-  off_t size_;
-  off_t rotate_threshold_;
+  int64 size_;
+  int64 rotate_threshold_;
 
   void do_rotate() {
     auto current_verbosity_level = GET_VERBOSITY_LEVEL();

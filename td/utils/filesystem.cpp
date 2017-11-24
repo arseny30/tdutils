@@ -8,7 +8,7 @@
 
 namespace td {
 
-Result<BufferSlice> read_file(CSlice path, off_t size) {
+Result<BufferSlice> read_file(CSlice path, int64 size) {
   TRY_RESULT(from_file, FileFd::open(path, FileFd::Read));
   if (size == -1) {
     size = from_file.get_size();
@@ -23,7 +23,7 @@ Result<BufferSlice> read_file(CSlice path, off_t size) {
 }
 
 // Very straightforward function. Don't expect much of it.
-Status copy_file(CSlice from, CSlice to, off_t size) {
+Status copy_file(CSlice from, CSlice to, int64 size) {
   TRY_RESULT(content, read_file(from, size));
   return write_file(to, content.as_slice());
 }

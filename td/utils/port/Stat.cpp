@@ -49,9 +49,7 @@ Stat from_native_stat(const struct ::stat &buf) {
   res.atime_nsec_ = buf.st_atime * 1000000000ll + buf.st_atimensec;
 #endif
 #endif
-  // TODO check for max size
-  // sometimes stat.st_size is greater than off_t
-  res.size_ = static_cast<off_t>(buf.st_size);
+  res.size_ = buf.st_size;
   res.is_dir_ = (buf.st_mode & S_IFMT) == S_IFDIR;
   res.is_reg_ = (buf.st_mode & S_IFMT) == S_IFREG;
   res.mtime_nsec_ /= 1000;

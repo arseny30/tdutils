@@ -24,8 +24,8 @@ class FileFd {
   Result<size_t> write(Slice slice) WARN_UNUSED_RESULT;
   Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT;
 
-  Result<size_t> pwrite(Slice slice, off_t offset) WARN_UNUSED_RESULT;
-  Result<size_t> pread(MutableSlice slice, off_t offset) WARN_UNUSED_RESULT;
+  Result<size_t> pwrite(Slice slice, int64 offset) WARN_UNUSED_RESULT;
+  Result<size_t> pread(MutableSlice slice, int64 offset) WARN_UNUSED_RESULT;
 
   enum class LockFlags { Write, Read, Unlock };
   Status lock(LockFlags flags, int32 max_tries = 1) WARN_UNUSED_RESULT;
@@ -36,15 +36,15 @@ class FileFd {
   int32 get_flags() const;
   void update_flags(Fd::Flags mask);
 
-  off_t get_size();
+  int64 get_size();
 
   Stat stat();
 
   Status sync() WARN_UNUSED_RESULT;
 
-  Status seek(off_t position) WARN_UNUSED_RESULT;
+  Status seek(int64 position) WARN_UNUSED_RESULT;
 
-  Status truncate_to_current_position(off_t current_position) WARN_UNUSED_RESULT;
+  Status truncate_to_current_position(int64 current_position) WARN_UNUSED_RESULT;
 
 #if TD_PORT_POSIX
   int get_native_fd() const;
