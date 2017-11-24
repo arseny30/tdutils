@@ -333,6 +333,25 @@ R narrow_cast(const A &a) {
   return r;
 }
 
+template <class R, class A>
+Result<R> narrow_cast_safe(const A &a) {
+  using RT = typename detail::safe_undeflying_type<R>::type;
+  using AT = typename detail::safe_undeflying_type<A>::type;
+
+  static_assert(std::is_integral<RT>::value, "expected integral type to cast to");
+  static_assert(std::is_integral<AT>::value, "expected integral type to cast from");
+
+  auto r = R(a);
+  if (!(A(r) == a)) {
+    return Status::Error("Narrow cast failed");
+  }
+  if (!((detail::is_same_signedness<RT, AT>::value) || ((static_cast<RT>(r) < RT{}) == (static_cast<AT>(a) < AT{})))) {
+    return Status::Error("Narrow cast failed");
+  }
+
+  return r;
+}
+
 template <int Alignment, class T>
 bool is_aligned_pointer(const T *pointer) {
   static_assert(Alignment > 0 && (Alignment & (Alignment - 1)) == 0, "Wrong alignment");
