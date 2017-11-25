@@ -1,6 +1,7 @@
 #include "td/utils/JsonBuilder.h"
 
 #include "td/utils/misc.h"
+#include "td/utils/ScopeGuard.h"
 
 #include <cstring>
 

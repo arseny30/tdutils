@@ -2,7 +2,7 @@
 
 #include "td/utils/format.h"
 #include "td/utils/logging.h"
-#include "td/utils/Slice.h"  // TODO move StringBuilder implementation to cpp, remove header
+//#include  "td/utils/Slice.h"  // TODO move StringBuilder implementation to cpp, remove header
 #include "td/utils/Time.h"
 
 namespace td {
