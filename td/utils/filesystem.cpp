@@ -89,7 +89,7 @@ std::string clean_filename(CSlice name) {
     size++;
   }
 
-  while (!new_name.empty() && new_name.back() == ' ') {
+  while (!new_name.empty() && (new_name.back() == ' ' || new_name.back() == '.')) {
     new_name.pop_back();
   }
   return new_name;
