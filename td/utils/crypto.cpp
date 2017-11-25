@@ -11,9 +11,9 @@
 #include <openssl/aes.h>
 #include <openssl/crypto.h>
 #include <openssl/evp.h>
+#include <openssl/hmac.h>
 #include <openssl/md5.h>
 #include <openssl/sha.h>
-#include <openssl/hmac.h>
 #endif
 
 #if TD_HAVE_ZLIB

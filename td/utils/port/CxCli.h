@@ -72,8 +72,8 @@ inline String^ string_from_unmanaged(const std::string &from) {
 }
 } // namespace CxCli
 #elif TD_CLI
-#include <msclr\marshal_cppstd.h>
 #include <msclr\lock.h>
+#include <msclr\marshal_cppstd.h>
 #define REF_NEW gcnew
 #define CLRCALL __clrcall
 #define CXCONST
