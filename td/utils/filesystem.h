@@ -12,4 +12,5 @@ Status copy_file(CSlice from, CSlice to, int64 size = -1);
 
 Status write_file(CSlice to, Slice data);
 
+std::string clean_filename(CSlice name);
 }  // namespace td

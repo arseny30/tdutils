@@ -5,6 +5,9 @@
 #include "td/utils/port/FileFd.h"
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
+#include "td/utils/unicode.h"
+#include "td/utils/utf8.h"
+#include "td/utils/misc.h"
 
 namespace td {
 
@@ -37,6 +40,61 @@ Status write_file(CSlice to, Slice data) {
   }
   to_file.close();
   return Status::OK();
+}
+
+std::string clean_filename(CSlice name) {
+  if (!check_utf8(name)) {
+    return {};
+  }
+  auto is_ok = [](uint32 code) {
+    if (code < 32) {
+      return false;
+    }
+    if (code < 127) {
+      switch (code) {
+        case '<':
+        case '>':
+        case ':':
+        case '"':
+        case '/':
+        case '\\':
+        case '|':
+        case '?':
+        case '*':
+        case '&':
+        case '`':
+        case '\'':
+          return false;
+        default:
+          return true;
+      }
+    }
+    auto category = get_unicode_simple_category(code);
+
+    return category == UnicodeSimpleCategory::Letter || category == UnicodeSimpleCategory::DecimalNumber ||
+           category == UnicodeSimpleCategory::Number;
+  };
+  std::string new_name;
+  int size = 0;
+  for (auto *it = name.ubegin(); it != name.uend() && size < 60; size++) {
+    uint32 code;
+    auto *next = next_utf8_unsafe(it, &code);
+    it = next;
+    if (!is_ok(code)) {
+      code = ' ';
+    }
+    append_utf8_character(new_name, code);
+  }
+
+  auto begin = new_name.data();
+  auto end = begin + new_name.size();
+  while (begin < end && (*begin == '.' || is_space(*begin))) {
+    begin++;
+  }
+  while (begin < end && is_space(end[-1])) {
+    end--;
+  }
+  return std::string(begin, end);
 }
 
 }  // namespace td
