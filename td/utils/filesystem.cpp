@@ -2,12 +2,12 @@
 
 #include "td/utils/buffer.h"
 #include "td/utils/logging.h"
+#include "td/utils/misc.h"
 #include "td/utils/port/FileFd.h"
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
 #include "td/utils/unicode.h"
 #include "td/utils/utf8.h"
-#include "td/utils/misc.h"
 
 namespace td {
 
@@ -76,25 +76,23 @@ std::string clean_filename(CSlice name) {
   };
   std::string new_name;
   int size = 0;
-  for (auto *it = name.ubegin(); it != name.uend() && size < 60; size++) {
+  for (auto *it = name.ubegin(); it != name.uend() && size < 60; ) {
     uint32 code;
-    auto *next = next_utf8_unsafe(it, &code);
-    it = next;
+    it = next_utf8_unsafe(it, &code);
     if (!is_ok(code)) {
       code = ' ';
     }
+    if (new_name.empty() && (code == ' ' || code == '.')) {
+      continue;
+    }
     append_utf8_character(new_name, code);
+    size++;
   }
 
-  auto begin = new_name.data();
-  auto end = begin + new_name.size();
-  while (begin < end && (*begin == '.' || is_space(*begin))) {
-    begin++;
+  while (!new_name.empty() && new_name.back() == ' ') {
+    new_name.pop_back();
   }
-  while (begin < end && is_space(end[-1])) {
-    end--;
-  }
-  return std::string(begin, end);
+  return new_name;
 }
 
 }  // namespace td
