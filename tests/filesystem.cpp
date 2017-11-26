@@ -12,7 +12,7 @@ TEST(Misc, clean_filename) {
   ASSERT_STREQ(clean_filename(".."), "");
   ASSERT_STREQ(clean_filename("test/git/   as   dsa  .   a"), "as   dsa.a");
   ASSERT_STREQ(clean_filename("     .    "), "");
-  ASSERT_STREQ(clean_filename("!@#$%^&*()_+-=[]{}|:\";'<>?,.`~"), "!@#$%^  ()_+-=[]{}   ;    ,.~");
+  ASSERT_STREQ(clean_filename("!@#$%^&*()_+-=[]{;|:\"}'<>?,.`~"), "!@#$%^  ()_+-=[]{;   }    ,.~");
   ASSERT_STREQ(clean_filename("!@#$%^&*()_+-=[]{}\\|:\";'<>?,.`~"), ";    ,.~");
   ASSERT_STREQ(clean_filename("عرفها بعد قد. هذا مع تاريخ اليميني واندونيسيا،, لعدم تاريخ لهيمنة الى"), "عرفها بعد قد.هذا مع تاريخ اليميني");
   ASSERT_STREQ(clean_filename("012345678901234567890123456789012345678901234567890123456789adsasdasdsaa.01234567890123456789asdasdasdasd"), "012345678901234567890123456789012345678901234567890123456789.01234567890123456789");
