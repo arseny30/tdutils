@@ -6,7 +6,8 @@ const char *extension_to_mime_type(const char *extension, size_t extension_len);
 const char *mime_type_to_extension(const char *mime_type, size_t mime_type_len);  // auto-generated
 
 namespace td {
-string mime_type_to_extension(Slice mime_type, Slice default_value) {
+
+string MimeType::to_extension(Slice mime_type, Slice default_value) {
   if (mime_type.empty()) {
     return default_value.str();
   }
@@ -20,7 +21,7 @@ string mime_type_to_extension(Slice mime_type, Slice default_value) {
   return default_value.str();
 }
 
-string extension_to_mime_type(Slice extension, Slice default_value) {
+string MimeType::from_extension(Slice extension, Slice default_value) {
   if (extension.empty()) {
     return default_value.str();
   }

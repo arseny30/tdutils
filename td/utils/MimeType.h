@@ -4,6 +4,11 @@
 #include "td/utils/Slice.h"
 
 namespace td {
-string mime_type_to_extension(Slice mime_type, Slice default_value = Slice());
-string extension_to_mime_type(Slice extension, Slice default_value = Slice());
+
+class MimeType {
+ public:
+  static string to_extension(Slice mime_type, Slice default_value = Slice());
+  static string from_extension(Slice extension, Slice default_value = Slice());
+};
+
 }  // namespace td

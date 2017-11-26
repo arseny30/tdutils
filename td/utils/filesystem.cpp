@@ -75,7 +75,7 @@ std::string clean_filename(CSlice name) {
   };
   std::string new_name;
   int size = 0;
-  for (auto *it = name.ubegin(); it != name.uend() && size < 60; ) {
+  for (auto *it = name.ubegin(); it != name.uend() && size < 60;) {
     uint32 code;
     it = next_utf8_unsafe(it, &code);
     if (!is_ok(code)) {
