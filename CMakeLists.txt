@@ -59,6 +59,7 @@ set(TDUTILS_SOURCE
   td/utils/buffer.cpp
   td/utils/crypto.cpp
   td/utils/filesystem.cpp
+  td/utils/find_boundary.cpp
   td/utils/Gzip.cpp
   td/utils/GzipByteFlow.cpp
   td/utils/Hints.cpp
@@ -123,6 +124,7 @@ set(TDUTILS_SOURCE
   td/utils/crypto.h
   td/utils/FileLog.h
   td/utils/filesystem.h
+  td/utils/find_boundary.h
   td/utils/FloodControlFast.h
   td/utils/FloodControlStrict.h
   td/utils/format.h
