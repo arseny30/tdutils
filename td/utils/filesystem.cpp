@@ -2,6 +2,7 @@
 
 #include "td/utils/buffer.h"
 #include "td/utils/logging.h"
+#include "td/utils/PathView.h"
 #include "td/utils/port/FileFd.h"
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
@@ -41,10 +42,7 @@ Status write_file(CSlice to, Slice data) {
   return Status::OK();
 }
 
-std::string clean_filename(CSlice name) {
-  if (!check_utf8(name)) {
-    return {};
-  }
+static std::string clean_filename_part(Slice name, int max_length) {
   auto is_ok = [](uint32 code) {
     if (code < 32) {
       return false;
@@ -73,9 +71,10 @@ std::string clean_filename(CSlice name) {
     return category == UnicodeSimpleCategory::Letter || category == UnicodeSimpleCategory::DecimalNumber ||
            category == UnicodeSimpleCategory::Number;
   };
+
   std::string new_name;
   int size = 0;
-  for (auto *it = name.ubegin(); it != name.uend() && size < 60;) {
+  for (auto *it = name.ubegin(); it != name.uend() && size < max_length;) {
     uint32 code;
     it = next_utf8_unsafe(it, &code);
     if (!is_ok(code)) {
@@ -92,6 +91,27 @@ std::string clean_filename(CSlice name) {
     new_name.pop_back();
   }
   return new_name;
+}
+
+std::string clean_filename(CSlice name) {
+  if (!check_utf8(name)) {
+    return {};
+  }
+
+  PathView path_view(name);
+  auto filename = clean_filename_part(path_view.file_stem(), 60);
+  auto extension = clean_filename_part(path_view.extension(), 20);
+  if (!extension.empty()) {
+    if (filename.empty()) {
+      filename = std::move(extension);
+    } else {
+      filename.reserve(filename.size() + 1 + extension.size());
+      filename += '.';
+      filename += extension;
+    }
+  }
+
+  return filename;
 }
 
 }  // namespace td
