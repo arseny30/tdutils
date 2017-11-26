@@ -14,6 +14,9 @@ class AtomicRefCnt {
   bool dec() {
     return cnt_.fetch_add(-1, std::memory_order_acq_rel) == 1;
   }
+  uint64 value() const {
+    return cnt_.load(std::memory_order_relaxed);
+  }
 
  private:
   std::atomic<uint64> cnt_;
@@ -25,6 +28,12 @@ class SharedPtrRaw : public DeleterT, private MpscLinkQueueImpl::Node {
   template <class... ArgsT>
   SharedPtrRaw(DeleterT deleter, ArgsT &&... args)
       : DeleterT(std::move(deleter)), ref_cnt_{0}, data_(std::forward<ArgsT>(args)...) {
+  }
+  ~SharedPtrRaw() {
+    CHECK(use_cnt() == 0);
+  }
+  uint64 use_cnt() const {
+    return ref_cnt_.value();
   }
   void inc() {
     ref_cnt_.inc();
