@@ -151,6 +151,7 @@ set(TDUTILS_SOURCE
   td/utils/Slice-decl.h
   td/utils/Slice.h
   td/utils/SpinLock.h
+  td/utils/SharedObjectPool.h
   td/utils/StackAllocator.h
   td/utils/Status.h
   td/utils/Storer.h
@@ -169,6 +170,7 @@ set(TDUTILS_SOURCE
 )
 
 set (TDUTILS_TESTS_SOURCE
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/SharedObjectPool.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/MpmcWaiter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/MpmcQueue.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/HazardPointers.cpp
