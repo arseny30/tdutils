@@ -77,9 +77,12 @@ TEST(SharedObjectPool, simple) {
     pool.alloc();
     pool.alloc();
     pool.alloc();
-    CHECK(Node::cnt() == 1) << Node::cnt();
+    CHECK(Node::cnt() == 0);
+    CHECK(pool.total_size() == 1);
+    CHECK(pool.calc_free_size() == 1);
     pool.alloc(), pool.alloc(), pool.alloc();
-    CHECK(Node::cnt() == 3);
+    CHECK(pool.total_size() == 3);
+    CHECK(pool.calc_free_size() == 3);
   }
   CHECK(Node::cnt() == 0);
 }

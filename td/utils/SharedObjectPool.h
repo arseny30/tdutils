@@ -25,12 +25,20 @@ class AtomicRefCnt {
 template <class DataT, class DeleterT>
 class SharedPtrRaw : public DeleterT, private MpscLinkQueueImpl::Node {
  public:
-  template <class... ArgsT>
-  SharedPtrRaw(DeleterT deleter, ArgsT &&... args)
-      : DeleterT(std::move(deleter)), ref_cnt_{0}, data_(std::forward<ArgsT>(args)...) {
+  SharedPtrRaw(DeleterT deleter) : DeleterT(std::move(deleter)), ref_cnt_{0}, option_magic_(Magic) {
   }
+
   ~SharedPtrRaw() {
     CHECK(use_cnt() == 0);
+    CHECK(option_magic_ == Magic);
+  }
+  template <class... ArgsT>
+  void init_data(ArgsT &&... args) {
+    new (&option_data_) DataT(std::forward<ArgsT>(args)...);
+  }
+  void destroy_data() {
+    option_data_.~DataT();
+    option_magic_ = Magic;
   }
   uint64 use_cnt() const {
     return ref_cnt_.value();
@@ -42,7 +50,7 @@ class SharedPtrRaw : public DeleterT, private MpscLinkQueueImpl::Node {
     return ref_cnt_.dec();
   }
   DataT &data() {
-    return data_;
+    return option_data_;
   }
   static SharedPtrRaw *from_mpsc_link_queue_node(MpscLinkQueueImpl::Node *node) {
     return static_cast<SharedPtrRaw<DataT, DeleterT> *>(node);
@@ -53,7 +61,11 @@ class SharedPtrRaw : public DeleterT, private MpscLinkQueueImpl::Node {
 
  private:
   AtomicRefCnt ref_cnt_;
-  DataT data_;
+  enum { Magic = 0x732817a2 };
+  union {
+    DataT option_data_;
+    uint32 option_magic_;
+  };
 };
 
 template <class T, class DeleterT = std::default_delete<T>>
@@ -91,6 +103,12 @@ class SharedPtr {
   operator bool() const {
     return !empty();
   }
+  uint64 use_cnt() const {
+    if (!raw_) {
+      return 0;
+    }
+    return raw_->use_cnt();
+  }
   T &operator*() const {
     return raw_->data();
   }
@@ -106,6 +124,7 @@ class SharedPtr {
 
   void reset(Raw *new_raw = nullptr) {
     if (raw_ && raw_->dec()) {
+      raw_->destroy_data();
       auto deleter = std::move(static_cast<DeleterT &>(*raw_));
       deleter(raw_);
     }
@@ -114,11 +133,15 @@ class SharedPtr {
 
   template <class... ArgsT>
   static SharedPtr<T, DeleterT> create(ArgsT &&... args) {
-    return SharedPtr<T, DeleterT>(std::make_unique<Raw>(DeleterT(), std::forward<ArgsT>(args)...).release());
+    auto raw = std::make_unique<Raw>(DeleterT());
+    raw->init_data(std::forward<ArgsT>(args)...);
+    return SharedPtr<T, DeleterT>(raw.release());
   }
   template <class D, class... ArgsT>
   static SharedPtr<T, DeleterT> create_with_deleter(D &&d, ArgsT &&... args) {
-    return SharedPtr<T, DeleterT>(std::make_unique<Raw>(std::forward<D>(d), std::forward<ArgsT>(args)...).release());
+    auto raw = std::make_unique<Raw>(std::forward<D>(d));
+    raw->init_data(std::forward<ArgsT>(args)...);
+    return SharedPtr<T, DeleterT>(raw.release());
   }
 
  private:
@@ -134,8 +157,37 @@ class SharedObjectPool {
  public:
   using Ptr = detail::SharedPtr<DataT, Deleter>;
 
-  Ptr alloc() {
-    return Ptr(alloc_raw());
+  ~SharedObjectPool() {
+    free_queue_.pop_all(free_queue_reader_);
+    size_t free_cnt = 0;
+    while (free_queue_reader_.read()) {
+      free_cnt++;
+    }
+    CHECK(free_cnt == allocated_.size()) << free_cnt << " " << allocated_.size();
+  }
+
+  template <class... ArgsT>
+  Ptr alloc(ArgsT &&... args) {
+    auto *raw = alloc_raw();
+    raw->init_data(std::forward<ArgsT>(args)...);
+    return Ptr(raw);
+  }
+  size_t total_size() const {
+    return allocated_.size();
+  }
+  uint64 calc_free_size() {
+    free_queue_.pop_all(free_queue_reader_);
+    return free_queue_reader_.calc_size();
+  }
+
+  //non thread safe
+  template <class F>
+  void for_each(F &&f) {
+    for (auto &raw : allocated_) {
+      if (raw->use_cnt() > 0) {
+        f(raw->data());
+      }
+    }
   }
 
  private:
@@ -151,7 +203,6 @@ class SharedObjectPool {
   }
 
   void free_raw(Raw *raw) {
-    raw->data() = DataT();
     free_queue_.push(Node{raw});
   }
 
