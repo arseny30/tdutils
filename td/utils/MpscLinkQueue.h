@@ -50,6 +50,12 @@ class MpscLinkQueueImpl {
       }
       head_ = node;
     }
+    size_t calc_size() const {
+      size_t res = 0;
+      for (auto it = head_; it != nullptr; it = it->next_, res++) {
+      }
+      return res;
+    }
 
    private:
     friend class MpscLinkQueueImpl;
@@ -107,6 +113,9 @@ class MpscLinkQueue {
     }
     void delay(Node node) {
       impl_.delay(node.to_mpsc_link_queue_node());
+    }
+    size_t calc_size() const {
+      return impl_.calc_size();
     }
 
    private:
