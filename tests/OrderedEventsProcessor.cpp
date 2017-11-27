@@ -1,6 +1,10 @@
-#include "td/utils/tests.h"
 #include "td/utils/OrderedEventsProcessor.h"
 #include "td/utils/Random.h"
+#include "td/utils/tests.h"
+
+#include <algorithm>
+#include <utility>
+#include <vector>
 
 TEST(OrderedEventsProcessor, random) {
   int d = 5001;
@@ -14,13 +18,13 @@ TEST(OrderedEventsProcessor, random) {
   std::sort(v.begin(), v.end());
 
   td::OrderedEventsProcessor<int> processor(offset);
-  int next = offset;
+  int next_pos = offset;
   for (auto p : v) {
     int seq_no = p.second;
     processor.add(seq_no, seq_no, [&](auto seq_no, int x) {
-      CHECK(x == next);
-      next++;
+      td::ASSERT_EQ(x, next_pos);
+      next_pos++;
     });
   }
-  CHECK(next == n + offset);
+  td::ASSERT_EQ(next_pos, n + offset);
 }
