@@ -22,9 +22,9 @@ TEST(OrderedEventsProcessor, random) {
   for (auto p : v) {
     int seq_no = p.second;
     processor.add(seq_no, seq_no, [&](auto seq_no, int x) {
-      td::ASSERT_EQ(x, next_pos);
+      ASSERT_EQ(x, next_pos);
       next_pos++;
     });
   }
-  td::ASSERT_EQ(next_pos, n + offset);
+  ASSERT_EQ(next_pos, n + offset);
 }

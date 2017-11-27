@@ -2,7 +2,6 @@
 #include "td/utils/tests.h"
 
 TEST(Misc, clean_filename) {
-  using td::ASSERT_STREQ;
   using td::clean_filename;
   ASSERT_STREQ(clean_filename("-1234567"), "-1234567");
   ASSERT_STREQ(clean_filename(".git"), "git");

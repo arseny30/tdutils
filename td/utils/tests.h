@@ -121,23 +121,24 @@ class Test : private ListNode {
 };
 
 template <class T1, class T2>
-void ASSERT_EQ(const T1 &a, const T2 &b) {
-  CHECK(a == b) << tag("expected", a) << tag("got", b);
+void assert_eq_impl(const T1 &expected, const T2 &got, const char *file, int line) {
+  CHECK(expected == got) << tag("expected", expected) << tag("got", got) << " in " << file << " at line " << line;
 }
 
 template <class T>
-void ASSERT_TRUE(const T &a) {
-  CHECK(a);
-}
-
-template <class T1, class T2>
-void ASSERT_STREQ(const T1 &a, const T2 &b) {
-  ASSERT_EQ(Slice(a), Slice(b));
+void assert_true_impl(const T &got, const char *file, int line) {
+  CHECK(got) << "Expected true in " << file << " at line " << line;
 }
 
 }  // namespace td
 
-#define TEST_NAME(a, b) TD_CONCAT(Test, TD_CONCAT(_, TD_CONCAT(a, TD_CONCAT(_, b))))
+#define ASSERT_EQ(expected, got) ::td::assert_eq_impl(expected, got, __FILE__, __LINE__)
+
+#define ASSERT_TRUE(got) ::td::assert_true_impl(got, __FILE__, __LINE__)
+
+#define ASSERT_STREQ(expected, got) ::td::assert_eq_impl(::td::Slice(expected), ::td::Slice(got), __FILE__, __LINE__)
+
+#define TEST_NAME(test_case_name, test_name) TD_CONCAT(Test, TD_CONCAT(_, TD_CONCAT(test_case_name, TD_CONCAT(_, test_name))))
 
 #define TEST(test_case_name, test_name) TEST_IMPL(TEST_NAME(test_case_name, test_name))
 
