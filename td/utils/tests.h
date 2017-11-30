@@ -132,11 +132,11 @@ void assert_true_impl(const T &got, const char *file, int line) {
 
 }  // namespace td
 
-#define ASSERT_EQ(expected, got) ::td::assert_eq_impl(expected, got, __FILE__, __LINE__)
+#define ASSERT_EQ(expected, got) ::td::assert_eq_impl((expected), (got), __FILE__, __LINE__)
 
-#define ASSERT_TRUE(got) ::td::assert_true_impl(got, __FILE__, __LINE__)
+#define ASSERT_TRUE(got) ::td::assert_true_impl((got), __FILE__, __LINE__)
 
-#define ASSERT_STREQ(expected, got) ::td::assert_eq_impl(::td::Slice(expected), ::td::Slice(got), __FILE__, __LINE__)
+#define ASSERT_STREQ(expected, got) ::td::assert_eq_impl(::td::Slice((expected)), ::td::Slice((got)), __FILE__, __LINE__)
 
 #define TEST_NAME(test_case_name, test_name) \
   TD_CONCAT(Test, TD_CONCAT(_, TD_CONCAT(test_case_name, TD_CONCAT(_, test_name))))

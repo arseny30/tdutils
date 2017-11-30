@@ -59,24 +59,36 @@ inline string implode(vector<string> v, char delimiter = ' ') {
   return result;
 }
 
-template <class T, class Func>
-auto transform(const T &v, const Func &f) {
-  vector<decltype(f(*v.begin()))> result;
-  result.reserve(v.size());
-  for (auto &x : v) {
-    result.push_back(f(x));
+namespace detail {
+
+template <typename T>
+struct transform_helper {
+  template <class Func>
+  auto transform(const T &v, const Func &f) {
+    vector<decltype(f(*v.begin()))> result;
+    result.reserve(v.size());
+    for (auto &x : v) {
+      result.push_back(f(x));
+    }
+    return result;
   }
-  return result;
-}
+
+  template <class Func>
+  auto transform(T &&v, const Func &f) {
+    vector<decltype(f(std::move(*v.begin())))> result;
+    result.reserve(v.size());
+    for (auto &x : v) {
+      result.push_back(f(std::move(x)));
+    }
+    return result;
+  }
+};
+
+}  // namespace detail
 
 template <class T, class Func>
 auto transform(T &&v, const Func &f) {
-  vector<decltype(f(std::move(*v.begin())))> result;
-  result.reserve(v.size());
-  for (auto &x : v) {
-    result.push_back(f(std::move(x)));
-  }
-  return result;
+  return detail::transform_helper<std::decay_t<T>>().transform(std::forward<T>(v), f);
 }
 
 template <class T>
@@ -368,6 +380,7 @@ struct overload<F> : public F {
   explicit overload(F f) : F(f) {
   }
 };
+
 template <class F, class... Fs>
 struct overload<F, Fs...>
     : public overload<F>
