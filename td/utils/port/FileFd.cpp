@@ -434,7 +434,7 @@ Status FileFd::sync() {
 Status FileFd::seek(int64 position) {
   CHECK(!empty());
 #if TD_PORT_POSIX
-  TRY_RESULT(position_off_t, narrow_cast_safe<int64>(position));
+  TRY_RESULT(position_off_t, narrow_cast_safe<off_t>(position));
   if (skip_eintr([&] { return ::lseek(fd_.get_native_fd(), position_off_t, SEEK_SET); }) < 0) {
 #elif TD_PORT_WINDOWS
   LARGE_INTEGER offset;
