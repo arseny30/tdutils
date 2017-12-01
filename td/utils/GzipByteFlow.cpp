@@ -30,6 +30,10 @@ void GzipByteFlow::loop() {
     auto output_size = gzip_.flush_output();
     if (output_size) {
       uncommited_size_ += output_size;
+      total_output_size_ += output_size;
+      if (total_output_size_ > max_output_size_) {
+        return finish(Status::Error("Max output size limit exceeded"));
+      }
       output_.confirm_append(output_size);
     }
 
