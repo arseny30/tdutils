@@ -40,7 +40,6 @@
 
 #include <memory>
 #include <string>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -89,24 +88,5 @@ template <class ToT, class FromT>
 const ToT &as(const FromT *from) {
   return *reinterpret_cast<const ToT *>(from);
 }
-
-template <class FunctionT>
-class member_function_class {
- private:
-  template <class ResultT, class ClassT, class... ArgsT>
-  static auto helper(ResultT (ClassT::*x)(ArgsT...)) {
-    return static_cast<ClassT *>(nullptr);
-  }
-  template <class ResultT, class ClassT, class... ArgsT>
-  static auto helper(ResultT (ClassT::*x)(ArgsT...) const) {
-    return static_cast<ClassT *>(nullptr);
-  }
-
- public:
-  using type = std::remove_pointer_t<decltype(helper(static_cast<FunctionT>(nullptr)))>;
-};
-
-template <class FunctionT>
-using member_function_class_t = typename member_function_class<FunctionT>::type;
 
 }  // namespace td

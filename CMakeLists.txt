@@ -169,6 +169,7 @@ set(TDUTILS_SOURCE
   td/utils/tl_helpers.h
   td/utils/tl_parsers.h
   td/utils/tl_storers.h
+  td/utils/type_traits.h
   td/utils/unicode.h
   td/utils/utf8.h
   td/utils/Variant.h
