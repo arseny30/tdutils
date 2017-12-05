@@ -149,6 +149,7 @@ set(TDUTILS_SOURCE
   td/utils/optional.h
   td/utils/OptionsParser.h
   td/utils/OrderedEventsProcessor.h
+  td/utils/overloaded.h
   td/utils/Parser.h
   td/utils/PathView.h
   td/utils/queue.h
