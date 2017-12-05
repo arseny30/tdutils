@@ -2,11 +2,13 @@
 
 #include "td/utils/common.h"
 
-#include <functional>
 #include <type_traits>
 #include <utility>
 
-template <class FunctionT = std::function<void(void)>>
+namespace td {
+
+namespace detail {
+template <class FunctionT>
 class ScopeGuard {
  public:
   explicit ScopeGuard(const FunctionT &func) : func_(func) {
@@ -34,11 +36,15 @@ class ScopeGuard {
   bool dismissed_ = false;
   FunctionT func_;
 };
+}  // namespace detail
 
 enum class ScopeExit {};
+
 template <class FunctionT>
 auto operator+(ScopeExit, FunctionT &&func) {
-  return ScopeGuard<std::decay_t<FunctionT>>(std::forward<FunctionT>(func));
+  return detail::ScopeGuard<std::decay_t<FunctionT>>(std::forward<FunctionT>(func));
 }
 
-#define SCOPE_EXIT auto TD_ANONYMOUS_VARIABLE(SCOPE_EXIT_VAR) = ScopeExit() + [&]()
+}  // namespace td
+
+#define SCOPE_EXIT auto TD_CONCAT(SCOPE_EXIT_VAR_, __LINE__) = ::td::ScopeExit() + [&]()
