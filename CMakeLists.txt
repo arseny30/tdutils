@@ -176,7 +176,7 @@ set(TDUTILS_SOURCE
   td/utils/Variant.h
 )
 
-set (TDUTILS_TESTS_SOURCE
+set(TDUTILS_TESTS_SOURCE
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/filesystem.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/heap.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/json.cpp
