@@ -2,6 +2,7 @@
 #include "td/utils/port/thread.h"
 
 #include <mutex>
+#include <condition_variable>
 
 namespace td {
 class MpmcWaiter {
