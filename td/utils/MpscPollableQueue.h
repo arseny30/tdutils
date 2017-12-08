@@ -51,7 +51,7 @@ class MpscPollableQueue {
       event_fd_.release();
     }
   }
-  EventFd& reader_get_event_fd() {
+  EventFd &reader_get_event_fd() {
     return event_fd_;
   }
   void writer_flush() {

@@ -51,7 +51,7 @@ TEST(OneValue, stress) {
   std::vector<td::thread> threads;
   td::OneValue<std::string> value;
   for (size_t i = 0; i < 2; i++) {
-    threads.push_back(td::thread([&, id = i ] {
+    threads.push_back(td::thread([&, id = i] {
       for (td::uint64 round = 1; round < 100000; round++) {
         if (id == 0) {
           value.reset();
@@ -116,7 +116,7 @@ TEST(MpmcQueueBlock, simple) {
 
 TEST(MpmcQueue, simple) {
   td::MpmcQueue<int> q(2, 1);
-  for (int i = 0; i < 2; i++) {
+  for (int t = 0; t < 2; t++) {
     for (int i = 0; i < 100; i++) {
       q.push(i, 0);
     }
@@ -142,9 +142,9 @@ TEST(MpmcQueue, multi_thread) {
   std::vector<td::thread> n_threads(n);
   std::vector<td::thread> m_threads(m);
   std::vector<ThreadData> thread_data(m);
-  size_t id = 0;
+  size_t thread_id = 0;
   for (auto &thread : m_threads) {
-    thread = td::thread([&, thread_id = id ] {
+    thread = td::thread([&, thread_id] {
       while (true) {
         auto data = q.pop(thread_id);
         if (data.value == 0) {
@@ -153,11 +153,11 @@ TEST(MpmcQueue, multi_thread) {
         thread_data[thread_id].v.push_back(data);
       }
     });
-    id++;
+    thread_id++;
   }
   size_t qn = 100000;
   for (auto &thread : n_threads) {
-    thread = td::thread([&, thread_id = id ] {
+    thread = td::thread([&, thread_id] {
       for (size_t i = 0; i < qn; i++) {
         Data data;
         data.from = thread_id - m;
@@ -165,7 +165,7 @@ TEST(MpmcQueue, multi_thread) {
         q.push(data, thread_id);
       }
     });
-    id++;
+    thread_id++;
   }
   for (auto &thread : n_threads) {
     thread.join();
@@ -174,7 +174,7 @@ TEST(MpmcQueue, multi_thread) {
     Data data;
     data.from = 0;
     data.value = 0;
-    q.push(data, id);
+    q.push(data, thread_id);
   }
   for (auto &thread : m_threads) {
     thread.join();

@@ -21,7 +21,7 @@ namespace td {
 #endif
 // clang-format on
 
-constexpr size_t max_threads_count() {
+inline constexpr size_t max_thread_count() {
   return 256;
 }
 

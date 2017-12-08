@@ -28,7 +28,7 @@ TEST(MpmcWaiter, stress_one_one) {
   std::unique_ptr<td::MpmcWaiter> waiter;
   size_t threads_n = 2;
   for (size_t i = 0; i < threads_n; i++) {
-    threads.push_back(td::thread([&, id = static_cast<td::uint32>(i) ] {
+    threads.push_back(td::thread([&, id = static_cast<td::uint32>(i)] {
       for (td::uint64 round = 1; round < 100000; round++) {
         if (id == 0) {
           value = 0;
@@ -76,7 +76,7 @@ TEST(MpmcWaiter, stress) {
   size_t threads_n = 20;
   std::unique_ptr<td::MpmcWaiter> waiter;
   for (size_t i = 0; i < threads_n; i++) {
-    threads.push_back(td::thread([&, id = static_cast<td::uint32>(i) ] {
+    threads.push_back(td::thread([&, id = static_cast<td::uint32>(i)] {
       for (td::uint64 round = 1; round < 1000; round++) {
         if (id == 0) {
           write_n = td::Random::fast(1, 10);

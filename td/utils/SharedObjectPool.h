@@ -12,7 +12,7 @@ class AtomicRefCnt {
     cnt_.fetch_add(1, std::memory_order_relaxed);
   }
   bool dec() {
-    return cnt_.fetch_add(-1, std::memory_order_acq_rel) == 1;
+    return cnt_.fetch_sub(1, std::memory_order_acq_rel) == 1;
   }
   uint64 value() const {
     return cnt_.load(std::memory_order_relaxed);
@@ -23,7 +23,9 @@ class AtomicRefCnt {
 };
 
 template <class DataT, class DeleterT>
-class SharedPtrRaw : public DeleterT, private MpscLinkQueueImpl::Node {
+class SharedPtrRaw
+    : public DeleterT
+    , private MpscLinkQueueImpl::Node {
  public:
   SharedPtrRaw(DeleterT deleter) : DeleterT(std::move(deleter)), ref_cnt_{0}, option_magic_(Magic) {
   }
@@ -222,7 +224,7 @@ class SharedObjectPool {
       return raw_;
     }
     operator bool() const {
-      return bool(raw_);
+      return raw_ != nullptr;
     }
 
    private:

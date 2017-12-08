@@ -1,4 +1,5 @@
 #pragma once
+
 #include "td/utils/common.h"
 
 namespace td {
@@ -8,7 +9,6 @@ class ThreadIdGuard {
   ThreadIdGuard();
   ~ThreadIdGuard();
   ThreadIdGuard(const ThreadIdGuard &) = delete;
-
   ThreadIdGuard &operator=(const ThreadIdGuard &) = delete;
   ThreadIdGuard(ThreadIdGuard &&) = delete;
   ThreadIdGuard &operator=(ThreadIdGuard &&) = delete;

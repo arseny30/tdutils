@@ -1,7 +1,9 @@
-#include "ThreadIdGuard.h"
-#include "td/utils/port/thread_local.h"
-#include "td/utils/logging.h"
+#include "td/utils/port/detail/ThreadIdGuard.h"
 
+#include "td/utils/logging.h"
+#include "td/utils/port/thread_local.h"
+
+#include <array>
 #include <mutex>
 
 namespace td {
@@ -16,7 +18,7 @@ class ThreadIdManager {
         return static_cast<int32>(i + 1);
       }
     }
-    LOG(FATAL) << "Cannot create more than " << max_threads_count() << " threads";
+    LOG(FATAL) << "Cannot create more than " << max_thread_count() << " threads";
     return 0;
   }
   void unregister_thread(int32 thread_id) {
@@ -28,7 +30,7 @@ class ThreadIdManager {
 
  private:
   std::mutex mutex_;
-  std::array<bool, max_threads_count()> is_id_used_{{false}};
+  std::array<bool, max_thread_count()> is_id_used_{{false}};
 };
 static ThreadIdManager thread_id_manager;
 

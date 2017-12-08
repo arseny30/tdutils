@@ -1,28 +1,35 @@
 #pragma once
+
 #include "td/utils/logging.h"
 
 #include <atomic>
+
 namespace td {
+
 template <class T, int MaxPointersN = 1>
 class HazardPointers {
  public:
-  HazardPointers(size_t threads_n) : threads_(threads_n) {
-    for (auto& data : threads_) {
-      for (auto& ptr : data.hazard) {
+  explicit HazardPointers(size_t threads_n) : threads_(threads_n) {
+    for (auto &data : threads_) {
+      for (auto &ptr : data.hazard) {
         ptr = nullptr;
       }
     }
   }
-  HazardPointers(const HazardPointers& other) = delete;
-  HazardPointers(HazardPointers&& other) = delete;
-  HazardPointers& operator=(const HazardPointers& other) = delete;
-  HazardPointers& operator=(HazardPointers&& other) = delete;
+  HazardPointers(const HazardPointers &other) = delete;
+  HazardPointers &operator=(const HazardPointers &other) = delete;
+  HazardPointers(HazardPointers &&other) = delete;
+  HazardPointers &operator=(HazardPointers &&other) = delete;
 
   class Holder {
    public:
-    T* protect(std::atomic<T*>& to_protect) {
+    T *protect(std::atomic<T *> &to_protect) {
       return do_protect(hazard_ptr_, to_protect);
     }
+    Holder(const Holder &other) = delete;
+    Holder &operator=(const Holder &other) = delete;
+    Holder(Holder &&other) = default; // TODO
+    Holder &operator=(Holder &&other) = delete;
     ~Holder() {
       clear();
     }
@@ -32,18 +39,18 @@ class HazardPointers {
 
    private:
     friend class HazardPointers;
-    Holder(std::atomic<T*>& ptr) : hazard_ptr_(ptr) {
+    explicit Holder(std::atomic<T *> &ptr) : hazard_ptr_(ptr) {
     }
-    std::atomic<T*>& hazard_ptr_;
+    std::atomic<T *> &hazard_ptr_;
   };
 
   Holder get_holder(size_t thread_id, size_t pos) {
     return Holder(get_hazard_ptr(thread_id, pos));
   }
 
-  void retire(size_t thread_id, T* ptr = nullptr) {
+  void retire(size_t thread_id, T *ptr = nullptr) {
     CHECK(thread_id < threads_.size());
-    auto& data = threads_[thread_id];
+    auto &data = threads_[thread_id];
     if (ptr) {
       data.to_delete.push_back(std::unique_ptr<T>(ptr));
     }
@@ -58,7 +65,7 @@ class HazardPointers {
   }
 
   // old inteface
-  T* protect(size_t thread_id, size_t pos, std::atomic<T*>& ptr) {
+  T *protect(size_t thread_id, size_t pos, std::atomic<T *> &ptr) {
     return do_protect(get_hazard_ptr(thread_id, pos), ptr);
   }
   void clear(size_t thread_id, size_t pos) {
@@ -67,7 +74,7 @@ class HazardPointers {
 
   size_t to_delete_size_unsafe() const {
     size_t res = 0;
-    for (auto& thread : threads_) {
+    for (auto &thread : threads_) {
       res += thread.to_delete.size();
     }
     return res;
@@ -75,32 +82,33 @@ class HazardPointers {
 
  private:
   struct ThreadData {
-    std::array<std::atomic<T*>, MaxPointersN> hazard;
-    char pad[TD_CONCURRENCY_PAD - sizeof(hazard)];
+    std::array<std::atomic<T *>, MaxPointersN> hazard;
+    char pad[TD_CONCURRENCY_PAD - sizeof(std::array<std::atomic<T *>, MaxPointersN>)];
 
     // stupid gc
     std::vector<std::unique_ptr<T>> to_delete;
-    char pad2[TD_CONCURRENCY_PAD - sizeof(to_delete)];
+    char pad2[TD_CONCURRENCY_PAD - sizeof(std::vector<std::unique_ptr<T>>)];
   };
   std::vector<ThreadData> threads_;
-  char pad2[TD_CONCURRENCY_PAD - sizeof(threads_)];
+  char pad2[TD_CONCURRENCY_PAD - sizeof(std::vector<ThreadData>)];
 
-  static T* do_protect(std::atomic<T*>& hazard_ptr, std::atomic<T*>& to_protect) {
-    T* saved = nullptr;
-    T* to_save;
+  static T *do_protect(std::atomic<T *> &hazard_ptr, std::atomic<T *> &to_protect) {
+    T *saved = nullptr;
+    T *to_save;
     while ((to_save = to_protect.load()) != saved) {
       hazard_ptr.store(to_save);
       saved = to_save;
     }
     return saved;
   }
-  static void do_clear(std::atomic<T*>& hazard_ptr) {
+
+  static void do_clear(std::atomic<T *> &hazard_ptr) {
     hazard_ptr.store(nullptr, std::memory_order_release);
   }
 
-  bool is_protected(T* ptr) {
-    for (auto& thread : threads_) {
-      for (auto& hazard_ptr : thread.hazard) {
+  bool is_protected(T *ptr) {
+    for (auto &thread : threads_) {
+      for (auto &hazard_ptr : thread.hazard) {
         if (hazard_ptr.load() == ptr) {
           return true;
         }
@@ -109,8 +117,9 @@ class HazardPointers {
     return false;
   }
 
-  std::atomic<T*>& get_hazard_ptr(size_t thread_id, size_t pos) {
+  std::atomic<T *> &get_hazard_ptr(size_t thread_id, size_t pos) {
     return threads_[thread_id].hazard[pos];
   }
 };
+
 }  // namespace td

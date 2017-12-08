@@ -14,7 +14,7 @@ TEST(HazardPointers, stress) {
   std::vector<td::thread> threads(threads_n);
   int id = 0;
   for (auto &thread : threads) {
-    thread = td::thread([&, thread_id = id ] {
+    thread = td::thread([&, thread_id = id] {
       auto holder = hazard_pointers.get_holder(thread_id, 0);
       for (int i = 0; i < 1000000; i++) {
         auto &node = nodes[td::Random::fast(0, threads_n - 1)];

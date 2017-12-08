@@ -1,4 +1,5 @@
 #pragma once
+
 // MPMC queue
 // Simple semaphore protected implementation
 // To close queue, one shoud send as musch sentinel elements as there are readers.
@@ -129,7 +130,7 @@ class MpmcQueueBlock {
         return PopStatus::Closed;
       }
       //TODO blocking get_value
-      if (nodes_[read_pos].one_value.get_value(value)) {
+      if (nodes_[static_cast<size_t>(read_pos)].one_value.get_value(value)) {
         return PopStatus::Ok;
       }
     }
@@ -143,7 +144,7 @@ class MpmcQueueBlock {
       if (read_pos >= nodes_.size()) {
         return PopStatus::Closed;
       }
-      if (nodes_[read_pos].one_value.get_value(value)) {
+      if (nodes_[static_cast<size_t>(read_pos)].one_value.get_value(value)) {
         return PopStatus::Ok;
       }
       auto write_pos = write_pos_.load(std::memory_order_relaxed);
@@ -160,7 +161,7 @@ class MpmcQueueBlock {
       if (write_pos >= nodes_.size()) {
         return PushStatus::Closed;
       }
-      if (nodes_[write_pos].one_value.set_value(value)) {
+      if (nodes_[static_cast<size_t>(write_pos)].one_value.set_value(value)) {
         //stat_.push_loop_ok(0);
         return PushStatus::Ok;
       }
@@ -173,11 +174,11 @@ class MpmcQueueBlock {
     OneValue<T> one_value;
   };
   std::atomic<uint64> write_pos_{0};
-  char pad[TD_CONCURRENCY_PAD - sizeof(write_pos_)];
+  char pad[TD_CONCURRENCY_PAD - sizeof(std::atomic<uint64>)];
   std::atomic<uint64> read_pos_{0};
-  char pad2[TD_CONCURRENCY_PAD - sizeof(read_pos_)];
+  char pad2[TD_CONCURRENCY_PAD - sizeof(std::atomic<uint64>)];
   std::vector<Node> nodes_;
-  char pad3[TD_CONCURRENCY_PAD - sizeof(nodes_)];
+  char pad3[TD_CONCURRENCY_PAD - sizeof(std::vector<Node>)];
 };
 
 template <class T>
@@ -288,14 +289,14 @@ class MpmcQueueOld {
     Node(size_t block_size) : block{block_size} {
     }
     std::atomic<Node *> next_{nullptr};
-    char pad[TD_CONCURRENCY_PAD - sizeof(next_)];
+    char pad[TD_CONCURRENCY_PAD - sizeof(std::atomic<Node *>)];
     MpmcQueueBlock<T> block;
     //Got pad in MpmcQueueBlock
   };
   std::atomic<Node *> write_pos_;
-  char pad[TD_CONCURRENCY_PAD - sizeof(write_pos_)];
+  char pad[TD_CONCURRENCY_PAD - sizeof(std::atomic<Node *>)];
   std::atomic<Node *> read_pos_;
-  char pad2[TD_CONCURRENCY_PAD - sizeof(read_pos_)];
+  char pad2[TD_CONCURRENCY_PAD - sizeof(std::atomic<Node *>)];
   size_t block_size_;
   HazardPointers<Node, 1> hazard_pointers_;
   //Got pad in HazardPointers
@@ -358,7 +359,7 @@ class MpmcQueue {
           write_pos_.compare_exchange_strong(node, next);
         }
       } else {
-        if (block.data[pos].set_value(value)) {
+        if (block.data[static_cast<size_t>(pos)].set_value(value)) {
           return;
         }
       }
@@ -372,7 +373,7 @@ class MpmcQueue {
     while (true) {
       auto node = hazard_pointers_.protect(thread_id, 0, read_pos_);
       auto &block = node->block;
-      if (block.write_pos <= block.read_pos && node->next == nullptr) {
+      if (block.write_pos <= block.read_pos && node->next.load(std::memory_order_relaxed) == nullptr) {
         return false;
       }
       auto pos = block.read_pos++;
@@ -386,7 +387,7 @@ class MpmcQueue {
           hazard_pointers_.retire(thread_id, node);
         }
       } else {
-        if (block.data[pos].get_value(value)) {
+        if (block.data[static_cast<size_t>(pos)].get_value(value)) {
           return true;
         }
       }
@@ -406,9 +407,9 @@ class MpmcQueue {
  private:
   struct Block {
     std::atomic<uint64> write_pos{0};
-    char pad[TD_CONCURRENCY_PAD - sizeof(write_pos)];
+    char pad[TD_CONCURRENCY_PAD - sizeof(std::atomic<uint64>)];
     std::atomic<uint64> read_pos{0};
-    char pad2[TD_CONCURRENCY_PAD - sizeof(read_pos)];
+    char pad2[TD_CONCURRENCY_PAD - sizeof(std::atomic<uint64>)];
     std::array<OneValue<T>, 1024> data;
     char pad3[TD_CONCURRENCY_PAD];
   };
@@ -417,14 +418,15 @@ class MpmcQueue {
     }
     Block block;
     std::atomic<Node *> next{nullptr};
-    char pad[TD_CONCURRENCY_PAD - sizeof(next)];
+    char pad[TD_CONCURRENCY_PAD - sizeof(std::atomic<Node *>)];
     //Got pad in MpmcQueueBlock
   };
   std::atomic<Node *> write_pos_;
-  char pad[TD_CONCURRENCY_PAD - sizeof(write_pos_)];
+  char pad[TD_CONCURRENCY_PAD - sizeof(std::atomic<Node *>)];
   std::atomic<Node *> read_pos_;
-  char pad2[TD_CONCURRENCY_PAD - sizeof(read_pos_)];
+  char pad2[TD_CONCURRENCY_PAD - sizeof(std::atomic<Node *>)];
   HazardPointers<Node, 1> hazard_pointers_;
   //Got pad in HazardPointers
-};  // namespace td
+};
+
 }  // namespace td

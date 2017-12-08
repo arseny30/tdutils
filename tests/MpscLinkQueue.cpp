@@ -71,11 +71,11 @@ TEST(MpscLinkQueue, multi_thread) {
   td::MpscLinkQueue<QueueNode> queue;
   int threads_n = 10;
   int queries_n = 1000000;
-  std::vector<int> next(threads_n);
+  std::vector<int> next_value(threads_n);
   std::vector<td::thread> threads(threads_n);
   int thread_i = 0;
   for (auto &thread : threads) {
-    thread = td::thread([&, id = thread_i ] {
+    thread = td::thread([&, id = thread_i] {
       for (int i = 0; i < queries_n; i++) {
         queue.push(create_node(i * threads_n + id));
       }
@@ -92,8 +92,8 @@ TEST(MpscLinkQueue, multi_thread) {
       auto x = value.value().value();
       auto thread_id = x % threads_n;
       x /= threads_n;
-      CHECK(next[thread_id] == x);
-      next[thread_id]++;
+      CHECK(next_value[thread_id] == x);
+      next_value[thread_id]++;
       if (x + 1 == queries_n) {
         active_threads--;
       }
