@@ -210,3 +210,10 @@ if (ZLIB_FOUND)
   target_include_directories(tdutils PRIVATE ${ZLIB_INCLUDE_DIR})
 endif()
 
+install(TARGETS tdutils EXPORT TdTargets
+   LIBRARY DESTINATION lib
+   ARCHIVE DESTINATION lib
+   RUNTIME DESTINATION bin
+   INCLUDES DESTINATION include
+)
+
