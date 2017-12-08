@@ -28,6 +28,9 @@ class Test : private ListNode {
   virtual ~Test() = default;
 
   static void add_substr_filter(std::string str) {
+    if (str[0] != '+' && str[0] != '-') {
+      str = "+" + str;
+    }
     get_substr_filters()->push_back(std::move(str));
   }
   static void set_stress_flag(bool flag) {
@@ -50,7 +53,8 @@ class Test : private ListNode {
       if (!state->is_running) {
         bool ok = true;
         for (const auto &filter : *get_substr_filters()) {
-          if (test->name_.str().find(filter) == std::string::npos) {
+          bool is_match = test->name_.str().find(filter.substr(1)) != std::string::npos;
+          if (is_match != (filter[0] == '+')) {
             ok = false;
             break;
           }
