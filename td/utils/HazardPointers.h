@@ -27,7 +27,7 @@ class HazardPointers {
       clear();
     }
     void clear() {
-      hazard_ptr_.store(nullptr, std::memory_order_relaxed);
+      hazard_ptr_.store(nullptr, std::memory_order_release);
     }
 
    private:
