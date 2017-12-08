@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <cmath>
 
 #include "td/utils/common.h"
 #include "td/utils/port/Clocks.h"
@@ -34,6 +35,9 @@ inline void relax_timeout_at(double *timeout, double new_timeout) {
 class Timestamp {
  public:
   Timestamp() = default;
+  static Timestamp never() {
+    return Timestamp{};
+  }
   static Timestamp now() {
     return Timestamp{Time::now()};
   }
@@ -71,6 +75,10 @@ class Timestamp {
     if (!*this || at_ > timeout.at_) {
       at_ = timeout.at_;
     }
+  }
+
+  friend bool operator==(Timestamp a, Timestamp b) {
+    return fabs(a.at() - b.at()) < 1e-6;
   }
 
  private:

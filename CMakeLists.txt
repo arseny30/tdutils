@@ -50,6 +50,7 @@ set(TDUTILS_SOURCE
   td/utils/port/detail/KQueue.cpp
   td/utils/port/detail/Poll.cpp
   td/utils/port/detail/Select.cpp
+  td/utils/port/detail/ThreadIdGuard.cpp
   td/utils/port/detail/WineventPoll.cpp
 
   ${TDMIME_AUTO}
@@ -105,6 +106,7 @@ set(TDUTILS_SOURCE
   td/utils/port/detail/KQueue.h
   td/utils/port/detail/Poll.h
   td/utils/port/detail/Select.h
+  td/utils/port/detail/ThreadIdGuard.h
   td/utils/port/detail/ThreadPthread.h
   td/utils/port/detail/ThreadStl.h
   td/utils/port/detail/WineventPoll.h
@@ -130,6 +132,7 @@ set(TDUTILS_SOURCE
   td/utils/format.h
   td/utils/Gzip.h
   td/utils/GzipByteFlow.h
+  td/utils/HazardPointers.h
   td/utils/Heap.h
   td/utils/Hints.h
   td/utils/HttpUrl.h
@@ -143,6 +146,7 @@ set(TDUTILS_SOURCE
   td/utils/misc.h
   td/utils/MovableValue.h
   td/utils/MpscPollableQueue.h
+  td/utils/MpscLinkQueue.h
   td/utils/Named.h
   td/utils/ObjectPool.h
   td/utils/Observer.h
@@ -158,6 +162,7 @@ set(TDUTILS_SOURCE
   td/utils/Slice-decl.h
   td/utils/Slice.h
   td/utils/SpinLock.h
+  td/utils/SharedObjectPool.h
   td/utils/StackAllocator.h
   td/utils/Status.h
   td/utils/Storer.h
@@ -177,6 +182,11 @@ set(TDUTILS_SOURCE
 )
 
 set(TDUTILS_TESTS_SOURCE
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/SharedObjectPool.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/MpmcWaiter.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/MpmcQueue.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/HazardPointers.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/MpscLinkQueue.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/filesystem.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/heap.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/json.cpp

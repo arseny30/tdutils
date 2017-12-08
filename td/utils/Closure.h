@@ -141,9 +141,14 @@ class DelayedClosure {
   }
 };
 
-template <class ImmediateClosureT>
-typename ImmediateClosureT::Delayed to_delayed_closure(ImmediateClosureT &&other) {
-  return typename ImmediateClosureT::Delayed(std::forward<ImmediateClosureT>(other));
+template <class... ArgsT>
+typename ImmediateClosure<ArgsT...>::Delayed to_delayed_closure(ImmediateClosure<ArgsT...> &&other) {
+  return typename ImmediateClosure<ArgsT...>::Delayed(std::move(other));
+}
+
+template <class... ArgsT>
+DelayedClosure<ArgsT...> to_delayed_closure(DelayedClosure<ArgsT...> &&other) {
+  return std::move(other);
 }
 
 template <class ActorT, class ResultT, class... DestArgsT, class... SrcArgsT>

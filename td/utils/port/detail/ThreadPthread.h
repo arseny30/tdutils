@@ -3,6 +3,8 @@
 
 #ifdef TD_THREAD_PTHREAD
 
+#include "td/utils/port/detail/ThreadIdGuard.h"
+
 #include "td/utils/common.h"
 #include "td/utils/invoke.h"
 #include "td/utils/MovableValue.h"
@@ -57,6 +59,7 @@ class ThreadPthread {
   }
 
   static void *run_thread(void *ptr) {
+    ThreadIdGuard thread_id_guard;
     auto func = static_cast<decltype(func_.get())>(ptr);
     func->reset();
     return nullptr;

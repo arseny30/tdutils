@@ -68,13 +68,23 @@
   #define ATTRIBUTE_FORMAT_PRINTF(from, to)
 #endif
 
+namespace td {
 #if TD_CLANG || TD_GCC || TD_INTEL
-  #define likely(x) __builtin_expect(x, 1)
-  #define unlikely(x) __builtin_expect(x, 0)
+inline bool likely(bool x) {
+  return __builtin_expect(x, 1);
+}
+inline bool unlikely(bool x) {
+  return __builtin_expect(x, 0);
+}
 #else
-  #define likely(x) x
-  #define unlikely(x) x
+inline bool likely(bool x) {
+  return x;
+}
+inline bool unlikely(bool x) {
+  return x;
+}
 #endif
+}
 
 #if TD_MSVC
   #define TD_UNUSED __pragma(warning(suppress : 4100))
@@ -102,5 +112,7 @@
 #ifdef TD_HAVE_ATOMIC_SHARED_PTR // unfortunately we can't check for __GLIBCXX__ here, it is not defined yet
   #undef TD_HAVE_ATOMIC_SHARED_PTR
 #endif
+
+#define TD_CONCURRENCY_PAD 128
 
 // clang-format on

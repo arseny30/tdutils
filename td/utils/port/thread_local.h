@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <atomic>
 
 namespace td {
 
@@ -19,6 +20,10 @@ namespace td {
   #define TD_THREAD_LOCAL thread_local
 #endif
 // clang-format on
+
+constexpr size_t max_threads_count() {
+  return 256;
+}
 
 // If raw_ptr is not nullptr, allocate T as in std::make_unique<T>(args...) and store pointer into raw_ptr
 template <class T, class P, class... ArgsT>

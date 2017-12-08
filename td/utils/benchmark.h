@@ -87,7 +87,7 @@ inline void bench(Benchmark &b, double max_time = 1.0) {
   }
   pass_time = n / pass_time;
 
-  int pass_cnt = 3;
+  int pass_cnt = 2;
   double sum = pass_time;
   double square_sum = pass_time * pass_time;
   double min_pass_time = pass_time;
@@ -107,7 +107,8 @@ inline void bench(Benchmark &b, double max_time = 1.0) {
   double avg = sum / pass_cnt;
   double d = sqrt(square_sum / pass_cnt - avg * avg);
 
-  LOG(ERROR, "Bench [%40s]:\t%.3lf ops/sec,\t", b.get_description().c_str(), avg)
+  LOG(ERROR, "Bench [%40s]:\t%.3lf[%.3lf-%.3lf] ops/sec,\t", b.get_description().c_str(), avg, min_pass_time,
+      max_pass_time)
       << format::as_time(1 / avg) << (PSLICE(" [d = %.6lf]", d));
 }
 
