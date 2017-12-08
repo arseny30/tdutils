@@ -56,7 +56,7 @@ struct MpmcStat {
     return arr[thread_id];
   }
 };
-MpmcStat stat_;
+//MpmcStat stat_;
 template <class T>
 class OneValue {
  public:
