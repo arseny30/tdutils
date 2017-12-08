@@ -2,7 +2,7 @@
 
 #include "td/utils/port/config.h"
 
-#include "td/utils/int_types.h"
+#include "td/utils/common.h"
 
 #include <memory>
 #include <utility>
