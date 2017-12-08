@@ -68,6 +68,7 @@ TEST(MpscLinkQueue, one_thread) {
   }
 }
 
+#if !TD_THREAD_UNSUPPORTED
 TEST(MpscLinkQueue, multi_thread) {
   td::MpscLinkQueue<QueueNode> queue;
   int threads_n = 10;
@@ -105,3 +106,4 @@ TEST(MpscLinkQueue, multi_thread) {
     thread.join();
   }
 }
+#endif  //!TD_THREAD_UNSUPPORTED

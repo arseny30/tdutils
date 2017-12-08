@@ -30,6 +30,7 @@ TEST(OneValue, simple) {
   }
 }
 
+#if !TD_THREAD_UNSUPPORTED
 TEST(OneValue, stress) {
   td::Stage run;
   td::Stage check;
@@ -75,6 +76,7 @@ TEST(OneValue, stress) {
     thread.join();
   }
 }
+#endif  //!TD_THREAD_UNSUPPORTED
 
 TEST(MpmcQueueBlock, simple) {
   // Test doesn't work now and it is ok, try_pop, logic changed
@@ -118,6 +120,7 @@ TEST(MpmcQueue, simple) {
   }
 }
 
+#if !TD_THREAD_UNSUPPORTED
 TEST(MpmcQueue, multi_thread) {
   size_t n = 10;
   size_t m = 10;
@@ -193,3 +196,4 @@ TEST(MpmcQueue, multi_thread) {
   }
   CHECK(q.hazard_pointers_to_delele_size_unsafe() == 0) << q.hazard_pointers_to_delele_size_unsafe();
 }
+#endif  //!TD_THREAD_UNSUPPORTED

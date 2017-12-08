@@ -6,6 +6,7 @@
 
 #include <atomic>
 
+#if !TD_THREAD_UNSUPPORTED
 TEST(MpmcWaiter, stress_one_one) {
   td::Stage run;
   td::Stage check;
@@ -107,3 +108,4 @@ TEST(MpmcWaiter, stress) {
     thread.join();
   }
 }
+#endif  // !TD_THREAD_UNSUPPORTED

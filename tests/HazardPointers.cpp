@@ -6,6 +6,7 @@
 
 #include <atomic>
 
+#if !TD_THREAD_UNSUPPORTED
 TEST(HazardPointers, stress) {
   struct Node {
     std::atomic<std::string *> name_;
@@ -48,3 +49,4 @@ TEST(HazardPointers, stress) {
   }
   CHECK(hazard_pointers.to_delete_size_unsafe() == 0);
 }
+#endif  //!TD_THREAD_UNSUPPORTED

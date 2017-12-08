@@ -4,7 +4,6 @@
 #include "td/utils/port/EventFd.h"
 
 #if !TD_EVENTFD_UNSUPPORTED
-
 #if !TD_WINDOWS
 #include <poll.h>  // for pollfd, poll, POLLIN
 #include <sched.h>
@@ -94,6 +93,55 @@ class MpscPollableQueue {
   std::vector<ValueT> writer_vector_;
   std::vector<ValueT> reader_vector_;
   size_t reader_pos_{0};
+};
+
+}  // namespace td
+
+#else
+#include "td/utils/logging.h"
+
+namespace td {
+
+// dummy implementation which shouldn't be used
+
+template <class T>
+class MpscPollableQueue {
+ public:
+  using ValueType = T;
+
+  void init() {
+    UNREACHABLE();
+  }
+
+  template <class PutValueType>
+  void writer_put(PutValueType &&value) {
+    UNREACHABLE();
+  }
+
+  void writer_flush() {
+    UNREACHABLE();
+  }
+
+  int reader_wait_nonblock() {
+    UNREACHABLE();
+    return 0;
+  }
+
+  ValueType reader_get_unsafe() {
+    UNREACHABLE();
+    return ValueType();
+  }
+
+  void reader_flush() {
+    UNREACHABLE();
+  }
+
+  MpscPollableQueue() = default;
+  MpscPollableQueue(const MpscPollableQueue &) = delete;
+  MpscPollableQueue &operator=(const MpscPollableQueue &) = delete;
+  MpscPollableQueue(MpscPollableQueue &&) = delete;
+  MpscPollableQueue &operator=(MpscPollableQueue &&) = delete;
+  ~MpscPollableQueue() = default;
 };
 
 }  // namespace td
