@@ -78,7 +78,7 @@ class Timestamp {
   }
 
   friend bool operator==(Timestamp a, Timestamp b) {
-    return fabs(a.at() - b.at()) < 1e-6;
+    return std::abs(a.at() - b.at()) < 1e-6;
   }
 
  private:

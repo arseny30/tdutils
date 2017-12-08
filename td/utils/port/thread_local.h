@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <utility>
-#include <atomic>
 
 namespace td {
 

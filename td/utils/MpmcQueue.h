@@ -2,19 +2,21 @@
 
 // MPMC queue
 // Simple semaphore protected implementation
-// To close queue, one shoud send as musch sentinel elements as there are readers.
+// To close queue, one should send as much sentinel elements as there are readers.
 // Once there are no readers and writers, one may easily destroy queue
 
-#include <atomic>
-#include <mutex>
-
-#include "td/utils/logging.h"
-#include "td/utils/HazardPointers.h"
-#include "td/utils/port/thread.h"
 #include "td/utils/format.h"
+#include "td/utils/HazardPointers.h"
+#include "td/utils/logging.h"
+#include "td/utils/port/thread.h"
 #include "td/utils/ScopeGuard.h"
 
+#include <array>
+#include <atomic>
+
 namespace td {
+
+namespace detail {
 struct MpmcStat {
  public:
   void alloc_ok(size_t thread_id) {
@@ -57,7 +59,9 @@ struct MpmcStat {
     return arr[thread_id];
   }
 };
-//MpmcStat stat_;
+}  // namespace detail
+//detail::MpmcStat stat_;
+
 template <class T>
 class OneValue {
  public:
@@ -117,7 +121,7 @@ class OneValue<T *> {
 template <class T>
 class MpmcQueueBlock {
  public:
-  MpmcQueueBlock(size_t size) : nodes_(size) {
+  explicit MpmcQueueBlock(size_t size) : nodes_(size) {
   }
   enum class PopStatus { Ok, Empty, Closed };
 
@@ -196,6 +200,10 @@ class MpmcQueueOld {
     node.release();
   }
 
+  MpmcQueueOld(const MpmcQueueOld &other) = delete;
+  MpmcQueueOld &operator=(const MpmcQueueOld &other) = delete;
+  MpmcQueueOld(MpmcQueueOld &&other) = delete;
+  MpmcQueueOld &operator=(MpmcQueueOld &&other) = delete;
   ~MpmcQueueOld() {
     auto *ptr = read_pos_.load(std::memory_order_relaxed);
     while (ptr) {
@@ -286,7 +294,7 @@ class MpmcQueueOld {
 
  private:
   struct Node {
-    Node(size_t block_size) : block{block_size} {
+    explicit Node(size_t block_size) : block{block_size} {
     }
     std::atomic<Node *> next_{nullptr};
     char pad[TD_CONCURRENCY_PAD - sizeof(std::atomic<Node *>)];
@@ -317,6 +325,10 @@ class MpmcQueue {
     node.release();
   }
 
+  MpmcQueue(const MpmcQueue &other) = delete;
+  MpmcQueue &operator=(const MpmcQueue &other) = delete;
+  MpmcQueue(MpmcQueue &&other) = delete;
+  MpmcQueue &operator=(MpmcQueue &&other) = delete;
   ~MpmcQueue() {
     auto *ptr = read_pos_.load(std::memory_order_relaxed);
     while (ptr) {
@@ -414,8 +426,8 @@ class MpmcQueue {
     char pad3[TD_CONCURRENCY_PAD];
   };
   struct Node {
-    Node() {
-    }
+    Node() = default;
+
     Block block;
     std::atomic<Node *> next{nullptr};
     char pad[TD_CONCURRENCY_PAD - sizeof(std::atomic<Node *>)];

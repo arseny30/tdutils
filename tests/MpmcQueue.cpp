@@ -1,20 +1,10 @@
+#include "td/utils/logging.h"
 #include "td/utils/MpmcQueue.h"
+#include "td/utils/port/thread.h"
 #include "td/utils/tests.h"
 
-namespace td {
-class Stage {
- public:
-  void wait(uint64 need) {
-    value_.fetch_add(1, std::memory_order_release);
-    while (value_.load(std::memory_order_acquire) < need) {
-      td::this_thread::yield();
-    }
-  };
-
- private:
-  std::atomic<uint64> value_{0};
-};
-}  // namespace td
+#include <algorithm>
+#include <tuple>
 
 TEST(OneValue, simple) {
   {
@@ -39,6 +29,7 @@ TEST(OneValue, simple) {
     CHECK(y == "hello");
   }
 }
+
 TEST(OneValue, stress) {
   td::Stage run;
   td::Stage check;

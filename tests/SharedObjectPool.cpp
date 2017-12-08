@@ -1,6 +1,8 @@
+#include "td/utils/logging.h"
+#include "td/utils/SharedObjectPool.h"
 #include "td/utils/tests.h"
 
-#include "td/utils/SharedObjectPool.h"
+#include <memory>
 
 TEST(AtomicRefCnt, simple) {
   td::detail::AtomicRefCnt cnt{0};

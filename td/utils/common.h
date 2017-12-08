@@ -60,6 +60,22 @@
 
 namespace td {
 
+inline bool likely(bool x) {
+#if TD_CLANG || TD_GCC || TD_INTEL
+  return __builtin_expect(x, 1);
+#else
+  return x;
+#endif
+}
+
+inline bool unlikely(bool x) {
+#if TD_CLANG || TD_GCC || TD_INTEL
+  return __builtin_expect(x, 0);
+#else
+  return x;
+#endif
+}
+
 using string = std::string;
 
 template <class ValueT>

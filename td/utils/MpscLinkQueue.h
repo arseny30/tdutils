@@ -6,7 +6,7 @@
 #include "td/utils/logging.h"
 
 namespace td {
-//NB: holder of the queue holds all responsibility of freeing it's nodes
+//NB: holder of the queue holds all responsibility of freeing its nodes
 class MpscLinkQueueImpl {
  public:
   class Node;
@@ -91,8 +91,7 @@ class MpscLinkQueueImpl {
 };
 
 // Uses MpscLinkQueueImpl.
-// Node should have to_mpsc_link_queue_node and from_mpsc_link_queue_node
-// functions
+// Node should have to_mpsc_link_queue_node and from_mpsc_link_queue_node functions
 template <class Node>
 class MpscLinkQueue {
  public:
@@ -122,8 +121,9 @@ class MpscLinkQueue {
     }
 
    private:
-    MpscLinkQueueImpl::Reader impl_;
     friend class MpscLinkQueue;
+
+    MpscLinkQueueImpl::Reader impl_;
     MpscLinkQueueImpl::Reader &impl() {
       return impl_;
     }
@@ -144,7 +144,7 @@ template <class Value>
 class MpscLinkQueueUniquePtrNode {
  public:
   MpscLinkQueueUniquePtrNode() = default;
-  MpscLinkQueueUniquePtrNode(std::unique_ptr<Value> ptr) : ptr_(std::move(ptr)) {
+  explicit MpscLinkQueueUniquePtrNode(std::unique_ptr<Value> ptr) : ptr_(std::move(ptr)) {
   }
 
   auto to_mpsc_link_queue_node() {
@@ -154,8 +154,8 @@ class MpscLinkQueueUniquePtrNode {
     return MpscLinkQueueUniquePtrNode<Value>(std::unique_ptr<Value>(Value::from_mpsc_link_queue_node(node)));
   }
 
-  operator bool() {
-    return bool(ptr_);
+  explicit operator bool() {
+    return ptr_ != nullptr;
   }
 
   Value &value() {

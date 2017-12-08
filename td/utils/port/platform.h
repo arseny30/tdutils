@@ -68,24 +68,6 @@
   #define ATTRIBUTE_FORMAT_PRINTF(from, to)
 #endif
 
-namespace td {
-#if TD_CLANG || TD_GCC || TD_INTEL
-inline bool likely(bool x) {
-  return __builtin_expect(x, 1);
-}
-inline bool unlikely(bool x) {
-  return __builtin_expect(x, 0);
-}
-#else
-inline bool likely(bool x) {
-  return x;
-}
-inline bool unlikely(bool x) {
-  return x;
-}
-#endif
-}
-
 #if TD_MSVC
   #define TD_UNUSED __pragma(warning(suppress : 4100))
 #elif TD_CLANG || TD_GCC || TD_INTEL

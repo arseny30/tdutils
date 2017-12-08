@@ -1,12 +1,21 @@
+#pragma once
+
 #include "td/utils/common.h"
 
+#include "td/utils/logging.h"
 #include "td/utils/MpscLinkQueue.h"
 
+#include <atomic>
+#include <memory>
+#include <new>
+#include <utility>
+
 namespace td {
+
 namespace detail {
 class AtomicRefCnt {
  public:
-  AtomicRefCnt(uint64 cnt) : cnt_(cnt) {
+  explicit AtomicRefCnt(uint64 cnt) : cnt_(cnt) {
   }
   void inc() {
     cnt_.fetch_add(1, std::memory_order_relaxed);
@@ -27,7 +36,7 @@ class SharedPtrRaw
     : public DeleterT
     , private MpscLinkQueueImpl::Node {
  public:
-  SharedPtrRaw(DeleterT deleter) : DeleterT(std::move(deleter)), ref_cnt_{0}, option_magic_(Magic) {
+  explicit SharedPtrRaw(DeleterT deleter) : DeleterT(std::move(deleter)), ref_cnt_{0}, option_magic_(Magic) {
   }
 
   ~SharedPtrRaw() {
@@ -102,7 +111,7 @@ class SharedPtr {
   bool empty() const {
     return raw_ == nullptr;
   }
-  operator bool() const {
+  explicit operator bool() const {
     return !empty();
   }
   uint64 use_cnt() const {
@@ -159,6 +168,11 @@ class SharedObjectPool {
  public:
   using Ptr = detail::SharedPtr<DataT, Deleter>;
 
+  SharedObjectPool() = default;
+  SharedObjectPool(const SharedObjectPool &other) = delete;
+  SharedObjectPool &operator=(const SharedObjectPool &other) = delete;
+  SharedObjectPool(SharedObjectPool &&other) = delete;
+  SharedObjectPool &operator=(SharedObjectPool &&other) = delete;
   ~SharedObjectPool() {
     free_queue_.pop_all(free_queue_reader_);
     size_t free_cnt = 0;
@@ -223,7 +237,7 @@ class SharedObjectPool {
     Raw *get() const {
       return raw_;
     }
-    operator bool() const {
+    explicit operator bool() const {
       return raw_ != nullptr;
     }
 

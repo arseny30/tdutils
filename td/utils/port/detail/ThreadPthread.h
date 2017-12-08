@@ -3,11 +3,10 @@
 
 #ifdef TD_THREAD_PTHREAD
 
-#include "td/utils/port/detail/ThreadIdGuard.h"
-
 #include "td/utils/common.h"
 #include "td/utils/invoke.h"
 #include "td/utils/MovableValue.h"
+#include "td/utils/port/detail/ThreadIdGuard.h"
 #include "td/utils/port/thread_local.h"
 
 #include <tuple>
@@ -46,6 +45,11 @@ class ThreadPthread {
   ~ThreadPthread() {
     join();
   }
+
+  static unsigned hardware_concurrency() {
+    return 8;
+  }
+
   using id = pthread_t;
 
  private:

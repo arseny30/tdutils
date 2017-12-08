@@ -1,11 +1,12 @@
-#include "td/utils/tests.h"
-#include "td/utils/MpscLinkQueue.h"
 #include "td/utils/format.h"
+#include "td/utils/logging.h"
+#include "td/utils/MpscLinkQueue.h"
 #include "td/utils/port/thread.h"
+#include "td/utils/tests.h"
 
 class NodeX : public td::MpscLinkQueueImpl::Node {
  public:
-  NodeX(int value) : value_(value) {
+  explicit NodeX(int value) : value_(value) {
   }
   auto to_mpsc_link_queue_node() {
     return static_cast<td::MpscLinkQueueImpl::Node *>(this);
@@ -23,7 +24,7 @@ class NodeX : public td::MpscLinkQueueImpl::Node {
 using QueueNode = td::MpscLinkQueueUniquePtrNode<NodeX>;
 
 QueueNode create_node(int value) {
-  return std::make_unique<NodeX>(value);
+  return QueueNode(std::make_unique<NodeX>(value));
 }
 
 TEST(MpscLinkQueue, one_thread) {

@@ -1,22 +1,10 @@
-#include "td/utils/tests.h"
 #include "td/utils/MpmcWaiter.h"
 #include "td/utils/port/sleep.h"
+#include "td/utils/port/thread.h"
 #include "td/utils/Random.h"
+#include "td/utils/tests.h"
 
-namespace td {
-class Stage {
- public:
-  void wait(uint64 need) {
-    value_.fetch_add(1, std::memory_order_release);
-    while (value_.load(std::memory_order_acquire) < need) {
-      td::this_thread::yield();
-    }
-  };
-
- private:
-  std::atomic<uint64> value_{0};
-};
-}  // namespace td
+#include <atomic>
 
 TEST(MpmcWaiter, stress_one_one) {
   td::Stage run;

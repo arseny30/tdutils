@@ -1,7 +1,10 @@
-#include "td/utils/tests.h"
 #include "td/utils/HazardPointers.h"
+#include "td/utils/logging.h"
 #include "td/utils/port/thread.h"
 #include "td/utils/Random.h"
+#include "td/utils/tests.h"
+
+#include <atomic>
 
 TEST(HazardPointers, stress) {
   struct Node {
@@ -12,9 +15,9 @@ TEST(HazardPointers, stress) {
   std::vector<Node> nodes(threads_n);
   td::HazardPointers<std::string> hazard_pointers(threads_n);
   std::vector<td::thread> threads(threads_n);
-  int id = 0;
+  int thread_id = 0;
   for (auto &thread : threads) {
-    thread = td::thread([&, thread_id = id] {
+    thread = td::thread([&, thread_id] {
       auto holder = hazard_pointers.get_holder(thread_id, 0);
       for (int i = 0; i < 1000000; i++) {
         auto &node = nodes[td::Random::fast(0, threads_n - 1)];
@@ -33,7 +36,7 @@ TEST(HazardPointers, stress) {
         }
       }
     });
-    id++;
+    thread_id++;
   }
   for (auto &thread : threads) {
     thread.join();
@@ -43,5 +46,5 @@ TEST(HazardPointers, stress) {
   for (int i = 0; i < threads_n; i++) {
     hazard_pointers.retire(i);
   }
-  CHECK(static_cast<int>(hazard_pointers.to_delete_size_unsafe()) == 0);
+  CHECK(hazard_pointers.to_delete_size_unsafe() == 0);
 }

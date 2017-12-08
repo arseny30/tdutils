@@ -9,6 +9,7 @@ uint64 pq_factorize(uint64 pq);
 
 #if TD_HAVE_OPENSSL
 void init_crypto();
+
 int pq_factorize(Slice pq_str, string *p_str, string *q_str);
 
 void aes_ige_xcrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag);

@@ -145,6 +145,8 @@ set(TDUTILS_SOURCE
   td/utils/MimeType.h
   td/utils/misc.h
   td/utils/MovableValue.h
+  td/utils/MpmcQueue.h
+  td/utils/MpmcWaiter.h
   td/utils/MpscPollableQueue.h
   td/utils/MpscLinkQueue.h
   td/utils/Named.h

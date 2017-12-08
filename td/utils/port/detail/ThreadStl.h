@@ -5,9 +5,8 @@
 
 #include "td/utils/common.h"
 #include "td/utils/invoke.h"
-#include "td/utils/port/thread_local.h"
-
 #include "td/utils/port/detail/ThreadIdGuard.h"
+#include "td/utils/port/thread_local.h"
 
 #include <thread>
 #include <tuple>
@@ -36,6 +35,10 @@ class ThreadStl {
 
   void join() {
     thread_.join();
+  }
+
+  static unsigned hardware_concurrency() {
+    return std::thread::hardware_concurrency();
   }
 
   using id = std::thread::id;

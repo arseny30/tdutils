@@ -4,8 +4,11 @@
 #include "td/utils/format.h"
 #include "td/utils/List.h"
 #include "td/utils/logging.h"
+#include "td/utils/port/thread.h"
 #include "td/utils/Slice.h"
 #include "td/utils/Time.h"
+
+#include <atomic>
 
 #define REGISTER_TESTS(x)                \
   void TD_CONCAT(register_tests_, x)() { \
@@ -122,6 +125,19 @@ class Test : private ListNode {
     run();
     return false;
   }
+};
+
+class Stage {
+ public:
+  void wait(uint64 need) {
+    value_.fetch_add(1, std::memory_order_release);
+    while (value_.load(std::memory_order_acquire) < need) {
+      td::this_thread::yield();
+    }
+  };
+
+ private:
+  std::atomic<uint64> value_{0};
 };
 
 template <class T1, class T2>

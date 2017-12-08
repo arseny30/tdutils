@@ -2,8 +2,6 @@
 
 #include "td/utils/logging.h"
 
-#include <mutex>
-
 namespace td {
 
 namespace detail {

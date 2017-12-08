@@ -44,7 +44,7 @@ class SpinLock {
   }
 
  private:
-  std::atomic_flag flag_;
+  std::atomic_flag flag_ = ATOMIC_FLAG_INIT;
   void unlock() {
     flag_.clear(std::memory_order_release);
   }

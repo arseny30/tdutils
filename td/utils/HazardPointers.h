@@ -1,7 +1,9 @@
 #pragma once
 
+#include "td/utils/common.h"
 #include "td/utils/logging.h"
 
+#include <array>
 #include <atomic>
 
 namespace td {
@@ -28,7 +30,7 @@ class HazardPointers {
     }
     Holder(const Holder &other) = delete;
     Holder &operator=(const Holder &other) = delete;
-    Holder(Holder &&other) = default; // TODO
+    Holder(Holder &&other) = default;  // TODO
     Holder &operator=(Holder &&other) = delete;
     ~Holder() {
       clear();

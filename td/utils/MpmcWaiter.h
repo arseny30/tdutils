@@ -1,8 +1,11 @@
+#pragma once
+
 #include "td/utils/common.h"
 #include "td/utils/port/thread.h"
 
-#include <mutex>
+#include <atomic>
 #include <condition_variable>
+#include <mutex>
 
 namespace td {
 class MpmcWaiter {
