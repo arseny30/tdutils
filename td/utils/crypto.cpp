@@ -421,10 +421,12 @@ std::vector<RwMutex> &openssl_mutexes() {
   return mutexes;
 }
 
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 void openssl_threadid_callback(CRYPTO_THREADID *thread_id) {
   static TD_THREAD_LOCAL int id;
   CRYPTO_THREADID_set_pointer(thread_id, &id);
 }
+#endif
 
 void openssl_locking_function(int mode, int n, const char *file, int line) {
   auto &mutexes = openssl_mutexes();
@@ -448,7 +450,9 @@ void openssl_locking_function(int mode, int n, const char *file, int line) {
 void init_openssl_threads() {
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
   if (CRYPTO_get_locking_callback() == nullptr) {
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
     CRYPTO_THREADID_set_callback(openssl_threadid_callback);
+#endif
     CRYPTO_set_locking_callback(openssl_locking_function);
   }
 #endif
