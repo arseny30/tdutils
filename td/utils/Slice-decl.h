@@ -27,8 +27,7 @@ class MutableSlice {
   MutableSlice(char *s, char *t);
   MutableSlice(unsigned char *s, unsigned char *t);
   template <size_t N>
-  constexpr MutableSlice(char (&a)[N]) : s_(a), len_(N - 1) {
-  }
+  constexpr MutableSlice(char (&a)[N]) = delete;
 
   bool empty() const;
   size_t size() const;

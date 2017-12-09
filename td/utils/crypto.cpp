@@ -373,8 +373,37 @@ void md5(Slice input, MutableSlice output) {
 }
 
 void pbkdf2_sha256(Slice password, Slice salt, int iteration_count, MutableSlice dest) {
+  CHECK(dest.size() == 256 / 8) << dest.size();
+  CHECK(iteration_count > 0);
+  auto evp_md = EVP_sha256();
+#if OPENSSL_VERSION_NUMBER < 0x10000000L
+  HMAC_CTX ctx;
+  HMAC_CTX_init(&ctx);
+  unsigned char counter[4] = {0, 0, 0, 1};
+  int password_len = narrow_cast<int>(password.size());
+  if (!HMAC_Init_ex(&ctx, password.data(), password_len, evp_md, NULL) ||
+      !HMAC_Update(&ctx, salt.ubegin(), narrow_cast<int>(salt.size())) || !HMAC_Update(&ctx, counter, 4) ||
+      !HMAC_Final(&ctx, dest.ubegin(), NULL)) {
+    LOG(FATAL) << "Failed to calculate HMAC";
+  }
+  HMAC_CTX_cleanup(&ctx);
+
+  if (iteration_count > 1) {
+    unsigned char buf[32];
+    std::copy(dest.ubegin(), dest.uend(), buf);
+    for (int iter = 1; iter < iteration_count; iter++) {
+      if (HMAC(evp_md, password.data(), password_len, buf, 32, buf, NULL) == nullptr) {
+        LOG(FATAL) << "Failed to HMAC";
+      }
+      for (int i = 0; i < 32; i++) {
+        dest[i] ^= buf[i];
+      }
+    }
+  }
+#else
   PKCS5_PBKDF2_HMAC(password.data(), narrow_cast<int>(password.size()), salt.ubegin(), narrow_cast<int>(salt.size()),
-                    iteration_count, EVP_sha256(), narrow_cast<int>(dest.size()), dest.ubegin());
+                    iteration_count, evp_md, narrow_cast<int>(dest.size()), dest.ubegin());
+#endif
 }
 
 void hmac_sha256(Slice key, Slice message, MutableSlice dest) {
