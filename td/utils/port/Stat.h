@@ -16,7 +16,7 @@ struct Stat {
   uint64 mtime_nsec_;
 };
 
-Result<Stat> stat(CSlice path) WARN_UNUSED_RESULT;
+Result<Stat> stat(CSlice path) TD_WARN_UNUSED_RESULT;
 
 #if TD_PORT_POSIX
 
@@ -24,7 +24,7 @@ namespace detail {
 Stat fstat(int native_fd);  // TODO return Result<Stat>
 }  // namespace detail
 
-Status update_atime(CSlice path) WARN_UNUSED_RESULT;
+Status update_atime(CSlice path) TD_WARN_UNUSED_RESULT;
 
 struct MemStat {
   uint64 resident_size_;
@@ -33,7 +33,7 @@ struct MemStat {
   uint64 virtual_size_peak_;
 };
 
-Result<MemStat> mem_stat() WARN_UNUSED_RESULT;
+Result<MemStat> mem_stat() TD_WARN_UNUSED_RESULT;
 
 #endif
 

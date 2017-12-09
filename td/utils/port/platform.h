@@ -61,11 +61,11 @@
 #endif
 
 #if TD_GCC || TD_CLANG || TD_INTEL
-  #define WARN_UNUSED_RESULT __attribute__((warn_unused_result))
-  #define ATTRIBUTE_FORMAT_PRINTF(from, to) __attribute__((format(printf, from, to)))
+  #define TD_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
+  #define TD_ATTRIBUTE_FORMAT_PRINTF(from, to) __attribute__((format(printf, from, to)))
 #else
-  #define WARN_UNUSED_RESULT
-  #define ATTRIBUTE_FORMAT_PRINTF(from, to)
+  #define TD_WARN_UNUSED_RESULT
+  #define TD_ATTRIBUTE_FORMAT_PRINTF(from, to)
 #endif
 
 #if TD_MSVC

@@ -19,16 +19,16 @@ class FileFd {
   const Fd &get_fd() const;
   Fd &get_fd();
 
-  static Result<FileFd> open(CSlice filepath, int32 flags, int32 mode = 0600) WARN_UNUSED_RESULT;
+  static Result<FileFd> open(CSlice filepath, int32 flags, int32 mode = 0600) TD_WARN_UNUSED_RESULT;
 
-  Result<size_t> write(Slice slice) WARN_UNUSED_RESULT;
-  Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT;
+  Result<size_t> write(Slice slice) TD_WARN_UNUSED_RESULT;
+  Result<size_t> read(MutableSlice slice) TD_WARN_UNUSED_RESULT;
 
-  Result<size_t> pwrite(Slice slice, int64 offset) WARN_UNUSED_RESULT;
-  Result<size_t> pread(MutableSlice slice, int64 offset) WARN_UNUSED_RESULT;
+  Result<size_t> pwrite(Slice slice, int64 offset) TD_WARN_UNUSED_RESULT;
+  Result<size_t> pread(MutableSlice slice, int64 offset) TD_WARN_UNUSED_RESULT;
 
   enum class LockFlags { Write, Read, Unlock };
-  Status lock(LockFlags flags, int32 max_tries = 1) WARN_UNUSED_RESULT;
+  Status lock(LockFlags flags, int32 max_tries = 1) TD_WARN_UNUSED_RESULT;
 
   void close();
   bool empty() const;
@@ -40,11 +40,11 @@ class FileFd {
 
   Stat stat();
 
-  Status sync() WARN_UNUSED_RESULT;
+  Status sync() TD_WARN_UNUSED_RESULT;
 
-  Status seek(int64 position) WARN_UNUSED_RESULT;
+  Status seek(int64 position) TD_WARN_UNUSED_RESULT;
 
-  Status truncate_to_current_position(int64 current_position) WARN_UNUSED_RESULT;
+  Status truncate_to_current_position(int64 current_position) TD_WARN_UNUSED_RESULT;
 
 #if TD_PORT_POSIX
   int get_native_fd() const;

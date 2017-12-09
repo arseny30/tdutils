@@ -52,12 +52,12 @@ class RwMutex {
   using ReadLock = std::unique_ptr<RwMutex, ReadUnlock>;
   using WriteLock = std::unique_ptr<RwMutex, WriteUnlock>;
 
-  Result<ReadLock> lock_read() WARN_UNUSED_RESULT {
+  Result<ReadLock> lock_read() TD_WARN_UNUSED_RESULT {
     lock_read_unsafe();
     return ReadLock(this);
   }
 
-  Result<WriteLock> lock_write() WARN_UNUSED_RESULT {
+  Result<WriteLock> lock_write() TD_WARN_UNUSED_RESULT {
     lock_write_unsafe();
     return WriteLock(this);
   }

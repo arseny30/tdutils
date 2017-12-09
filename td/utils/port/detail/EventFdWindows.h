@@ -25,7 +25,7 @@ class EventFdWindows final : public EventFdBase {
 
   void close() override;
 
-  Status get_pending_error() override WARN_UNUSED_RESULT;
+  Status get_pending_error() override TD_WARN_UNUSED_RESULT;
 
   const Fd &get_fd() const override;
   Fd &get_fd() override;

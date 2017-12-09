@@ -19,7 +19,7 @@ class Gzip {
   ~Gzip();
 
   enum Mode { Empty, Encode, Decode };
-  Status init(Mode mode) WARN_UNUSED_RESULT {
+  Status init(Mode mode) TD_WARN_UNUSED_RESULT {
     if (mode == Encode) {
       return init_encode();
     } else if (mode == Decode) {
@@ -29,9 +29,9 @@ class Gzip {
     return Status::OK();
   }
 
-  Status init_encode() WARN_UNUSED_RESULT;
+  Status init_encode() TD_WARN_UNUSED_RESULT;
 
-  Status init_decode() WARN_UNUSED_RESULT;
+  Status init_decode() TD_WARN_UNUSED_RESULT;
 
   void set_input(Slice input);
 
@@ -74,7 +74,7 @@ class Gzip {
   }
 
   enum State { Running, Done };
-  Result<State> run() WARN_UNUSED_RESULT;
+  Result<State> run() TD_WARN_UNUSED_RESULT;
 
  private:
   class Impl;

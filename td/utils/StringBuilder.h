@@ -165,7 +165,7 @@ class StringBuilder {
     }
   }
 
-  void printf(const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3) {
+  void printf(const char *fmt, ...) TD_ATTRIBUTE_FORMAT_PRINTF(2, 3) {
     va_list list;
     va_start(list, fmt);
     vprintf(fmt, list);

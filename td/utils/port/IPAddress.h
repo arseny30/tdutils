@@ -32,14 +32,14 @@ class IPAddress {
 
   IPAddress get_any_addr() const;
 
-  Status init_ipv6_port(CSlice ipv6, int port) WARN_UNUSED_RESULT;
-  Status init_ipv6_as_ipv4_port(CSlice ipv4, int port) WARN_UNUSED_RESULT;
-  Status init_ipv4_port(CSlice ipv4, int port) WARN_UNUSED_RESULT;
-  Status init_host_port(CSlice host, int port) WARN_UNUSED_RESULT;
-  Status init_host_port(CSlice host, CSlice port) WARN_UNUSED_RESULT;
-  Status init_host_port(CSlice host_port) WARN_UNUSED_RESULT;
-  Status init_socket_address(const SocketFd &socket_fd) WARN_UNUSED_RESULT;
-  Status init_peer_address(const SocketFd &socket_fd) WARN_UNUSED_RESULT;
+  Status init_ipv6_port(CSlice ipv6, int port) TD_WARN_UNUSED_RESULT;
+  Status init_ipv6_as_ipv4_port(CSlice ipv4, int port) TD_WARN_UNUSED_RESULT;
+  Status init_ipv4_port(CSlice ipv4, int port) TD_WARN_UNUSED_RESULT;
+  Status init_host_port(CSlice host, int port) TD_WARN_UNUSED_RESULT;
+  Status init_host_port(CSlice host, CSlice port) TD_WARN_UNUSED_RESULT;
+  Status init_host_port(CSlice host_port) TD_WARN_UNUSED_RESULT;
+  Status init_socket_address(const SocketFd &socket_fd) TD_WARN_UNUSED_RESULT;
+  Status init_peer_address(const SocketFd &socket_fd) TD_WARN_UNUSED_RESULT;
 
   friend bool operator==(const IPAddress &a, const IPAddress &b);
   friend bool operator<(const IPAddress &a, const IPAddress &b);
@@ -55,7 +55,7 @@ class IPAddress {
   };
   bool is_valid_;
 
-  Status init_sockaddr(sockaddr *addr, socklen_t len) WARN_UNUSED_RESULT;
+  Status init_sockaddr(sockaddr *addr, socklen_t len) TD_WARN_UNUSED_RESULT;
   void init_ipv4_any();
   void init_ipv6_any();
 };

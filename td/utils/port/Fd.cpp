@@ -513,7 +513,7 @@ class Fd::FdImpl {
     return reinterpret_cast<HANDLE>(socket_);
   }
 
-  Result<size_t> write(Slice slice) WARN_UNUSED_RESULT {
+  Result<size_t> write(Slice slice) TD_WARN_UNUSED_RESULT {
     if (async_mode_) {
       return write_async(slice);
     } else {
@@ -521,7 +521,7 @@ class Fd::FdImpl {
     }
   }
 
-  Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT {
+  Result<size_t> read(MutableSlice slice) TD_WARN_UNUSED_RESULT {
     if (async_mode_) {
       return read_async(slice);
     } else {
@@ -529,14 +529,14 @@ class Fd::FdImpl {
     }
   }
 
-  Result<size_t> write_async(Slice slice) WARN_UNUSED_RESULT {
+  Result<size_t> write_async(Slice slice) TD_WARN_UNUSED_RESULT {
     CHECK(async_mode_);
     output_writer_.append(slice);
     output_reader_.sync_with_writer();
     loop();
     return slice.size();
   }
-  Result<size_t> write_sync(Slice slice) WARN_UNUSED_RESULT {
+  Result<size_t> write_sync(Slice slice) TD_WARN_UNUSED_RESULT {
     CHECK(!async_mode_);
     DWORD bytes_written = 0;
     auto res = WriteFile(get_io_handle(), slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_written, nullptr);
@@ -545,7 +545,7 @@ class Fd::FdImpl {
     }
     return bytes_written;
   }
-  Result<size_t> read_async(MutableSlice slice) WARN_UNUSED_RESULT {
+  Result<size_t> read_async(MutableSlice slice) TD_WARN_UNUSED_RESULT {
     CHECK(async_mode_);
     auto res = input_reader_.advance(std::min(slice.size(), input_reader_.size()), slice);
     if (res == 0) {
@@ -553,7 +553,7 @@ class Fd::FdImpl {
     }
     return res;
   }
-  Result<size_t> read_sync(MutableSlice slice) WARN_UNUSED_RESULT {
+  Result<size_t> read_sync(MutableSlice slice) TD_WARN_UNUSED_RESULT {
     CHECK(!async_mode_);
     DWORD bytes_read = 0;
     auto res = ReadFile(get_io_handle(), slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_read, nullptr);

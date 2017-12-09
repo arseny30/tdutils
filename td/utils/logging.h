@@ -193,7 +193,7 @@ class Logger {
     return *this;
   }
 
-  Logger &printf(const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
+  Logger &printf(const char *fmt, ...) TD_ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
   MutableCSlice as_cslice() {
     return sb_.as_cslice();

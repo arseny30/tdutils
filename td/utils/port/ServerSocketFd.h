@@ -16,14 +16,14 @@ class ServerSocketFd {
   ServerSocketFd(ServerSocketFd &&) = default;
   ServerSocketFd &operator=(ServerSocketFd &&) = default;
 
-  static Result<ServerSocketFd> open(int32 port, CSlice addr = CSlice("0.0.0.0")) WARN_UNUSED_RESULT;
+  static Result<ServerSocketFd> open(int32 port, CSlice addr = CSlice("0.0.0.0")) TD_WARN_UNUSED_RESULT;
 
   const Fd &get_fd() const;
   Fd &get_fd();
   int32 get_flags() const;
-  Status get_pending_error() WARN_UNUSED_RESULT;
+  Status get_pending_error() TD_WARN_UNUSED_RESULT;
 
-  Result<SocketFd> accept() WARN_UNUSED_RESULT;
+  Result<SocketFd> accept() TD_WARN_UNUSED_RESULT;
 
   void close();
   bool empty() const;
@@ -31,7 +31,7 @@ class ServerSocketFd {
  private:
   Fd fd_;
 
-  Status init(int32 port, CSlice addr) WARN_UNUSED_RESULT;
+  Status init(int32 port, CSlice addr) TD_WARN_UNUSED_RESULT;
 };
 
 }  // namespace td

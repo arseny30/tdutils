@@ -15,7 +15,7 @@ class BufferedReader {
       : file_(file), buff_(buff_size), begin_pos_(0), end_pos_(0) {
   }
 
-  Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT;
+  Result<size_t> read(MutableSlice slice) TD_WARN_UNUSED_RESULT;
 
  private:
   FileFd &file_;

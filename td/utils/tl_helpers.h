@@ -196,7 +196,7 @@ string serialize(const T &object) {
 }
 
 template <class T>
-WARN_UNUSED_RESULT Status unserialize(T &object, Slice data) {
+TD_WARN_UNUSED_RESULT Status unserialize(T &object, Slice data) {
   TlParser parser(data);
   parse(object, parser);
   parser.fetch_end();

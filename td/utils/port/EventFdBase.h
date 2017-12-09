@@ -19,7 +19,7 @@ class EventFdBase {
   virtual void close() = 0;
   virtual const Fd &get_fd() const = 0;
   virtual Fd &get_fd() = 0;
-  virtual Status get_pending_error() WARN_UNUSED_RESULT = 0;
+  virtual Status get_pending_error() TD_WARN_UNUSED_RESULT = 0;
   virtual void release() = 0;
   virtual void acquire() = 0;
 };

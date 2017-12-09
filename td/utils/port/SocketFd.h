@@ -17,17 +17,17 @@ class SocketFd {
   SocketFd(SocketFd &&) = default;
   SocketFd &operator=(SocketFd &&) = default;
 
-  static Result<SocketFd> open(const IPAddress &address) WARN_UNUSED_RESULT;
+  static Result<SocketFd> open(const IPAddress &address) TD_WARN_UNUSED_RESULT;
 
   const Fd &get_fd() const;
   Fd &get_fd();
 
   int32 get_flags() const;
 
-  Status get_pending_error() WARN_UNUSED_RESULT;
+  Status get_pending_error() TD_WARN_UNUSED_RESULT;
 
-  Result<size_t> write(Slice slice) WARN_UNUSED_RESULT;
-  Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT;
+  Result<size_t> write(Slice slice) TD_WARN_UNUSED_RESULT;
+  Result<size_t> read(MutableSlice slice) TD_WARN_UNUSED_RESULT;
 
   void close();
   bool empty() const;
@@ -37,7 +37,7 @@ class SocketFd {
 
   friend class ServerSocketFd;
 
-  Status init(const IPAddress &address) WARN_UNUSED_RESULT;
+  Status init(const IPAddress &address) TD_WARN_UNUSED_RESULT;
 
 #if TD_PORT_POSIX
   static Result<SocketFd> from_native_fd(int fd);

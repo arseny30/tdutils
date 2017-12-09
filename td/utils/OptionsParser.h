@@ -46,7 +46,7 @@ class OptionsParser {
                          std::placeholders::_1));
   }
 
-  Result<int> run(int argc, char *argv[]) WARN_UNUSED_RESULT {
+  Result<int> run(int argc, char *argv[]) TD_WARN_UNUSED_RESULT {
 #if TD_WINDOWS
     return -1;
 #else

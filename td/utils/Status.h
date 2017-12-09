@@ -80,7 +80,7 @@ class Status {
     return false;
   }
 
-  Status clone() const WARN_UNUSED_RESULT {
+  Status clone() const TD_WARN_UNUSED_RESULT {
     if (is_ok()) {
       return Status();
     }
@@ -91,31 +91,31 @@ class Status {
     return Status(false, info.error_type, info.error_code, message());
   }
 
-  static Status OK() WARN_UNUSED_RESULT {
+  static Status OK() TD_WARN_UNUSED_RESULT {
     return Status();
   }
 
-  static Status Error(int err, Slice message = Slice()) WARN_UNUSED_RESULT {
+  static Status Error(int err, Slice message = Slice()) TD_WARN_UNUSED_RESULT {
     return Status(false, ErrorType::general, err, message);
   }
 
-  static Status Error(Slice message) WARN_UNUSED_RESULT {
+  static Status Error(Slice message) TD_WARN_UNUSED_RESULT {
     return Error(0, message);
   }
 
 #if TD_PORT_WINDOWS
-  static Status WindowsError(int saved_error, Slice message) WARN_UNUSED_RESULT {
+  static Status WindowsError(int saved_error, Slice message) TD_WARN_UNUSED_RESULT {
     return Status(false, ErrorType::os, saved_error, message);
   }
 #endif
 
 #if TD_PORT_POSIX
-  static Status PosixError(int32 saved_errno, Slice message) WARN_UNUSED_RESULT {
+  static Status PosixError(int32 saved_errno, Slice message) TD_WARN_UNUSED_RESULT {
     return Status(false, ErrorType::os, saved_errno, message);
   }
 #endif
 
-  static Status Error() WARN_UNUSED_RESULT {
+  static Status Error() TD_WARN_UNUSED_RESULT {
     return Error<0>();
   }
 
@@ -125,12 +125,12 @@ class Status {
     return status.clone_static();
   }
 
-  static Status InvalidId() WARN_UNUSED_RESULT {
+  static Status InvalidId() TD_WARN_UNUSED_RESULT {
     static Status status(true, ErrorType::general, 0, "Invalid Id");
     return status.clone_static();
   }
 
-  static Status Hangup() WARN_UNUSED_RESULT {
+  static Status Hangup() TD_WARN_UNUSED_RESULT {
     static Status status(true, ErrorType::general, 0, "Hangup");
     return status.clone_static();
   }
@@ -168,11 +168,11 @@ class Status {
   }
 
   // Default interface
-  bool is_ok() const WARN_UNUSED_RESULT {
+  bool is_ok() const TD_WARN_UNUSED_RESULT {
     return !is_error();
   }
 
-  bool is_error() const WARN_UNUSED_RESULT {
+  bool is_error() const TD_WARN_UNUSED_RESULT {
     return ptr_ != nullptr;
   }
 
@@ -230,11 +230,11 @@ class Status {
     return *this;
   }
 
-  Status move() WARN_UNUSED_RESULT {
+  Status move() TD_WARN_UNUSED_RESULT {
     return std::move(*this);
   }
 
-  Status move_as_error() WARN_UNUSED_RESULT {
+  Status move_as_error() TD_WARN_UNUSED_RESULT {
     return std::move(*this);
   }
 
@@ -269,7 +269,7 @@ class Status {
       : Status(to_info(static_flag, error_type, error_code), message) {
   }
 
-  Status clone_static() const WARN_UNUSED_RESULT {
+  Status clone_static() const TD_WARN_UNUSED_RESULT {
     CHECK(is_ok() || get_info().static_flag);
     Status result;
     result.ptr_ = std::unique_ptr<char[], Deleter>(ptr_.get());
@@ -376,7 +376,7 @@ class Result {
     CHECK(status_.is_error());
     return status_;
   }
-  Status move_as_error() WARN_UNUSED_RESULT {
+  Status move_as_error() TD_WARN_UNUSED_RESULT {
     CHECK(status_.is_error());
     SCOPE_EXIT {
       status_ = Status::Error();
@@ -396,7 +396,7 @@ class Result {
     return std::move(value_);
   }
 
-  Result<T> clone() const WARN_UNUSED_RESULT {
+  Result<T> clone() const TD_WARN_UNUSED_RESULT {
     if (is_ok()) {
       return Result<T>(ok());  // TODO: return clone(ok());
     }

@@ -29,33 +29,33 @@
 
 namespace td {
 
-Status mkdir(CSlice dir, int32 mode = 0700) WARN_UNUSED_RESULT;
-Status mkpath(CSlice path, int32 mode = 0700) WARN_UNUSED_RESULT;
-Status rename(CSlice from, CSlice to) WARN_UNUSED_RESULT;
-Result<string> realpath(CSlice slice) WARN_UNUSED_RESULT;
-Status chdir(CSlice dir) WARN_UNUSED_RESULT;
-Status rmdir(CSlice dir) WARN_UNUSED_RESULT;
-Status unlink(CSlice path) WARN_UNUSED_RESULT;
-Status set_temporary_dir(CSlice dir) WARN_UNUSED_RESULT;
+Status mkdir(CSlice dir, int32 mode = 0700) TD_WARN_UNUSED_RESULT;
+Status mkpath(CSlice path, int32 mode = 0700) TD_WARN_UNUSED_RESULT;
+Status rename(CSlice from, CSlice to) TD_WARN_UNUSED_RESULT;
+Result<string> realpath(CSlice slice) TD_WARN_UNUSED_RESULT;
+Status chdir(CSlice dir) TD_WARN_UNUSED_RESULT;
+Status rmdir(CSlice dir) TD_WARN_UNUSED_RESULT;
+Status unlink(CSlice path) TD_WARN_UNUSED_RESULT;
+Status set_temporary_dir(CSlice dir) TD_WARN_UNUSED_RESULT;
 CSlice get_temporary_dir();
-Result<std::pair<FileFd, string>> mkstemp(CSlice dir) WARN_UNUSED_RESULT;
-Result<string> mkdtemp(CSlice dir, Slice prefix) WARN_UNUSED_RESULT;
+Result<std::pair<FileFd, string>> mkstemp(CSlice dir) TD_WARN_UNUSED_RESULT;
+Result<string> mkdtemp(CSlice dir, Slice prefix) TD_WARN_UNUSED_RESULT;
 
 template <class Func>
-Status walk_path(CSlice path, Func &func) WARN_UNUSED_RESULT;
+Status walk_path(CSlice path, Func &func) TD_WARN_UNUSED_RESULT;
 
 #if TD_PORT_POSIX
 
 // TODO move details somewhere else
 namespace detail {
 template <class Func>
-Status walk_path_dir(string &path, FileFd fd, Func &&func) WARN_UNUSED_RESULT;
+Status walk_path_dir(string &path, FileFd fd, Func &&func) TD_WARN_UNUSED_RESULT;
 template <class Func>
-Status walk_path_dir(string &path, Func &&func) WARN_UNUSED_RESULT;
+Status walk_path_dir(string &path, Func &&func) TD_WARN_UNUSED_RESULT;
 template <class Func>
-Status walk_path_file(string &path, Func &&func) WARN_UNUSED_RESULT;
+Status walk_path_file(string &path, Func &&func) TD_WARN_UNUSED_RESULT;
 template <class Func>
-Status walk_path(string &path, Func &&func) WARN_UNUSED_RESULT;
+Status walk_path(string &path, Func &&func) TD_WARN_UNUSED_RESULT;
 
 template <class Func>
 Status walk_path_subdir(string &path, DIR *dir, Func &&func) {

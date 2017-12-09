@@ -87,10 +87,10 @@ class Fd {
   Flags get_flags() const;
 
   bool has_pending_error() const;
-  Status get_pending_error() WARN_UNUSED_RESULT;
+  Status get_pending_error() TD_WARN_UNUSED_RESULT;
 
-  Result<size_t> write(Slice slice) WARN_UNUSED_RESULT;
-  Result<size_t> read(MutableSlice slice) WARN_UNUSED_RESULT;
+  Result<size_t> write(Slice slice) TD_WARN_UNUSED_RESULT;
+  Result<size_t> read(MutableSlice slice) TD_WARN_UNUSED_RESULT;
 
   Status set_is_blocking(bool is_blocking);
 
@@ -98,14 +98,14 @@ class Fd {
   void update_flags_notify(Flags flags);
   void clear_flags(Flags flags);
 
-  Result<size_t> write_unsafe(Slice slice) WARN_UNUSED_RESULT;
+  Result<size_t> write_unsafe(Slice slice) TD_WARN_UNUSED_RESULT;
 
   int get_native_fd() const;
   int move_as_native_fd();
 #endif
 
 #if TD_PORT_WINDOWS
-  Result<Fd> accept() WARN_UNUSED_RESULT;
+  Result<Fd> accept() TD_WARN_UNUSED_RESULT;
   void connect(const IPAddress &addr);
 
   uint64 get_key() const;
