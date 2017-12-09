@@ -52,7 +52,7 @@ class OptionsParser {
 #else
     // use getopt. long keys are not supported for now
     char buff[1024];
-    StringBuilder sb(buff);
+    StringBuilder sb({buff, sizeof(buff)});
     for (auto &opt : options_) {
       CHECK(opt.type != Option::OptionalArg);
       sb << opt.short_key;
