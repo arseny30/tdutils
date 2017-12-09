@@ -381,11 +381,10 @@ void pbkdf2_sha256(Slice password, Slice salt, int iteration_count, MutableSlice
   HMAC_CTX_init(&ctx);
   unsigned char counter[4] = {0, 0, 0, 1};
   int password_len = narrow_cast<int>(password.size());
-  if (!HMAC_Init_ex(&ctx, password.data(), password_len, evp_md, NULL) ||
-      !HMAC_Update(&ctx, salt.ubegin(), narrow_cast<int>(salt.size())) || !HMAC_Update(&ctx, counter, 4) ||
-      !HMAC_Final(&ctx, dest.ubegin(), NULL)) {
-    LOG(FATAL) << "Failed to calculate HMAC";
-  }
+  HMAC_Init_ex(&ctx, password.data(), password_len, evp_md, NULL);
+  HMAC_Update(&ctx, salt.ubegin(), narrow_cast<int>(salt.size()));
+  HMAC_Update(&ctx, counter, 4);
+  HMAC_Final(&ctx, dest.ubegin(), NULL);
   HMAC_CTX_cleanup(&ctx);
 
   if (iteration_count > 1) {
