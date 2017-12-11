@@ -140,7 +140,7 @@ TEST(Crypto, crc32) {
 #endif
 
 TEST(Crypto, crc64) {
-  td::vector<td::uint64> answers{0, 3039664240384658157, 17549519902062861804, 8794730974279819706};
+  td::vector<td::uint64> answers{0, 3039664240384658157, 17549519902062861804u, 8794730974279819706};
 
   for (std::size_t i = 0; i < strings.size(); i++) {
     ASSERT_EQ(answers[i], td::crc64(strings[i]));
