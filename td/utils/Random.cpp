@@ -1,6 +1,7 @@
 #include "td/utils/Random.h"
 
 #include "td/utils/logging.h"
+#include "td/utils/misc.h"
 #include "td/utils/port/thread_local.h"
 
 #if TD_HAVE_OPENSSL
@@ -92,9 +93,12 @@ uint64 Random::fast_uint64() {
 }
 
 int Random::fast(int min, int max) {
-  CHECK(0 <= min);
+  if (min == std::numeric_limits<int>::min() && max == std::numeric_limits<int>::max()) {
+    // to prevent integer overflow and division by zero
+    min++;
+  }
   CHECK(min <= max);
-  return static_cast<int>(min + fast_uint32() % (max - min + 1));
+  return static_cast<int>(min + fast_uint32() % (max - min + 1));  // TODO signed_cast
 }
 
 }  // namespace td

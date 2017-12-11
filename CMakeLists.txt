@@ -184,19 +184,20 @@ set(TDUTILS_SOURCE
 )
 
 set(TDUTILS_TESTS_SOURCE
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/SharedObjectPool.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/MpmcWaiter.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/MpmcQueue.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/HazardPointers.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/MpscLinkQueue.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/crypto.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/filesystem.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/HazardPointers.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/heap.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/json.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/misc.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/pq.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/variant.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/MpmcQueue.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/MpmcWaiter.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/MpscLinkQueue.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/OrderedEventsProcessor.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/pq.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/SharedObjectPool.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/variant.cpp
   PARENT_SCOPE
 )
 
