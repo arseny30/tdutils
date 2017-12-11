@@ -1,6 +1,7 @@
 #include "td/utils/base64.h"
 #include "td/utils/common.h"
 #include "td/utils/crypto.h"
+#include "td/utils/Slice.h"
 #include "td/utils/tests.h"
 
 #include <limits>
@@ -9,19 +10,21 @@ static td::vector<td::string> strings{"", "1", "short test string", td::string(1
 
 #if TD_HAVE_OPENSSL
 TEST(Crypto, Sha256) {
-  auto s = td::rand_string(std::numeric_limits<char>::min(), std::numeric_limits<char>::max(), 10000);
-  td::UInt256 baseline;
-  td::sha256(s, td::MutableSlice(baseline.raw, 32));
+  for (auto length: {0, 1, 31, 32, 33, 9999, 10000, 10001, 999999, 1000001}) {
+    auto s = td::rand_string(std::numeric_limits<char>::min(), std::numeric_limits<char>::max(), length);
+    td::UInt256 baseline;
+    td::sha256(s, td::MutableSlice(baseline.raw, 32));
 
-  td::Sha256State state;
-  td::sha256_init(&state);
-  auto v = td::rand_split(s);
-  for (auto &x : v) {
-    td::sha256_update(x, &state);
+    td::Sha256State state;
+    td::sha256_init(&state);
+    auto v = td::rand_split(s);
+    for (auto &x : v) {
+      td::sha256_update(x, &state);
+    }
+    td::UInt256 result;
+    td::sha256_final(&state, td::MutableSlice(result.raw, 32));
+    ASSERT_TRUE(baseline == result);
   }
-  td::UInt256 result;
-  td::sha256_final(&state, td::MutableSlice(result.raw, 32));
-  ASSERT_TRUE(baseline == result);
 }
 
 TEST(Crypto, PBKDF) {

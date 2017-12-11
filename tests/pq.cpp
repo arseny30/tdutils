@@ -5,6 +5,7 @@
 #include "td/utils/crypto.h"
 #include "td/utils/format.h"
 #include "td/utils/logging.h"
+#include "td/utils/misc.h"
 
 #include <limits>
 #include <utility>
@@ -35,14 +36,10 @@ static std::vector<uint64> gen_primes(uint64 L, uint64 R, int limit = 0) {
 
 static std::vector<uint64> gen_primes() {
   std::vector<uint64> result;
-  auto A = gen_primes(1, 100);
-  auto B = gen_primes((1ull << 31) - 500000, std::numeric_limits<uint64>::max(), 5);
-  auto C = gen_primes((1ull << 32) - 500000, std::numeric_limits<uint64>::max(), 10);
-  auto D = gen_primes((1ull << 39) - 500000, std::numeric_limits<uint64>::max(), 1);
-  result.insert(result.end(), A.begin(), A.end());
-  result.insert(result.end(), B.begin(), B.end());
-  result.insert(result.end(), C.begin(), C.end());
-  result.insert(result.end(), D.begin(), D.end());
+  append(result, gen_primes(1, 100));
+  append(result, gen_primes((1ull << 31) - 500000, std::numeric_limits<uint64>::max(), 5));
+  append(result, gen_primes((1ull << 32) - 500000, std::numeric_limits<uint64>::max(), 5));
+  append(result, gen_primes((1ull << 39) - 500000, std::numeric_limits<uint64>::max(), 1));
   return result;
 }
 
