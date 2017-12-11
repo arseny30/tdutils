@@ -12,11 +12,9 @@ namespace td {
 class AesCtrByteFlow : public ByteFlowInplaceBase {
  public:
   void init(const UInt256 &key, const UInt128 &iv) {
-    key_ = key;
-    init_aes_ctr_state(key, iv, &state_);
+    state_.init(key, iv);
   }
-  void init(const UInt256 &key, AesCtrState &&state) {
-    key_ = key;
+  void init(AesCtrState &&state) {
     state_ = std::move(state);
   }
   AesCtrState move_aes_ctr_state() {
@@ -29,7 +27,7 @@ class AesCtrByteFlow : public ByteFlowInplaceBase {
       if (ready.empty()) {
         break;
       }
-      aes_ctr_encrypt(&state_, ready, MutableSlice(const_cast<char *>(ready.data()), ready.size()));
+      state_.encrypt(ready, MutableSlice(const_cast<char *>(ready.data()), ready.size()));
       input_->confirm_read(ready.size());
       output_.advance_end(ready.size());
       was_updated = true;
@@ -44,7 +42,6 @@ class AesCtrByteFlow : public ByteFlowInplaceBase {
   }
 
  private:
-  UInt256 key_;
   AesCtrState state_;
 };
 #endif

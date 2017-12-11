@@ -270,14 +270,14 @@ void aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, Mutabl
 }
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
-struct AesCtrStateImpl {
+struct AesCtrState::Impl {
  public:
-  AesCtrStateImpl() = default;
-  AesCtrStateImpl(const AesCtrStateImpl &) = delete;
-  AesCtrStateImpl &operator=(const AesCtrStateImpl &) = delete;
-  AesCtrStateImpl(AesCtrStateImpl &&other) = delete;
-  AesCtrStateImpl &operator=(AesCtrStateImpl &&other) = delete;
-  ~AesCtrStateImpl() {
+  Impl() = default;
+  Impl(const Impl &) = delete;
+  Impl &operator=(const Impl &) = delete;
+  Impl(Impl &&other) = delete;
+  Impl &operator=(Impl &&other) = delete;
+  ~Impl() {
     EVP_CIPHER_CTX_cleanup(&ctx_inner_);
   }
   EVP_CIPHER_CTX *get() {
@@ -288,9 +288,9 @@ struct AesCtrStateImpl {
   EVP_CIPHER_CTX ctx_inner_;
 };
 #else
-struct AesCtrStateImpl {
+struct AesCtrState::Impl {
  public:
-  AesCtrStateImpl() : ctx_(EVP_CIPHER_CTX_new(), &EVP_CIPHER_CTX_free) {
+  Impl() : ctx_(EVP_CIPHER_CTX_new(), &EVP_CIPHER_CTX_free) {
   }
   EVP_CIPHER_CTX *get() {
     return ctx_.get();
@@ -302,33 +302,29 @@ struct AesCtrStateImpl {
 #endif
 
 AesCtrState::AesCtrState() = default;
-AesCtrState::~AesCtrState() = default;
 AesCtrState::AesCtrState(AesCtrState &&from) = default;
 AesCtrState &AesCtrState::operator=(AesCtrState &&from) = default;
+AesCtrState::~AesCtrState() = default;
 
-void init_aes_ctr_state(const UInt256 &key, const UInt128 &iv, AesCtrState *state) {
-  state->ctx_ = std::make_unique<AesCtrStateImpl>();
-  int error;
-  error = EVP_EncryptInit_ex(state->ctx_->get(), EVP_aes_256_ctr(), nullptr, key.raw, iv.raw);
-  CHECK(error);
-  error = EVP_CIPHER_CTX_set_padding(state->ctx_->get(), 0);
+void AesCtrState::init(const UInt256 &key, const UInt128 &iv) {
+  ctx_ = std::make_unique<AesCtrState::Impl>();
 
-  // LOG(ERROR) << EVP_CIPHER_CTX_block_size(state->ctx_->get());
-  // LOG(ERROR) << EVP_CIPHER_CTX_key_length(state->ctx_->get());
-  // LOG(ERROR) << EVP_CIPHER_CTX_iv_length(state->ctx_->get());
-  CHECK(error);
+  int error = EVP_EncryptInit_ex(ctx_->get(), EVP_aes_256_ctr(), nullptr, key.raw, iv.raw);
+  CHECK(error != 0);
+  error = EVP_CIPHER_CTX_set_padding(ctx_->get(), 0);
+  CHECK(error != 0);
 }
 
-void aes_ctr_encrypt(AesCtrState *state, Slice from, MutableSlice to) {
+void AesCtrState::encrypt(Slice from, MutableSlice to) {
   int from_size = narrow_cast<int>(from.size());
   int to_size = narrow_cast<int>(to.size());
-  auto error = EVP_EncryptUpdate(state->ctx_->get(), to.ubegin(), &to_size, from.ubegin(), from_size);
+  auto error = EVP_EncryptUpdate(ctx_->get(), to.ubegin(), &to_size, from.ubegin(), from_size);
   CHECK(error);
   CHECK(to_size == from_size);
 }
 
-void aes_ctr_decrypt(AesCtrState *state, Slice from, MutableSlice to) {
-  aes_ctr_encrypt(state, from, to);  // it is the same as decrypt
+void AesCtrState::decrypt(Slice from, MutableSlice to) {
+  encrypt(from, to);  // it is the same as decrypt
 }
 
 void sha1(Slice data, unsigned char output[20]) {

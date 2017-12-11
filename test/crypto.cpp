@@ -10,7 +10,7 @@ static td::vector<td::string> strings{"", "1", "short test string", td::string(1
 
 #if TD_HAVE_OPENSSL
 TEST(Crypto, Sha256) {
-  for (auto length: {0, 1, 31, 32, 33, 9999, 10000, 10001, 999999, 1000001}) {
+  for (auto length : {0, 1, 31, 32, 33, 9999, 10000, 10001, 999999, 1000001}) {
     auto s = td::rand_string(std::numeric_limits<char>::min(), std::numeric_limits<char>::max(), length);
     td::UInt256 baseline;
     td::sha256(s, td::MutableSlice(baseline.raw, 32));

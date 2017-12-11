@@ -18,19 +18,25 @@ void aes_ige_decrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, Mutabl
 void aes_cbc_encrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to);
 void aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to);
 
-struct AesCtrStateImpl;
-struct AesCtrState {
+class AesCtrState {
+ public:
   AesCtrState();
+  AesCtrState(const AesCtrState &from) = delete;
+  AesCtrState &operator=(const AesCtrState &from) = delete;
   AesCtrState(AesCtrState &&from);
   AesCtrState &operator=(AesCtrState &&from);
   ~AesCtrState();
 
-  std::unique_ptr<AesCtrStateImpl> ctx_;
-};
+  void init(const UInt256 &key, const UInt128 &iv);
 
-void init_aes_ctr_state(const UInt256 &key, const UInt128 &iv, AesCtrState *state);
-void aes_ctr_encrypt(AesCtrState *state, Slice from, MutableSlice to);
-void aes_ctr_decrypt(AesCtrState *state, Slice from, MutableSlice to);
+  void encrypt(Slice from, MutableSlice to);
+
+  void decrypt(Slice from, MutableSlice to);
+
+ private:
+  struct Impl;
+  std::unique_ptr<Impl> ctx_;
+};
 
 void sha1(Slice data, unsigned char output[20]);
 

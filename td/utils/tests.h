@@ -143,7 +143,7 @@ class Stage {
 
 inline string rand_string(char from, char to, int len) {
   string res(len, 0);
-  for (auto &c:res) {
+  for (auto &c : res) {
     c = static_cast<char>(Random::fast(from, to));
   }
   return res;
