@@ -65,7 +65,7 @@ static std::vector<PqQuery> gen_pq_queries() {
   return res;
 }
 
-void test_pq(uint64 first, uint64 second) {
+static void test_pq(uint64 first, uint64 second) {
   BigNum p = BigNum::from_decimal(PSLICE() << first);
   BigNum q = BigNum::from_decimal(PSLICE() << second);
 

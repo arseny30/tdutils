@@ -5,6 +5,7 @@
 #include "td/utils/List.h"
 #include "td/utils/logging.h"
 #include "td/utils/port/thread.h"
+#include "td/utils/Random.h"
 #include "td/utils/Slice.h"
 #include "td/utils/Time.h"
 
@@ -139,6 +140,14 @@ class Stage {
  private:
   std::atomic<uint64> value_{0};
 };
+
+inline string rand_string(char from, char to, int len) {
+  string res(len, 0);
+  for (auto &c:res) {
+    c = static_cast<char>(Random::fast(from, to));
+  }
+  return res;
+}
 
 template <class T1, class T2>
 void assert_eq_impl(const T1 &expected, const T2 &got, const char *file, int line) {

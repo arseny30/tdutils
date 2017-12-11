@@ -13,6 +13,7 @@
 #include "td/utils/tests.h"
 
 #include <atomic>
+#include <limits>
 
 using namespace td;
 
@@ -107,14 +108,6 @@ TEST(Misc, errno_tls_bug) {
 #endif
 }
 
-static string rand_string(int from, int to, int len) {
-  string res(len, '\0');
-  for (int i = 0; i < len; i++) {
-    res[i] = static_cast<char>(Random::fast(from, to));
-  }
-  return res;
-}
-
 static std::vector<string> rand_split(string str) {
   std::vector<string> res;
   size_t pos = 0;
@@ -136,7 +129,7 @@ static std::vector<string> rand_split(string str) {
 
 #if TD_HAVE_OPENSSL
 TEST(Misc, Sha256) {
-  string s = rand_string(0, 255, 10000);
+  string s = rand_string(std::numeric_limits<char>::min(), std::numeric_limits<char>::max(), 10000);
   UInt256 baseline;
   sha256(s, MutableSlice(baseline.raw, 32));
 
@@ -155,7 +148,7 @@ TEST(Misc, Sha256) {
 TEST(Misc, base64) {
   for (int l = 0; l < 300000; l += l / 20 + 1) {
     for (int t = 0; t < 10; t++) {
-      string s = rand_string(0, 255, l);
+      string s = rand_string(std::numeric_limits<char>::min(), std::numeric_limits<char>::max(), l);
       string encoded = base64url_encode(s);
       auto decoded = base64url_decode(encoded);
       ASSERT_TRUE(decoded.is_ok());

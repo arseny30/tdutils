@@ -11,7 +11,7 @@ REGISTER_TESTS(json)
 
 using namespace td;
 
-void decode_encode(string str) {
+static void decode_encode(string str) {
   auto str_copy = str;
   auto r_value = json_decode(str_copy);
   ASSERT_TRUE(r_value.is_ok());
