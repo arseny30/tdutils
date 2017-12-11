@@ -149,6 +149,22 @@ inline string rand_string(char from, char to, int len) {
   return res;
 }
 
+inline std::vector<string> rand_split(string str) {
+  std::vector<string> res;
+  size_t pos = 0;
+  while (pos < str.size()) {
+    size_t len;
+    if (Random::fast(0, 1) == 1) {
+      len = Random::fast(1, 10);
+    } else {
+      len = Random::fast(100, 200);
+    }
+    res.push_back(str.substr(pos, len));
+    pos += len;
+  }
+  return res;
+}
+
 template <class T1, class T2>
 void assert_eq_impl(const T1 &expected, const T2 &got, const char *file, int line) {
   CHECK(expected == got) << tag("expected", expected) << tag("got", got) << " in " << file << " at line " << line;

@@ -108,25 +108,6 @@ TEST(Misc, errno_tls_bug) {
 #endif
 }
 
-static std::vector<string> rand_split(string str) {
-  std::vector<string> res;
-  size_t pos = 0;
-  while (pos < str.size()) {
-    size_t len;
-    if (Random::fast(0, 1)) {
-      len = Random::fast(1, 10);
-    } else {
-      len = Random::fast(100, 200);
-    }
-    if (len > str.size() - pos) {
-      len = str.size() - pos;
-    }
-    res.push_back(str.substr(pos, len));
-    pos += len;
-  }
-  return res;
-}
-
 #if TD_HAVE_OPENSSL
 TEST(Misc, Sha256) {
   string s = rand_string(std::numeric_limits<char>::min(), std::numeric_limits<char>::max(), 10000);
