@@ -10,10 +10,10 @@ static td::vector<td::string> strings{"", "1", "short test string", td::string(1
 
 #if TD_HAVE_OPENSSL
 TEST(Crypto, AesCtrState) {
-  td::vector<td::uint32> answers1{0,         1141589763, 596296607,  3673001485, 2302125528,
-                                  330967191, 2047392231, 3537459563, 307747798,  2149598133};
-  td::vector<td::uint32> answers2{0,         2053451992, 1384063362, 3266188502, 2893295118,
-                                  780356167, 1904947434, 2043402406, 472080809,  1807109488};
+  td::vector<td::uint32> answers1{0u,         1141589763u, 596296607u,  3673001485u, 2302125528u,
+                                  330967191u, 2047392231u, 3537459563u, 307747798u,  2149598133u};
+  td::vector<td::uint32> answers2{0u,         2053451992u, 1384063362u, 3266188502u, 2893295118u,
+                                  780356167u, 1904947434u, 2043402406u, 472080809u,  1807109488u};
 
   std::size_t i = 0;
   for (auto length : {0, 1, 31, 32, 33, 9999, 10000, 10001, 999999, 1000001}) {
@@ -143,7 +143,7 @@ TEST(Crypto, md5) {
 
 #if TD_HAVE_ZLIB
 TEST(Crypto, crc32) {
-  td::vector<td::uint32> answers{0, 2212294583, 3013144151, 3693461436};
+  td::vector<td::uint32> answers{0u, 2212294583u, 3013144151u, 3693461436u};
 
   for (std::size_t i = 0; i < strings.size(); i++) {
     ASSERT_EQ(answers[i], td::crc32(strings[i]));
@@ -152,7 +152,7 @@ TEST(Crypto, crc32) {
 #endif
 
 TEST(Crypto, crc64) {
-  td::vector<td::uint64> answers{0, 3039664240384658157, 17549519902062861804u, 8794730974279819706};
+  td::vector<td::uint64> answers{0ull, 3039664240384658157ull, 17549519902062861804ull, 8794730974279819706ull};
 
   for (std::size_t i = 0; i < strings.size(); i++) {
     ASSERT_EQ(answers[i], td::crc64(strings[i]));
