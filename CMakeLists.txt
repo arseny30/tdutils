@@ -214,7 +214,7 @@ endif()
 target_link_libraries(tdutils PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(tdutils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 
-if (OPENSSL_FOUND) 
+if (OPENSSL_FOUND)
   target_link_libraries(tdutils PRIVATE ${OPENSSL_CRYPTO_LIBRARY})
   if (NOT WIN32)
     target_link_libraries(tdutils PRIVATE dl z)
@@ -233,4 +233,3 @@ install(TARGETS tdutils EXPORT TdTargets
    RUNTIME DESTINATION bin
    INCLUDES DESTINATION include
 )
-
