@@ -8,7 +8,6 @@
 #include "td/utils/port/Stat.h"
 #include "td/utils/port/thread.h"
 #include "td/utils/Random.h"
-#include "td/utils/Slice.h"
 #include "td/utils/tests.h"
 
 #include <atomic>

@@ -10,8 +10,11 @@ static td::vector<td::string> strings{"", "1", "short test string", td::string(1
 
 #if TD_HAVE_OPENSSL
 TEST(Crypto, AesCtrState) {
-  td::vector<td::uint32> answers{0,         1141589763, 596296607,  3673001485, 2302125528,
-                                 330967191, 2047392231, 3537459563, 307747798,  2149598133};
+  td::vector<td::uint32> answers1{0,         1141589763, 596296607,  3673001485, 2302125528,
+                                  330967191, 2047392231, 3537459563, 307747798,  2149598133};
+  td::vector<td::uint32> answers2{0,         2053451992, 1384063362, 3266188502, 2893295118,
+                                  780356167, 1904947434, 2043402406, 472080809,  1807109488};
+
   std::size_t i = 0;
   for (auto length : {0, 1, 31, 32, 33, 9999, 10000, 10001, 999999, 1000001}) {
     td::uint32 seed = length;
@@ -24,22 +27,31 @@ TEST(Crypto, AesCtrState) {
     td::UInt256 key;
     for (auto &c : key.raw) {
       seed = seed * 123457567u + 987651241u;
-      c = static_cast<char>((seed >> 23) & 255);
+      c = (seed >> 23) & 255;
     }
     td::UInt128 iv;
     for (auto &c : iv.raw) {
       seed = seed * 123457567u + 987651241u;
-      c = static_cast<char>((seed >> 23) & 255);
+      c = (seed >> 23) & 255;
     }
 
     td::AesCtrState state;
     state.init(key, iv);
     td::string t(length, '\0');
     state.encrypt(s, t);
-    ASSERT_EQ(answers[i++], td::crc32(t));
+    ASSERT_EQ(answers1[i], td::crc32(t));
     state.init(key, iv);
     state.decrypt(t, t);
     ASSERT_STREQ(s, t);
+
+    for (auto &c : iv.raw) {
+      c = 0xFF;
+    }
+    state.init(key, iv);
+    state.encrypt(s, t);
+    ASSERT_EQ(answers2[i], td::crc32(t));
+
+    i++;
   }
 }
 
