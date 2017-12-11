@@ -9,7 +9,41 @@
 static td::vector<td::string> strings{"", "1", "short test string", td::string(1000000, 'a')};
 
 #if TD_HAVE_OPENSSL
-TEST(Crypto, Sha256) {
+TEST(Crypto, AesCtrState) {
+  td::vector<td::uint32> answers{0,         1141589763, 596296607,  3673001485, 2302125528,
+                                 330967191, 2047392231, 3537459563, 307747798,  2149598133};
+  std::size_t i = 0;
+  for (auto length : {0, 1, 31, 32, 33, 9999, 10000, 10001, 999999, 1000001}) {
+    td::uint32 seed = length;
+    td::string s(length, '\0');
+    for (auto &c : s) {
+      seed = seed * 123457567u + 987651241u;
+      c = static_cast<char>((seed >> 23) & 255);
+    }
+
+    td::UInt256 key;
+    for (auto &c : key.raw) {
+      seed = seed * 123457567u + 987651241u;
+      c = static_cast<char>((seed >> 23) & 255);
+    }
+    td::UInt128 iv;
+    for (auto &c : iv.raw) {
+      seed = seed * 123457567u + 987651241u;
+      c = static_cast<char>((seed >> 23) & 255);
+    }
+
+    td::AesCtrState state;
+    state.init(key, iv);
+    td::string t(length, '\0');
+    state.encrypt(s, t);
+    ASSERT_EQ(answers[i++], td::crc32(t));
+    state.init(key, iv);
+    state.decrypt(t, t);
+    ASSERT_STREQ(s, t);
+  }
+}
+
+TEST(Crypto, Sha256State) {
   for (auto length : {0, 1, 31, 32, 33, 9999, 10000, 10001, 999999, 1000001}) {
     auto s = td::rand_string(std::numeric_limits<char>::min(), std::numeric_limits<char>::max(), length);
     td::UInt256 baseline;
