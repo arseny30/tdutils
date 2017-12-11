@@ -8,17 +8,17 @@ REGISTER_TESTS(variant);
 using namespace td;
 
 static const size_t BUF_SIZE = 1024 * 1024;
-char buf[BUF_SIZE], buf2[BUF_SIZE];
-StringBuilder sb(MutableSlice(buf, BUF_SIZE - 1));
-StringBuilder sb2(MutableSlice(buf2, BUF_SIZE - 1));
+static char buf[BUF_SIZE], buf2[BUF_SIZE];
+static StringBuilder sb(MutableSlice(buf, BUF_SIZE - 1));
+static StringBuilder sb2(MutableSlice(buf2, BUF_SIZE - 1));
 
-std::string move_sb() {
+static std::string move_sb() {
   auto res = sb.as_cslice().str();
   sb.clear();
   return res;
 }
 
-std::string name(int id) {
+static std::string name(int id) {
   if (id == 1) {
     return "A";
   }
