@@ -219,7 +219,7 @@ static void signal_safe_write_data(Slice data) {
     }
   }
 #elif TD_PORT_WINDOWS
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
   HANDLE stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
   DWORD bytes_written;
   WriteFile(stderr_handle, data.data(), static_cast<DWORD>(data.size()), &bytes_written, nullptr);

@@ -999,7 +999,7 @@ HANDLE Fd::get_io_handle() const {
   return impl_->get_io_handle();
 }
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 Fd &Fd::Stderr() {
   static auto handle = GetStdHandle(STD_ERROR_HANDLE);
   LOG_IF(FATAL, handle == INVALID_HANDLE_VALUE) << "Failed to get stderr";
