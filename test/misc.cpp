@@ -156,4 +156,3 @@ TEST(Misc, to_integer) {
   ASSERT_EQ(to_integer_safe<uint64>("12345678910111213").ok(), 12345678910111213ull);
   ASSERT_TRUE(to_integer_safe<uint64>("-12345678910111213").is_error());
 }
-

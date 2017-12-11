@@ -183,21 +183,21 @@ set(TDUTILS_SOURCE
   td/utils/Variant.h
 )
 
-set(TDUTILS_TESTS_SOURCE
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/crypto.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/filesystem.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/HazardPointers.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/heap.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/json.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/misc.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/MpmcQueue.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/MpmcWaiter.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/MpscLinkQueue.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/OrderedEventsProcessor.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/pq.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/SharedObjectPool.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/variant.cpp
+set(TDUTILS_TEST_SOURCE
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/crypto.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/filesystem.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/gzip.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/HazardPointers.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/heap.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/json.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/misc.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/MpmcQueue.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/MpmcWaiter.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/MpscLinkQueue.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/OrderedEventsProcessor.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/pq.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/SharedObjectPool.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/variant.cpp
   PARENT_SCOPE
 )
 

@@ -1,7 +1,6 @@
 #include "td/utils/Random.h"
 
 #include "td/utils/logging.h"
-#include "td/utils/misc.h"
 #include "td/utils/port/thread_local.h"
 
 #if TD_HAVE_OPENSSL
