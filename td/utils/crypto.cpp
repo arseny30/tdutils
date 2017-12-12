@@ -271,35 +271,35 @@ void aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, Mutabl
 
 struct AesCtrState::Impl {
  public:
-   Impl(const UInt256 &key, const UInt128 &iv) {
-     if (AES_set_encrypt_key(key.raw, 256, &aes_key) < 0) {
-       LOG(FATAL) << "Failed to set encrypt key";
-     }
-     MutableSlice(counter, AES_BLOCK_SIZE).copy_from({iv.raw, AES_BLOCK_SIZE});
-     current_pos = 0;
-   }
+  Impl(const UInt256 &key, const UInt128 &iv) {
+    if (AES_set_encrypt_key(key.raw, 256, &aes_key) < 0) {
+      LOG(FATAL) << "Failed to set encrypt key";
+    }
+    MutableSlice(counter, AES_BLOCK_SIZE).copy_from({iv.raw, AES_BLOCK_SIZE});
+    current_pos = 0;
+  }
 
-   void encrypt(Slice from, MutableSlice to) {
-     CHECK(to.size() >= from.size());
-     for (size_t i = 0; i < from.size(); i++) {
-       if (current_pos == 0) {
-         AES_encrypt(counter, encrypted_counter, &aes_key);
-         for (int j = 15; j >= 0; j--) {
-           if (++counter[j] != 0) {
-             break;
-           }
-         }
-       }
-       to[i] = from[i] ^ encrypted_counter[current_pos];
-       current_pos = (current_pos + 1) & 15;
-     }
-   }
+  void encrypt(Slice from, MutableSlice to) {
+    CHECK(to.size() >= from.size());
+    for (size_t i = 0; i < from.size(); i++) {
+      if (current_pos == 0) {
+        AES_encrypt(counter, encrypted_counter, &aes_key);
+        for (int j = 15; j >= 0; j--) {
+          if (++counter[j] != 0) {
+            break;
+          }
+        }
+      }
+      to[i] = from[i] ^ encrypted_counter[current_pos];
+      current_pos = (current_pos + 1) & 15;
+    }
+  }
 
  private:
-   AES_KEY aes_key;
-   uint8 counter[AES_BLOCK_SIZE];
-   uint8 encrypted_counter[AES_BLOCK_SIZE];
-   uint8 current_pos;
+  AES_KEY aes_key;
+  uint8 counter[AES_BLOCK_SIZE];
+  uint8 encrypted_counter[AES_BLOCK_SIZE];
+  uint8 current_pos;
 };
 
 AesCtrState::AesCtrState() = default;
