@@ -233,11 +233,13 @@ int pq_factorize(Slice pq_str, string *p_str, string *q_str) {
 /*** AES ***/
 static void aes_ige_xcrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag) {
   AES_KEY key;
+  int err;
   if (encrypt_flag) {
-    AES_set_encrypt_key(aes_key.raw, 256, &key);
+    err = AES_set_encrypt_key(aes_key.raw, 256, &key);
   } else {
-    AES_set_decrypt_key(aes_key.raw, 256, &key);
+    err = AES_set_decrypt_key(aes_key.raw, 256, &key);
   }
+  LOG_IF(FATAL, err != 0);
   CHECK(from.size() <= to.size());
   AES_ige_encrypt(from.ubegin(), to.ubegin(), from.size(), &key, aes_iv->raw, encrypt_flag);
 }
@@ -252,11 +254,13 @@ void aes_ige_decrypt(const UInt256 &aes_key, UInt256 *aes_iv, Slice from, Mutabl
 
 static void aes_cbc_xcrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, MutableSlice to, bool encrypt_flag) {
   AES_KEY key;
+  int err;
   if (encrypt_flag) {
-    AES_set_encrypt_key(aes_key.raw, 256, &key);
+    err = AES_set_encrypt_key(aes_key.raw, 256, &key);
   } else {
-    AES_set_decrypt_key(aes_key.raw, 256, &key);
+    err = AES_set_decrypt_key(aes_key.raw, 256, &key);
   }
+  LOG_IF(FATAL, err != 0);
   CHECK(from.size() <= to.size());
   AES_cbc_encrypt(from.ubegin(), to.ubegin(), from.size(), &key, aes_iv->raw, encrypt_flag);
 }
@@ -320,12 +324,14 @@ void AesCtrState::decrypt(Slice from, MutableSlice to) {
 }
 
 void sha1(Slice data, unsigned char output[20]) {
-  SHA1(data.ubegin(), data.size(), output);
+  auto result = SHA1(data.ubegin(), data.size(), output);
+  CHECK(result == output);
 }
 
 void sha256(Slice data, MutableSlice output) {
   CHECK(output.size() >= 32);
-  SHA256(data.ubegin(), data.size(), output.ubegin());
+  auto result = SHA256(data.ubegin(), data.size(), output.ubegin());
+  CHECK(result == output.ubegin());
 }
 
 struct Sha256StateImpl {
@@ -339,29 +345,36 @@ Sha256State::~Sha256State() = default;
 
 void sha256_init(Sha256State *state) {
   state->impl = std::make_unique<Sha256StateImpl>();
-  SHA256_Init(&state->impl->ctx);
+  int err = SHA256_Init(&state->impl->ctx);
+  LOG_IF(FATAL, err != 1);
 }
+
 void sha256_update(Slice data, Sha256State *state) {
   CHECK(state->impl);
-  SHA256_Update(&state->impl->ctx, data.ubegin(), data.size());
+  int err = SHA256_Update(&state->impl->ctx, data.ubegin(), data.size());
+  LOG_IF(FATAL, err != 1);
 }
+
 void sha256_final(Sha256State *state, MutableSlice output) {
   CHECK(output.size() >= 32);
   CHECK(state->impl);
-  SHA256_Final(output.ubegin(), &state->impl->ctx);
+  int err = SHA256_Final(output.ubegin(), &state->impl->ctx);
+  LOG_IF(FATAL, err != 1);
   state->impl.reset();
 }
 
 /*** md5 ***/
 void md5(Slice input, MutableSlice output) {
   CHECK(output.size() >= MD5_DIGEST_LENGTH);
-  MD5(input.ubegin(), input.size(), output.ubegin());
+  auto result = MD5(input.ubegin(), input.size(), output.ubegin());
+  CHECK(result == output.ubegin());
 }
 
 void pbkdf2_sha256(Slice password, Slice salt, int iteration_count, MutableSlice dest) {
   CHECK(dest.size() == 256 / 8) << dest.size();
   CHECK(iteration_count > 0);
   auto evp_md = EVP_sha256();
+  CHECK(evp_md != nullptr);
 #if OPENSSL_VERSION_NUMBER < 0x10000000L
   HMAC_CTX ctx;
   HMAC_CTX_init(&ctx);
@@ -386,16 +399,19 @@ void pbkdf2_sha256(Slice password, Slice salt, int iteration_count, MutableSlice
     }
   }
 #else
-  PKCS5_PBKDF2_HMAC(password.data(), narrow_cast<int>(password.size()), salt.ubegin(), narrow_cast<int>(salt.size()),
-                    iteration_count, evp_md, narrow_cast<int>(dest.size()), dest.ubegin());
+  int err = PKCS5_PBKDF2_HMAC(password.data(), narrow_cast<int>(password.size()), salt.ubegin(),
+                              narrow_cast<int>(salt.size()), iteration_count, evp_md, narrow_cast<int>(dest.size()),
+                              dest.ubegin());
+  LOG_IF(FATAL, err != 1);
 #endif
 }
 
 void hmac_sha256(Slice key, Slice message, MutableSlice dest) {
   CHECK(dest.size() == 256 / 8);
   unsigned int len = 0;
-  HMAC(EVP_sha256(), key.ubegin(), narrow_cast<int>(key.size()), message.ubegin(), narrow_cast<int>(message.size()),
-       dest.ubegin(), &len);
+  auto result = HMAC(EVP_sha256(), key.ubegin(), narrow_cast<int>(key.size()), message.ubegin(),
+                     narrow_cast<int>(message.size()), dest.ubegin(), &len);
+  CHECK(result == dest.ubegin());
   CHECK(len == dest.size());
 }
 

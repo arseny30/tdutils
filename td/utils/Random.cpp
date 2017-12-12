@@ -40,7 +40,7 @@ void Random::secure_bytes(unsigned char *ptr, size_t size) {
   if (size < buf_size) {
     int err = RAND_bytes(buf, static_cast<int>(buf_size));
     // TODO: it CAN fail
-    CHECK(err == 1);
+    LOG_IF(FATAL, err != 1);
     buf_pos = size;
     std::memcpy(ptr, buf, size);
     return;
@@ -49,7 +49,7 @@ void Random::secure_bytes(unsigned char *ptr, size_t size) {
   CHECK(size <= static_cast<size_t>(std::numeric_limits<int>::max()));
   int err = RAND_bytes(ptr, static_cast<int>(size));
   // TODO: it CAN fail
-  CHECK(err == 1);
+  LOG_IF(FATAL, err != 1);
 }
 
 int32 Random::secure_int32() {
