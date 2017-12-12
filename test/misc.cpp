@@ -19,6 +19,7 @@ using namespace td;
 TEST(Misc, update_atime_saves_mtime) {
   SET_VERBOSITY_LEVEL(VERBOSITY_NAME(ERROR));
   std::string name = "test_file";
+  unlink(name).ignore();
   auto r_file = FileFd::open(name, FileFd::Read | FileFd::Flags::Create | FileFd::Flags::Truncate);
   LOG_IF(ERROR, r_file.is_error()) << r_file.error();
   ASSERT_TRUE(r_file.is_ok());
@@ -48,6 +49,7 @@ TEST(Misc, update_atime_saves_mtime) {
 TEST(Misc, update_atime_change_atime) {
   SET_VERBOSITY_LEVEL(VERBOSITY_NAME(ERROR));
   std::string name = "test_file";
+  unlink(name).ignore();
   auto r_file = FileFd::open(name, FileFd::Read | FileFd::Flags::Create | FileFd::Flags::Truncate);
   LOG_IF(ERROR, r_file.is_error()) << r_file.error();
   ASSERT_TRUE(r_file.is_ok());
