@@ -49,7 +49,6 @@ class OrderedEventsProcessor {
       }
     } else {
       auto pos = static_cast<size_t>(seq_no - offset_);
-      CHECK(pos <= 10000) << "pos = " << pos << ", seq_no = " << seq_no << ", offset_seq_no = " << offset_;
       auto need_size = pos + 1;
       if (data_array_.size() < need_size) {
         data_array_.resize(need_size);
