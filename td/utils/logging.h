@@ -243,7 +243,6 @@ class Stringify {
 
 class TsLog : public LogInterface {
  public:
-  TsLog() = default;
   explicit TsLog(LogInterface *log) : log_(log) {
   }
   void init(LogInterface *log) {
