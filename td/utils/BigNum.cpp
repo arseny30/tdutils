@@ -42,7 +42,7 @@ class BigNum::Impl {
 
   Impl() : Impl(BN_new()) {
   }
-  Impl(BIGNUM *big_num) : big_num(big_num) {
+  explicit Impl(BIGNUM *big_num) : big_num(big_num) {
     LOG_IF(FATAL, big_num == nullptr);
   }
   Impl(const Impl &other) = delete;
