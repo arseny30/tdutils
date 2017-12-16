@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 
-# Generate files for mime type <-> extension conversions
+# Generates files for MIME type <-> extension conversions
 # DEPENDS ON: gperf grep bash/powershell
 
 file(MAKE_DIRECTORY auto)

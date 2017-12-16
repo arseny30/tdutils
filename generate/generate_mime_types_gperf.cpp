@@ -93,13 +93,13 @@ int main(int argc, char *argv[]) {
     std::tie(mime_type, extensions_string) = split(line, '\t');
 
     if (mime_type.empty()) {
-      std::cerr << "Wrong mime type description \"" << line << "\"" << std::endl;
+      std::cerr << "Wrong MIME type description \"" << line << "\"" << std::endl;
       continue;
     }
 
     auto extensions_start_position = extensions_string.find_first_not_of(" \t");
     if (extensions_start_position == std::string::npos) {
-      std::cerr << "Wrong mime type description \"" << line << "\"" << std::endl;
+      std::cerr << "Wrong MIME type description \"" << line << "\"" << std::endl;
       continue;
     }
     extensions_string = extensions_string.substr(extensions_start_position);
@@ -121,7 +121,7 @@ int main(int argc, char *argv[]) {
     }
     if (mime_type_to_extension.emplace_hint(mime_type_to_extension.end(), mime_type, extensions[index])->second !=
         extensions[index]) {
-      std::cerr << "Mime type \"" << mime_type << "\" has more than one extensions list" << std::endl;
+      std::cerr << "MIME type \"" << mime_type << "\" has more than one extensions list" << std::endl;
     }
 
     for (auto &extension : extensions) {

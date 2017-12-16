@@ -17,7 +17,7 @@ string MimeType::to_extension(Slice mime_type, Slice default_value) {
     return result;
   }
 
-  LOG(INFO) << "Unknown file mime type " << mime_type;
+  LOG(INFO) << "Unknown file MIME type " << mime_type;
   return default_value.str();
 }
 
