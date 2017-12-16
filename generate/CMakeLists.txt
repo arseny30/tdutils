@@ -34,26 +34,26 @@ if (NOT CMAKE_CROSSCOMPILING)
   )
 
   if (WIN32)
-    set(MimeToExtentionCmd powershell -ExecutionPolicy ByPass \" & gperf -m100 --output-file=auto/mime_type_to_extension.cpp auto/mime_type_to_extension.gperf\")
+    set(MIME_TYPE_TO_EXTENSION_CMD powershell -ExecutionPolicy ByPass \" & gperf -m100 --output-file=auto/mime_type_to_extension.cpp auto/mime_type_to_extension.gperf\")
   else()
-    set(MimeToExtentionCmd gperf -m100 auto/mime_type_to_extension.gperf | grep -v __gnu_inline__ > auto/mime_type_to_extension.cpp)
+    set(MIME_TYPE_TO_EXTENSION_CMD gperf -m100 auto/mime_type_to_extension.gperf | grep -v __gnu_inline__ > auto/mime_type_to_extension.cpp)
   endif()
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/auto/mime_type_to_extension.cpp
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND ${MimeToExtentionCmd}
+    COMMAND ${MIME_TYPE_TO_EXTENSION_CMD}
     DEPENDS auto/mime_type_to_extension.gperf
   )
 
   if (WIN32)
-    set(ExtentionToMimeCmd powershell -ExecutionPolicy ByPass \" & gperf -m100 --output-file=auto/extension_to_mime_type.cpp auto/extension_to_mime_type.gperf\")
+    set(EXTENSION_TO_MIME_TYPE_CMD powershell -ExecutionPolicy ByPass \" & gperf -m100 --output-file=auto/extension_to_mime_type.cpp auto/extension_to_mime_type.gperf\")
   else()
-    set(ExtentionToMimeCmd gperf -m100 auto/extension_to_mime_type.gperf | grep -v __gnu_inline__ > auto/extension_to_mime_type.cpp)
+    set(EXTENSION_TO_MIME_TYPE_CMD gperf -m100 auto/extension_to_mime_type.gperf | grep -v __gnu_inline__ > auto/extension_to_mime_type.cpp)
   endif()
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/auto/extension_to_mime_type.cpp
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND ${ExtentionToMimeCmd}
+    COMMAND ${EXTENSION_TO_MIME_TYPE_CMD}
     DEPENDS auto/extension_to_mime_type.gperf
   )
 endif()
