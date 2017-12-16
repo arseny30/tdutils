@@ -219,12 +219,12 @@ if (OPENSSL_FOUND)
   if (NOT WIN32)
     target_link_libraries(tdutils PRIVATE dl z)
   endif()
-  target_include_directories(tdutils PRIVATE ${OPENSSL_INCLUDE_DIR})
+  target_include_directories(tdutils SYSTEM PRIVATE ${OPENSSL_INCLUDE_DIR})
 endif()
 
 if (ZLIB_FOUND)
   target_link_libraries(tdutils PRIVATE ${ZLIB_LIBRARIES})
-  target_include_directories(tdutils PRIVATE ${ZLIB_INCLUDE_DIR})
+  target_include_directories(tdutils SYSTEM PRIVATE ${ZLIB_INCLUDE_DIR})
 endif()
 
 install(TARGETS tdutils EXPORT TdTargets
