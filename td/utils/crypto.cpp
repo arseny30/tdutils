@@ -294,7 +294,7 @@ struct AesCtrState::Impl {
           }
         }
       }
-      to[i] = from[i] ^ encrypted_counter[current_pos];
+      to[i] = static_cast<char>(from[i] ^ encrypted_counter[current_pos]);
       current_pos = (current_pos + 1) & 15;
     }
   }
