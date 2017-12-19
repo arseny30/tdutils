@@ -380,17 +380,17 @@ void pbkdf2_sha256(Slice password, Slice salt, int iteration_count, MutableSlice
   HMAC_CTX_init(&ctx);
   unsigned char counter[4] = {0, 0, 0, 1};
   int password_len = narrow_cast<int>(password.size());
-  HMAC_Init_ex(&ctx, password.data(), password_len, evp_md, NULL);
+  HMAC_Init_ex(&ctx, password.data(), password_len, evp_md, nullptr);
   HMAC_Update(&ctx, salt.ubegin(), narrow_cast<int>(salt.size()));
   HMAC_Update(&ctx, counter, 4);
-  HMAC_Final(&ctx, dest.ubegin(), NULL);
+  HMAC_Final(&ctx, dest.ubegin(), nullptr);
   HMAC_CTX_cleanup(&ctx);
 
   if (iteration_count > 1) {
     unsigned char buf[32];
     std::copy(dest.ubegin(), dest.uend(), buf);
     for (int iter = 1; iter < iteration_count; iter++) {
-      if (HMAC(evp_md, password.data(), password_len, buf, 32, buf, NULL) == nullptr) {
+      if (HMAC(evp_md, password.data(), password_len, buf, 32, buf, nullptr) == nullptr) {
         LOG(FATAL) << "Failed to HMAC";
       }
       for (int i = 0; i < 32; i++) {
