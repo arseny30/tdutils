@@ -10,7 +10,6 @@
 
 namespace td {
 class SliceStorer : public Storer {
- private:
   Slice slice;
 
  public:
@@ -30,7 +29,6 @@ inline SliceStorer create_storer(Slice slice) {
 }
 
 class ConcatStorer : public Storer {
- private:
   const Storer &a_;
   const Storer &b_;
 

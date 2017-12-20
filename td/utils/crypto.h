@@ -34,7 +34,7 @@ class AesCtrState {
   void decrypt(Slice from, MutableSlice to);
 
  private:
-  struct Impl;
+  class Impl;
   std::unique_ptr<Impl> ctx_;
 };
 

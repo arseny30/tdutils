@@ -14,7 +14,6 @@ namespace td {
 
 // TODO move implementation to cpp
 class FileLog : public LogInterface {
- private:
   static constexpr int DEFAULT_ROTATE_THRESHOLD = 10 * (1 << 20);
 
  public:

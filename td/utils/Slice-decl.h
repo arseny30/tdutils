@@ -9,7 +9,6 @@ namespace td {
 class Slice;
 
 class MutableSlice {
- private:
   char *s_;
   size_t len_;
 
@@ -57,7 +56,6 @@ class MutableSlice {
 };
 
 class Slice {
- private:
   const char *s_;
   size_t len_;
 

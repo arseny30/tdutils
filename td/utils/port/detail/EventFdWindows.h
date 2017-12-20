@@ -13,7 +13,6 @@ namespace td {
 namespace detail {
 
 class EventFdWindows final : public EventFdBase {
- private:
   Fd fd_;
 
  public:

@@ -67,7 +67,6 @@ string winerror_to_string(int code);
 #endif
 
 class Status {
- private:
   enum class ErrorType : int8 { general, os };
 
  public:

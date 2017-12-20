@@ -45,7 +45,6 @@ class BufferedFdBase : public FdT {
 
 template <class FdT>
 class BufferedFd : public BufferedFdBase<FdT> {
- private:
   using Parent = BufferedFdBase<FdT>;
   ChainBufferWriter input_writer_;
   ChainBufferReader input_reader_;

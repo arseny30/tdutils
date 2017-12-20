@@ -63,7 +63,6 @@ class MpmcWaiter {
 
  private:
   struct State {
-   public:
     static constexpr uint32 awake() {
       return 0;
     }

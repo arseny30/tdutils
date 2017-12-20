@@ -273,7 +273,7 @@ void aes_cbc_decrypt(const UInt256 &aes_key, UInt128 *aes_iv, Slice from, Mutabl
   aes_cbc_xcrypt(aes_key, aes_iv, from, to, false);
 }
 
-struct AesCtrState::Impl {
+class AesCtrState::Impl {
  public:
   Impl(const UInt256 &key, const UInt128 &iv) {
     if (AES_set_encrypt_key(key.raw, 256, &aes_key) < 0) {

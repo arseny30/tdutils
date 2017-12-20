@@ -14,7 +14,6 @@ class SpinLock {
   };
 
   class InfBackoff {
-   private:
     int cnt = 0;
 
    public:

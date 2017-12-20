@@ -13,7 +13,6 @@ namespace td {
 namespace detail {
 
 class EventFdLinux final : public EventFdBase {
- private:
   Fd fd_;
 
  public:

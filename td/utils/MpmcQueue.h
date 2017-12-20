@@ -18,7 +18,6 @@ namespace td {
 
 namespace detail {
 struct MpmcStat {
- public:
   void alloc_ok(size_t thread_id) {
     s(thread_id).alloc_ok_cnt++;
   }

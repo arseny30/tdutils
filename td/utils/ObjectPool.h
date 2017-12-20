@@ -16,7 +16,6 @@ namespace td {
 //
 template <class DataT>
 class ObjectPool {
- private:
   struct Storage;
 
  public:

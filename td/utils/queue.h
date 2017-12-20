@@ -18,7 +18,6 @@ namespace td {
 
 namespace detail {
 class Backoff {
- private:
   int cnt = 0;
 
  public:
@@ -39,7 +38,6 @@ class Backoff {
 };
 
 class InfBackoff {
- private:
   int cnt = 0;
 
  public:

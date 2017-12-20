@@ -32,7 +32,6 @@ class MpscLinkQueueImpl {
   }
 
   class Node {
-   private:
     friend class MpscLinkQueueImpl;
     Node *next_{nullptr};
   };
