@@ -4,6 +4,8 @@ char disable_linker_warning_about_empty_file_wstring_convert_cpp TD_UNUSED;
 
 #if TD_PORT_WINDOWS
 
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+
 #include "td/utils/port/wstring_convert.h"
 
 #include <codecvt>
