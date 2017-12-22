@@ -5,6 +5,7 @@
 
 #include <map>
 #include <unordered_map>
+#include <utility>
 
 namespace td {
 
@@ -22,14 +23,15 @@ class Hints {
 
   void set_rating(KeyT key, RatingT rating);
 
-  vector<KeyT> search(Slice query, int32 limit,
-                      bool return_all_for_empty_query = false) const;  // TODO sort by name instead of sort by rating
+  std::pair<size_t, vector<KeyT>> search(
+      Slice query, int32 limit,
+      bool return_all_for_empty_query = false) const;  // TODO sort by name instead of sort by rating
 
   bool has_key(KeyT key) const;
 
   string key_to_string(KeyT key) const;
 
-  vector<KeyT> search_empty(int32 limit) const;  // == search("", limit, true)
+  std::pair<size_t, vector<KeyT>> search_empty(int32 limit) const;  // == search("", limit, true)
 
   size_t size() const;
 

@@ -236,7 +236,7 @@ Result<size_t> FileFd::read(MutableSlice slice) {
 
 Result<size_t> FileFd::pwrite(Slice slice, int64 offset) {
   if (offset < 0) {
-    return Status::Error("Offset should be non-negative");
+    return Status::Error("Offset must be non-negative");
   }
 #if TD_PORT_POSIX
   TRY_RESULT(offset_off_t, narrow_cast_safe<off_t>(offset));
@@ -275,7 +275,7 @@ Result<size_t> FileFd::pwrite(Slice slice, int64 offset) {
 
 Result<size_t> FileFd::pread(MutableSlice slice, int64 offset) {
   if (offset < 0) {
-    return Status::Error("Offset should be non-negative");
+    return Status::Error("Offset must be non-negative");
   }
 #if TD_PORT_POSIX
   TRY_RESULT(offset_off_t, narrow_cast_safe<off_t>(offset));

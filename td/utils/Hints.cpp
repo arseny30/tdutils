@@ -110,12 +110,12 @@ vector<Hints::KeyT> Hints::search_word(const string &word) const {
   return results;
 }
 
-vector<Hints::KeyT> Hints::search(Slice query, int32 limit, bool return_all_for_empty_query) const {
+std::pair<size_t, vector<Hints::KeyT>> Hints::search(Slice query, int32 limit, bool return_all_for_empty_query) const {
   // LOG(ERROR) << "Search " << query;
   vector<KeyT> results;
 
-  if (limit <= 0) {
-    return results;
+  if (limit < 0) {
+    return {key_to_name_.size(), std::move(results)};
   }
 
   auto words = get_words(query);
@@ -151,14 +151,15 @@ vector<Hints::KeyT> Hints::search(Slice query, int32 limit, bool return_all_for_
     results.resize(new_results_size);
   }
 
-  if (results.size() < static_cast<size_t>(limit)) {
+  auto total_size = results.size();
+  if (total_size < static_cast<size_t>(limit)) {
     std::sort(results.begin(), results.end(), CompareByRating(key_to_rating_));
   } else {
     std::partial_sort(results.begin(), results.begin() + limit, results.end(), CompareByRating(key_to_rating_));
     results.resize(limit);
   }
 
-  return results;
+  return {total_size, std::move(results)};
 }
 
 bool Hints::has_key(KeyT key) const {
@@ -173,7 +174,7 @@ string Hints::key_to_string(KeyT key) const {
   return it->second;
 }
 
-vector<Hints::KeyT> Hints::search_empty(int32 limit) const {
+std::pair<size_t, vector<Hints::KeyT>> Hints::search_empty(int32 limit) const {
   return search(Slice(), limit, true);
 }
 
