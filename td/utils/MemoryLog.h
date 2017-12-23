@@ -27,7 +27,7 @@ class MemoryLog : public LogInterface {
     size_t slice_size = slice.size();
     CHECK(slice_size * 3 < buffer_size);
     size_t pad_size = ((slice_size + 15) & ~15) - slice_size;
-    size_t magic_size = 16;
+    constexpr size_t magic_size = 16;
     uint32 total_size = static_cast<uint32>(slice_size + pad_size + magic_size);
     uint32 real_pos = pos_.fetch_add(total_size, std::memory_order_relaxed);
     CHECK((total_size & 15) == 0);
@@ -46,7 +46,7 @@ class MemoryLog : public LogInterface {
     }
 
     CHECK((start_pos & 15) == 0);
-    CHECK(start_pos + magic_size <= buffer_size);
+    CHECK(start_pos <= buffer_size - magic_size);
     buffer_[start_pos] = '\n';
     size_t printed = std::snprintf(&buffer_[start_pos + 1], magic_size - 1, "LOG:%08x: ", real_pos);
     CHECK(printed == magic_size - 2);
