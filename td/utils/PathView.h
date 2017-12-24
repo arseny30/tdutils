@@ -61,7 +61,7 @@ class PathView {
   }
 
   bool is_absolute() const {
-    return !empty() && is_slash(path_[0]);
+    return !empty() && (is_slash(path_[0]) || (path_.size() >= 3 && path_[1] == ':' && is_slash(path_[2])));
   }
 
   bool is_relative() const {
