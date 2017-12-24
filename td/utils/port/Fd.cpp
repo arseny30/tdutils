@@ -96,11 +96,13 @@ Fd::Fd(Fd &&other) {
 }
 
 Fd &Fd::operator=(Fd &&other) {
-  // with this check this may be equal &other
-  CHECK(empty());
-  fd_ = other.fd_;
-  mode_ = other.mode_;
-  other.fd_ = -1;
+  if (this != &other) {
+    close();
+
+    fd_ = other.fd_;
+    mode_ = other.mode_;
+    other.fd_ = -1;
+  }
   return *this;
 }
 

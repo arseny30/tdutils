@@ -49,6 +49,7 @@ class FileLog : public LogInterface {
   }
 
   void init(string path, int64 rotate_threshold = DEFAULT_ROTATE_THRESHOLD) {
+    fd_.close();
     path_ = std::move(path);
 
     auto r_fd = FileFd::open(path_, FileFd::Create | FileFd::Write | FileFd::Append);
