@@ -211,7 +211,9 @@ if (NOT CMAKE_CROSSCOMPILING)
   add_dependencies(tdutils tdmime_auto)
 endif()
 
-target_link_libraries(tdutils PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+if (DEFINED CMAKE_THREAD_LIBS_INIT)
+  target_link_libraries(tdutils PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+endif()
 target_include_directories(tdutils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 
 if (OPENSSL_FOUND)
