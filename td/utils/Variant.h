@@ -230,6 +230,7 @@ class Variant {
   int32 get_offset() const {
     return offset_;
   }
+
  private:
   union {
     int64 align_;
