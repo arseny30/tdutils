@@ -49,6 +49,7 @@ static void init_base64_table() {
     }
     return true;
   }();
+  CHECK(is_inited);
 }
 
 Result<string> base64_decode(Slice base64) {
@@ -133,6 +134,7 @@ static void init_base64url_table() {
     }
     return true;
   }();
+  CHECK(is_inited);
 }
 
 Result<string> base64url_decode(Slice base64) {
@@ -214,13 +216,13 @@ static bool is_base64_impl(Slice input) {
   }
 
   if ((input.size() & 3) == 2) {
-    auto value = table[input.back()];
+    auto value = table[static_cast<int>(input.back())];
     if ((value & 15) != 0) {
       return false;
     }
   }
   if ((input.size() & 3) == 3) {
-    auto value = table[input.back()];
+    auto value = table[static_cast<int>(input.back())];
     if ((value & 3) != 0) {
       return false;
     }
