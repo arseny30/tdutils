@@ -2,6 +2,9 @@
 
 #include "td/utils/port/config.h"
 
+#include "td/utils/format.h"
+#include "td/utils/logging.h"
+
 #if TD_PORT_POSIX
 #include <signal.h>
 #include <sys/mman.h>
@@ -16,9 +19,6 @@
 #include <cstring>
 #include <ctime>
 #include <limits>
-
-#include "td/utils/format.h"
-#include "td/utils/logging.h"
 
 namespace td {
 
