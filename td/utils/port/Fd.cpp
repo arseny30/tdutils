@@ -280,7 +280,7 @@ Result<size_t> Fd::write_unsafe(Slice slice) {
   if (write_res >= 0) {
     return narrow_cast<size_t>(write_res);
   }
-  return Status::PosixError(write_errno, PSLICE("Write to [fd=%d] has failed", native_fd));
+  return Status::PosixError(write_errno, PSLICE() << "Write to fd " << native_fd << " has failed");
 }
 
 Result<size_t> Fd::write(Slice slice) {
@@ -300,7 +300,7 @@ Result<size_t> Fd::write(Slice slice) {
     return 0;
   }
 
-  auto error = Status::PosixError(write_errno, PSLICE("Write to [fd=%d] has failed", native_fd));
+  auto error = Status::PosixError(write_errno, PSLICE() << "Write to fd " << native_fd << " has failed");
   switch (write_errno) {
     case EBADF:
     case ENXIO:
@@ -346,7 +346,7 @@ Result<size_t> Fd::read(MutableSlice slice) {
     clear_flags(Read);
     return 0;
   }
-  auto error = Status::PosixError(read_errno, PSLICE("Read from [fd=%d] has failed", native_fd));
+  auto error = Status::PosixError(read_errno, PSLICE() << "Read from fd " << native_fd << " has failed");
   switch (read_errno) {
     case EISDIR:
     case EBADF:
