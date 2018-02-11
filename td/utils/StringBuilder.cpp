@@ -1,6 +1,7 @@
 #include "td/utils/StringBuilder.h"
 
 #include "td/utils/misc.h"
+#include "td/utils/port/thread_local.h"
 
 #include <cstdio>
 #include <locale>
