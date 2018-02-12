@@ -8,6 +8,7 @@
 #include <mutex>
 
 namespace td {
+
 class MpmcWaiter {
  public:
   int wait(int yields, uint32 worker_id) {
@@ -95,4 +96,5 @@ class MpmcWaiter {
     }
   }
 };
+
 }  // namespace td

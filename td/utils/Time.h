@@ -4,7 +4,6 @@
 #include "td/utils/port/Clocks.h"
 
 #include <atomic>
-#include <cmath>
 
 namespace td {
 
@@ -77,9 +76,7 @@ class Timestamp {
     }
   }
 
-  friend bool operator==(Timestamp a, Timestamp b) {
-    return std::abs(a.at() - b.at()) < 1e-6;
-  }
+  friend bool operator==(Timestamp a, Timestamp b);
 
  private:
   double at_{0};
