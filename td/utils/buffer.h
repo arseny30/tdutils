@@ -5,7 +5,6 @@
 #include "td/utils/port/thread_local.h"
 #include "td/utils/Slice.h"
 
-#include <algorithm>
 #include <atomic>
 #include <cstring>
 #include <limits>
@@ -464,7 +463,7 @@ class ChainBufferIterator {
       skipped += ready.size();
 
       // copy to dest if possible
-      auto to_dest_size = std::min(ready.size(), dest.size());
+      auto to_dest_size = min(ready.size(), dest.size());
       if (to_dest_size != 0) {
         std::memcpy(dest.data(), ready.data(), to_dest_size);
         dest.remove_prefix(to_dest_size);
@@ -582,7 +581,7 @@ class ChainBufferReader {
   }
 
   BufferSlice read_as_buffer_slice(size_t limit = std::numeric_limits<size_t>::max()) {
-    return begin_.read_as_buffer_slice(std::min(limit, size()));
+    return begin_.read_as_buffer_slice(min(limit, size()));
   }
 
  private:
@@ -643,7 +642,7 @@ class ChainBufferWriter {
   void append(Slice slice) {
     while (!slice.empty()) {
       auto ready = prepare_append(slice.size());
-      auto shift = std::min(ready.size(), slice.size());
+      auto shift = min(ready.size(), slice.size());
       std::memcpy(ready.data(), slice.data(), shift);
       confirm_append(shift);
       slice.remove_prefix(shift);

@@ -3,8 +3,6 @@
 #include "td/utils/common.h"
 #include "td/utils/TimedStat.h"
 
-#include <algorithm>
-
 namespace td {
 
 class FloodControlFast {
@@ -13,7 +11,7 @@ class FloodControlFast {
     for (auto &limit : limits_) {
       limit.stat_.add_event(CounterStat::Event(), now);
       if (limit.stat_.get_stat(now).count_ > limit.count_) {
-        wakeup_at_ = std::max(wakeup_at_, now + limit.duration_ * 2);
+        wakeup_at_ = max(wakeup_at_, now + limit.duration_ * 2);
       }
     }
     return wakeup_at_;

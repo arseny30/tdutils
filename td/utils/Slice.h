@@ -4,7 +4,6 @@
 
 #include "td/utils/logging.h"
 
-#include <algorithm>
 #include <cstring>
 
 namespace td {
@@ -90,7 +89,7 @@ inline MutableSlice MutableSlice::substr(size_t from) const {
 }
 inline MutableSlice MutableSlice::substr(size_t from, size_t size) const {
   CHECK(from <= len_);
-  return MutableSlice(s_ + from, std::min(size, len_ - from));
+  return MutableSlice(s_ + from, min(size, len_ - from));
 }
 
 inline size_t MutableSlice::find(char c) const {
@@ -211,7 +210,7 @@ inline Slice Slice::substr(size_t from) const {
 }
 inline Slice Slice::substr(size_t from, size_t size) const {
   CHECK(from <= len_);
-  return Slice(s_ + from, std::min(size, len_ - from));
+  return Slice(s_ + from, min(size, len_ - from));
 }
 
 inline size_t Slice::find(char c) const {
