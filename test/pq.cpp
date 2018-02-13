@@ -7,6 +7,7 @@
 #include "td/utils/logging.h"
 #include "td/utils/misc.h"
 
+#include <algorithm>
 #include <limits>
 #include <utility>
 
