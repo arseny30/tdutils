@@ -1,7 +1,4 @@
 #include "td/utils/Enumerator.h"
-#include "td/utils/logging.h"
-#include "td/utils/port/thread.h"
-#include "td/utils/Random.h"
 #include "td/utils/tests.h"
 
 TEST(Enumerator, simple) {
