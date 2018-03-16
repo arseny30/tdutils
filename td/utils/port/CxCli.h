@@ -17,7 +17,6 @@
 
 #define REF_NEW ref new
 #define CLRCALL
-#define CXCONST
 
 namespace CxCli {
 
@@ -87,7 +86,6 @@ inline String^ string_from_unmanaged(const std::string &from) {
 
 #define REF_NEW gcnew
 #define CLRCALL __clrcall
-#define CXCONST
 
 namespace CxCli {
 
