@@ -7,6 +7,7 @@
 #include <openssl/rand.h>
 #endif
 
+#include <array>
 #include <cstring>
 #include <limits>
 #include <random>
