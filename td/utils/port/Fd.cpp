@@ -352,12 +352,12 @@ Result<size_t> Fd::read(MutableSlice slice) {
     case ENXIO:
     case EFAULT:
     case EINVAL:
-    case ENOTCONN:
       LOG(FATAL) << error;
       UNREACHABLE();
     default:
       LOG(WARNING) << error;
     // fallthrough
+    case ENOTCONN:
     case EIO:
     case ENOBUFS:
     case ENOMEM:
