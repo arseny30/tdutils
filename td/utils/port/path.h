@@ -13,6 +13,7 @@
 #include <utility>
 
 #if TD_PORT_POSIX
+#include <limits.h>
 #include <dirent.h>
 #include <sys/types.h>
 #endif
