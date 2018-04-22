@@ -52,7 +52,7 @@ void Select::unsubscribe(const Fd &fd) {
       fds_.pop_back();
       break;
     } else {
-      it++;
+      ++it;
     }
   }
 }
