@@ -172,6 +172,7 @@ bool IPAddress::is_valid() const {
 }
 
 const sockaddr *IPAddress::get_sockaddr() const {
+  CHECK(is_valid());
   return &sockaddr_;
 }
 
@@ -193,7 +194,11 @@ int IPAddress::get_address_family() const {
 }
 
 bool IPAddress::is_ipv4() const {
-  return get_address_family() == AF_INET;
+  return is_valid() && get_address_family() == AF_INET;
+}
+
+bool IPAddress::is_ipv6() const {
+  return is_valid() && get_address_family() == AF_INET6;
 }
 
 uint32 IPAddress::get_ipv4() const {
@@ -455,7 +460,7 @@ void IPAddress::set_port(int port) {
 
 bool operator==(const IPAddress &a, const IPAddress &b) {
   if (!a.is_valid() || !b.is_valid()) {
-    return false;
+    return !a.is_valid() && !b.is_valid();
   }
   if (a.get_address_family() != b.get_address_family()) {
     return false;
@@ -474,8 +479,8 @@ bool operator==(const IPAddress &a, const IPAddress &b) {
 }
 
 bool operator<(const IPAddress &a, const IPAddress &b) {
-  if (a.is_valid() != b.is_valid()) {
-    return a.is_valid() < b.is_valid();
+  if (!a.is_valid() || !b.is_valid()) {
+    return !a.is_valid() && b.is_valid();
   }
   if (a.get_address_family() != b.get_address_family()) {
     return a.get_address_family() < b.get_address_family();
