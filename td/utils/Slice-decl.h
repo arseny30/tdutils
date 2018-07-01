@@ -2,7 +2,6 @@
 
 #include "td/utils/common.h"
 
-#include <cstddef>
 #include <type_traits>
 
 namespace td {
