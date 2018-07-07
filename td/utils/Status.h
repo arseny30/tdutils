@@ -144,7 +144,6 @@ class Status {
 #endif
         break;
       default:
-        LOG(FATAL) << "Unknown status type: " << static_cast<int8>(info.error_type);
         UNREACHABLE();
         break;
     }
@@ -212,7 +211,6 @@ class Status {
         return winerror_to_string(info.error_code);
 #endif
       default:
-        LOG(FATAL) << "Unknown status type: " << static_cast<int8>(info.error_type);
         UNREACHABLE();
         return "";
     }
