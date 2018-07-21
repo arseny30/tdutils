@@ -8,6 +8,7 @@
 #include <utility>
 
 namespace td {
+
 class Guard {
  public:
   Guard() = default;
