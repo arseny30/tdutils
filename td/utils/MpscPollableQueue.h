@@ -14,9 +14,11 @@
 
 namespace td {
 // interface like in PollableQueue
-template <class ValueT>
+template <class T>
 class MpscPollableQueue {
  public:
+  using ValueType = T;
+
   int reader_wait_nonblock() {
     auto ready = reader_vector_.size() - reader_pos_;
     if (ready != 0) {
@@ -35,13 +37,13 @@ class MpscPollableQueue {
       return narrow_cast<int>(reader_vector_.size());
     }
   }
-  ValueT reader_get_unsafe() {
+  ValueType reader_get_unsafe() {
     return std::move(reader_vector_[reader_pos_++]);
   }
   void reader_flush() {
     //nop
   }
-  void writer_put(ValueT value) {
+  void writer_put(ValueType value) {
     auto guard = lock_.lock();
     writer_vector_.push_back(std::move(value));
     if (wait_event_fd_) {
@@ -89,8 +91,8 @@ class MpscPollableQueue {
   SpinLock lock_;
   bool wait_event_fd_{false};
   EventFd event_fd_;
-  std::vector<ValueT> writer_vector_;
-  std::vector<ValueT> reader_vector_;
+  std::vector<ValueType> writer_vector_;
+  std::vector<ValueType> reader_vector_;
   size_t reader_pos_{0};
 };
 
