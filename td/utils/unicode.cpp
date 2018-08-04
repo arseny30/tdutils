@@ -1144,7 +1144,7 @@ static uint32 binary_search_ranges(const int32 (&ranges)[N], uint32 code) {
     case 2:
       return ((code - 1) | 1);
     default:
-      UNREACHABLE();
+      LOG(FATAL) << code << " " << l << " " << r << " " << t;
       return 0;
   }
 }
