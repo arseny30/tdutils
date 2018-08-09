@@ -6,6 +6,7 @@
 
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
+#include "td/utils/StringBuilder.h"
 
 namespace td {
 
@@ -99,6 +100,8 @@ class BigNum {
 
   explicit BigNum(unique_ptr<Impl> &&impl);
 };
+
+StringBuilder &operator<<(StringBuilder &sb, const BigNum &bn);
 
 }  // namespace td
 
