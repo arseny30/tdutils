@@ -1,14 +1,16 @@
 #pragma once
 
+#if 0
 #include "td/utils/port/config.h"
 
 #include "td/utils/common.h"
 #include "td/utils/Slice.h"
+#include "td/utils/format.h"
 #include "td/utils/Status.h"
 
-#if TD_PORT_WINDOWS
 #include "td/utils/port/IPAddress.h"
 
+#if TD_PORT_WINDOWS
 #include <memory>
 #endif
 
@@ -43,6 +45,21 @@ class Fd {
     None = 0
   };
   using Flags = int32;
+
+  class FlagsSet {
+   public:
+    bool write_flags(Flags flags);
+    bool write_flags_local(Flags flags);
+    bool flush() const;
+    Flags read_flags() const;
+    Flags read_flags_local() const;
+    void clear_flags(Flags flags);
+    void clear();
+
+   private:
+    mutable std::atomic<Flags> to_write_;
+    mutable Flags flags_;
+  };
   enum class Mode { Reference, Owner };
 
   Fd();
@@ -85,9 +102,13 @@ class Fd {
 
   void update_flags(Flags flags);
 
+  void after_notify();
+
   Flags get_flags() const;
+  Flags get_flags_local() const;
 
   bool has_pending_error() const;
+  bool has_pending_error_local() const;
   Status get_pending_error() TD_WARN_UNUSED_RESULT;
 
   Result<size_t> write(Slice slice) TD_WARN_UNUSED_RESULT;
@@ -126,7 +147,7 @@ class Fd {
 #if TD_PORT_POSIX
   struct Info {
     std::atomic<int> refcnt;
-    int32 flags;
+    FlagsSet flags;
     ObserverBase *observer;
   };
   struct InfoSet {
@@ -195,7 +216,7 @@ auto skip_eintr_cstr(F &&f) {
 
 template <class FdT>
 bool can_read(const FdT &fd) {
-  return (fd.get_flags() & Fd::Read) != 0;
+  return (fd.get_flags() & (Fd::Read | Fd::Error)) != 0;
 }
 
 template <class FdT>
@@ -208,13 +229,5 @@ bool can_close(const FdT &fd) {
   return (fd.get_flags() & Fd::Close) != 0;
 }
 
-namespace detail {
-#if TD_PORT_POSIX
-Status set_native_socket_is_blocking(int fd, bool is_blocking);
-#endif
-#if TD_PORT_WINDOWS
-Status set_native_socket_is_blocking(SOCKET fd, bool is_blocking);
-#endif
-}  // namespace detail
-
 }  // namespace td
+#endif

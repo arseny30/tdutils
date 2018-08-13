@@ -106,6 +106,7 @@ class Slice {
 
 bool operator==(const Slice &a, const Slice &b);
 bool operator!=(const Slice &a, const Slice &b);
+bool operator<(const Slice &a, const Slice &b);
 
 class MutableCSlice : public MutableSlice {
   struct private_tag {};

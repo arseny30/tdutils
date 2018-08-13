@@ -202,7 +202,7 @@ class ByteFlowSink : public ByteFlowInterface {
     CHECK(buffer_ == nullptr);
     buffer_ = input;
   }
-  void set_parent(ByteFlowInterface &parent) final {
+  void set_parent(ByteFlowInterface & /*parent*/) final {
     UNREACHABLE();
   }
   void close_input(Status status) final {
@@ -248,7 +248,7 @@ class ByteFlowMoveSink : public ByteFlowInterface {
     CHECK(!input_);
     input_ = input;
   }
-  void set_parent(ByteFlowInterface &parent) final {
+  void set_parent(ByteFlowInterface & /*parent*/) final {
     UNREACHABLE();
   }
   void close_input(Status status) final {
