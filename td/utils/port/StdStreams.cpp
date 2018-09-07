@@ -1,11 +1,13 @@
 #include "td/utils/port/StdStreams.h"
 
+#include "td/utils/port/detail/NativeFd.h"
+
 namespace td {
 
 namespace {
 template <class T>
 FileFd create(T handle) {
-  return FileFd::from_native_fd(NativeFd(handle, true)).move_as_ok();
+  return FileFd::from_native_fd(NativeFd(handle, true));
 }
 }  // namespace
 FileFd &Stdin() {

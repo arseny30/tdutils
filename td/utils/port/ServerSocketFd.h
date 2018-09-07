@@ -1,6 +1,7 @@
 #pragma once
 
-#include "td/utils/port/Fd.h"
+#include "td/utils/port/detail/NativeFd.h"
+#include "td/utils/port/detail/PollableFd.h"
 #include "td/utils/port/SocketFd.h"
 
 #include "td/utils/Slice.h"

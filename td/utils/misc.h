@@ -278,8 +278,8 @@ string url_encode(Slice str);
 
 namespace detail {
 template <class T, class U>
-struct is_same_signedness : public std::integral_constant<bool, std::is_signed<T>::value == std::is_signed<U>::value> {
-};
+struct is_same_signedness
+    : public std::integral_constant<bool, std::is_signed<T>::value == std::is_signed<U>::value> {};
 
 template <class T, class Enable = void>
 struct safe_undeflying_type {
@@ -344,6 +344,7 @@ bool is_aligned_pointer(const T *pointer) {
   return (reinterpret_cast<std::uintptr_t>(static_cast<const void *>(pointer)) & (Alignment - 1)) == 0;
 }
 
+namespace detail {
 template <typename T>
 struct reversion_wrapper {
   T &iterable;
@@ -358,9 +359,10 @@ template <typename T>
 auto end(reversion_wrapper<T> w) {
   return rend(w.iterable);
 }
+}  // namespace detail
 
 template <typename T>
-reversion_wrapper<T> reversed(T &&iterable) {
+detail::reversion_wrapper<T> reversed(T &iterable) {
   return {iterable};
 }
 

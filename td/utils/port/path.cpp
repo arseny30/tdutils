@@ -1,7 +1,5 @@
 #include "td/utils/port/path.h"
 
-#include "td/utils/port/Fd.h"
-
 #if TD_WINDOWS
 #include "td/utils/Random.h"
 #endif

@@ -1,19 +1,25 @@
 #pragma once
-#include "td/utils/port/UdpSocketFd.h"
 
 #include "td/utils/buffer.h"
 #include "td/utils/optional.h"
+#include "td/utils/port/detail/PollableFd.h"
+#include "td/utils/port/thread_local.h"
+#include "td/utils/port/UdpSocketFd.h"
+#include "td/utils/Span.h"
 #include "td/utils/VectorQueue.h"
 
+#include <array>
+
 namespace td {
+
 #if TD_PORT_POSIX
 namespace detail {
 class UdpWriter {
  public:
-  static Status write_once(UdpSocketFd& fd, VectorQueue<UdpMessage>& queue) TD_WARN_UNUSED_RESULT {
+  static Status write_once(UdpSocketFd &fd, VectorQueue<UdpMessage> &queue) TD_WARN_UNUSED_RESULT {
     std::array<UdpSocketFd::OutboundMessage, 16> messages;
     auto to_send = queue.as_span();
-    size_t to_send_n = std::min(messages.size(), to_send.size());
+    size_t to_send_n = td::min(messages.size(), to_send.size());
     to_send.truncate(to_send_n);
     for (size_t i = 0; i < to_send_n; i++) {
       messages[i].to = &to_send[i].address;
@@ -29,7 +35,7 @@ class UdpWriter {
 
 class UdpReaderHelper {
  public:
-  void init_inbound_message(UdpSocketFd::InboundMessage& message) {
+  void init_inbound_message(UdpSocketFd::InboundMessage &message) {
     message.from = &message_.address;
     message.error = &message_.error;
     if (buffer_.size() < MAX_PACKET_SIZE) {
@@ -39,7 +45,7 @@ class UdpReaderHelper {
     message.data = buffer_.as_slice().truncate(MAX_PACKET_SIZE);
   }
 
-  UdpMessage extract_udp_message(UdpSocketFd::InboundMessage& message) {
+  UdpMessage extract_udp_message(UdpSocketFd::InboundMessage &message) {
     message_.data = buffer_.from_slice(message.data);
     auto size = message_.data.size();
     size = (size + 7) & ~7;
@@ -54,7 +60,7 @@ class UdpReaderHelper {
   BufferSlice buffer_;
 };
 
-//One for thread is enough
+// One for thread is enough
 class UdpReader {
  public:
   UdpReader() {
@@ -62,7 +68,7 @@ class UdpReader {
       helpers_[i].init_inbound_message(messages_[i]);
     }
   }
-  Status read_once(UdpSocketFd& fd, VectorQueue<UdpMessage>& queue) TD_WARN_UNUSED_RESULT {
+  Status read_once(UdpSocketFd &fd, VectorQueue<UdpMessage> &queue) TD_WARN_UNUSED_RESULT {
     for (size_t i = 0; i < messages_.size(); i++) {
       CHECK(messages_[i].data.size() == 2048);
     }
@@ -75,7 +81,6 @@ class UdpReader {
     for (size_t i = cnt; i < messages_.size(); i++) {
       CHECK(messages_[i].data.size() == 2048)
           << " cnt = " << cnt << " i = " << i << " size = " << messages_[i].data.size() << " status = " << status;
-      ;
     }
     if (status.is_error() && !UdpSocketFd::is_critical_read_error(status)) {
       queue.push(UdpMessage{{}, {}, std::move(status)});
@@ -95,7 +100,7 @@ class UdpReader {
 
 class BufferedUdp : public UdpSocketFd {
  public:
-  BufferedUdp(UdpSocketFd fd) : UdpSocketFd(std::move(fd)) {
+  explicit BufferedUdp(UdpSocketFd fd) : UdpSocketFd(std::move(fd)) {
   }
 
 #if TD_PORT_POSIX
@@ -126,8 +131,8 @@ class BufferedUdp : public UdpSocketFd {
     return std::move(as_fd());
   }
 
-  UdpSocketFd& as_fd() {
-    return *static_cast<UdpSocketFd*>(this);
+  UdpSocketFd &as_fd() {
+    return *static_cast<UdpSocketFd *>(this);
   }
 
  private:
@@ -135,10 +140,10 @@ class BufferedUdp : public UdpSocketFd {
   VectorQueue<UdpMessage> input_;
   VectorQueue<UdpMessage> output_;
 
-  VectorQueue<UdpMessage>& input() {
+  VectorQueue<UdpMessage> &input() {
     return input_;
   }
-  VectorQueue<UdpMessage>& output() {
+  VectorQueue<UdpMessage> &output() {
     return output_;
   }
 
@@ -151,7 +156,8 @@ class BufferedUdp : public UdpSocketFd {
     return udp_reader_->read_once(as_fd(), input_);
   }
 
-  static TD_THREAD_LOCAL detail::UdpReader* udp_reader_;
+  static TD_THREAD_LOCAL detail::UdpReader *udp_reader_;
 #endif
 };
+
 }  // namespace td

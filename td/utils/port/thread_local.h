@@ -44,7 +44,7 @@ void do_init_thread_local(P &raw_ptr, ArgsT &&... args) {
     ptr.reset();
     raw_ptr = nullptr;
   }));
-}  // namespace detail
+}
 }  // namespace detail
 
 template <class T, class P, class... ArgsT>
