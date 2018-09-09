@@ -318,6 +318,7 @@ inline const NativeFd &PollableFd::native_fd() const {
 }
 
 #if TD_PORT_POSIX
+namespace detail {
 template <class F>
 auto skip_eintr(F &&f) {
   decltype(f()) res;
@@ -337,6 +338,7 @@ auto skip_eintr_cstr(F &&f) {
   } while (res == nullptr && errno == EINTR);
   return res;
 }
+}  // namespace detail
 #endif
 
 template <class FdT>
