@@ -1,6 +1,7 @@
 #include "td/utils/tests.h"
 
 #include "td/utils/buffer.h"
+#include "td/utils/Random.h"
 
 using namespace td;
 

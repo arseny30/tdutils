@@ -17,7 +17,6 @@
 #include <errno.h>
 
 #include <atomic>
-#include <type_traits>
 #endif
 
 namespace td {
