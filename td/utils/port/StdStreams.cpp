@@ -84,7 +84,6 @@ class BufferedStdinImpl {
   td::thread read_thread_;
   std::atomic<bool> close_flag_{false};
 
-
   void read_loop() {
     while (!close_flag_) {
       auto slice = writer_.prepare_append();
@@ -100,7 +99,7 @@ class BufferedStdinImpl {
   }
 
   Result<size_t> read(MutableSlice slice) {
-    auto native_fd = info_.native_fd().io_handle();
+    auto native_fd = info_.native_fd().fd();
     DWORD bytes_read = 0;
     auto res = ReadFile(native_fd, slice.data(), narrow_cast<DWORD>(slice.size()), &bytes_read, nullptr);
     if (res) {
@@ -108,7 +107,6 @@ class BufferedStdinImpl {
     }
     return OS_ERROR(PSLICE() << "Read from [fd = " << native_fd << "] has failed");
   }
-
 };
 void BufferedStdinImplDeleter::operator()(BufferedStdinImpl *impl) {
   impl->close();
