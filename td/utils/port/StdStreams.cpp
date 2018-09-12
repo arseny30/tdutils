@@ -35,7 +35,6 @@ static FileFd &get_file_fd() {
   static FileFd result = FileFd::from_native_fd(NativeFd(handle, true));
 #else
   static FileFd result;
-  result = FileFd();
 #endif
   return result;
 }
