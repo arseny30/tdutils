@@ -16,7 +16,6 @@ class SocketFdImplDeleter {
  public:
   void operator()(SocketFdImpl *impl);
 };
-class EventFdBsd;
 }  // namespace detail
 
 class SocketFd {
@@ -46,12 +45,6 @@ class SocketFd {
 
  private:
   std::unique_ptr<detail::SocketFdImpl, detail::SocketFdImplDeleter> impl_;
-
-  PollableFdInfo &poll_info();
-
-  friend class ServerSocketFd;
-  friend class detail::EventFdBsd;
-
   explicit SocketFd(std::unique_ptr<detail::SocketFdImpl> impl);
 };
 
