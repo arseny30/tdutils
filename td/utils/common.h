@@ -37,10 +37,9 @@
 // clang-format on
 
 #include "td/utils/int_types.h"
+#include "td/utils/unique_ptr.h"
 
-#include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #define TD_DEBUG
@@ -92,11 +91,6 @@ using string = std::string;
 
 template <class ValueT>
 using vector = std::vector<ValueT>;
-
-template <class ValueT>
-using unique_ptr = std::unique_ptr<ValueT>;
-
-using std::make_unique;
 
 struct Unit {};
 
