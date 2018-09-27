@@ -9,6 +9,7 @@
 
 #include <cerrno>
 #include <cstring>
+#include <memory>
 #include <new>
 #include <type_traits>
 #include <utility>

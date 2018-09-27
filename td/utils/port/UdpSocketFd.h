@@ -11,6 +11,8 @@
 #include "td/utils/Span.h"
 #include "td/utils/Status.h"
 
+#include <memory>
+
 namespace td {
 // Udp and errors
 namespace detail {
@@ -74,7 +76,7 @@ class UdpSocketFd {
 
  private:
   std::unique_ptr<detail::UdpSocketFdImpl, detail::UdpSocketFdImplDeleter> impl_;
-  explicit UdpSocketFd(std::unique_ptr<detail::UdpSocketFdImpl> impl);
+  explicit UdpSocketFd(unique_ptr<detail::UdpSocketFdImpl> impl);
 };
 
 }  // namespace td

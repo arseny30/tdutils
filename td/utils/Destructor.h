@@ -36,7 +36,7 @@ class LambdaDestructor : public Destructor {
 
 template <class F>
 auto create_destructor(F &&f) {
-  return std::make_unique<LambdaDestructor<F>>(std::forward<F>(f));
+  return make_unique<LambdaDestructor<F>>(std::forward<F>(f));
 }
 template <class F>
 auto create_shared_destructor(F &&f) {

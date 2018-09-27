@@ -6,6 +6,7 @@
 
 #include <array>
 #include <cstdlib>
+#include <memory>
 
 namespace td {
 

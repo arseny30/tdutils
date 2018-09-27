@@ -9,6 +9,7 @@
 #include "td/utils/SpinLock.h"
 
 #include <atomic>
+#include <memory>
 #include <type_traits>
 
 namespace td {

@@ -12,6 +12,7 @@
 #include <array>
 #include <cstring>
 #include <limits>
+#include <memory>
 #include <string>
 
 namespace td {
@@ -23,7 +24,7 @@ class TlParser {
   size_t error_pos = std::numeric_limits<size_t>::max();
   std::string error;
 
-  unique_ptr<int32[]> data_buf;
+  std::unique_ptr<int32[]> data_buf;
   static constexpr size_t SMALL_DATA_ARRAY_SIZE = 6;
   std::array<int32, SMALL_DATA_ARRAY_SIZE> small_data_array;
 
@@ -40,7 +41,7 @@ class TlParser {
         buf = &small_data_array[0];
       } else {
         LOG(ERROR) << "Unexpected big unaligned data pointer of length " << slice.size() << " at " << slice.begin();
-        data_buf = make_unique<int32[]>(1 + data_len / sizeof(int32));
+        data_buf = std::make_unique<int32[]>(1 + data_len / sizeof(int32));
         buf = data_buf.get();
       }
       std::memcpy(static_cast<void *>(buf), static_cast<const void *>(slice.begin()), slice.size());
