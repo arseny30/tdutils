@@ -49,7 +49,7 @@ void add_word_transliterations(vector<string> &result, Slice word, bool allow_pa
   auto end = word.uend();
   while (pos != end) {
     uint32 code;
-    pos = next_utf8_unsafe(pos, &code);
+    pos = next_utf8_unsafe(pos, &code, "add_word_transliterations");
     auto it = simple_rules.find(code);
     if (it != simple_rules.end()) {
       s += it->second;
@@ -82,7 +82,7 @@ void add_word_transliterations(vector<string> &result, Slice word, bool allow_pa
     }
 
     uint32 code;
-    pos = next_utf8_unsafe(pos, &code);
+    pos = next_utf8_unsafe(pos, &code, "add_word_transliterations 2");
     auto it = simple_rules.find(code);
     if (it != simple_rules.end()) {
       s += it->second;

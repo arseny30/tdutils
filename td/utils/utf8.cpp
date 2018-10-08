@@ -73,7 +73,7 @@ void append_utf8_character(string &str, uint32 ch) {
   }
 }
 
-const unsigned char *next_utf8_unsafe(const unsigned char *ptr, uint32 *code) {
+const unsigned char *next_utf8_unsafe(const unsigned char *ptr, uint32 *code, const char *source) {
   uint32 a = ptr[0];
   if ((a & 0x80) == 0) {
     if (code) {
@@ -96,7 +96,7 @@ const unsigned char *next_utf8_unsafe(const unsigned char *ptr, uint32 *code) {
     }
     return ptr + 4;
   }
-  UNREACHABLE();
+  LOG(FATAL) << a << " " << source;
   if (code) {
     *code = 0;
   }
@@ -109,7 +109,7 @@ string utf8_to_lower(Slice str) {
   auto end = str.uend();
   while (pos != end) {
     uint32 code;
-    pos = next_utf8_unsafe(pos, &code);
+    pos = next_utf8_unsafe(pos, &code, "utf8_to_lower");
     append_utf8_character(result, unicode_to_lower(code));
   }
   return result;
