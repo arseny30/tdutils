@@ -194,8 +194,7 @@ class Jsonable {};
 
 class JsonScope {
  public:
-  explicit JsonScope(JsonBuilder *jb) : sb_(&jb->sb_), jb_(jb) {
-    save_scope_ = jb_->scope_;
+  explicit JsonScope(JsonBuilder *jb) : sb_(&jb->sb_), jb_(jb), save_scope_(jb->scope_) {
     jb_->scope_ = this;
     CHECK(is_active());
   }
