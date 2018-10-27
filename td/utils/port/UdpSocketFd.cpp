@@ -694,7 +694,7 @@ class UdpSocketFdImpl {
 #ifdef MSG_ERRQUEUE
       flags = MSG_ERRQUEUE;
 #else
-      return fd_.get_pending_error();
+      return get_pending_error();
 #endif
     }
     //struct mmsghdr {
