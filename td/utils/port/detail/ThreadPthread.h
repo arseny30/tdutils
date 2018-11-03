@@ -30,6 +30,7 @@ class ThreadPthread {
     join();
     is_inited_ = std::move(other.is_inited_);
     thread_ = other.thread_;
+    return *this;
   }
   template <class Function, class... Args>
   explicit ThreadPthread(Function &&f, Args &&... args) {
@@ -76,7 +77,6 @@ class ThreadPthread {
   static void *run_thread(void *ptr) {
     ThreadIdGuard thread_id_guard;
     auto func = unique_ptr<Destructor>(static_cast<Destructor *>(ptr));
-    func->reset();
     return nullptr;
   }
 };
