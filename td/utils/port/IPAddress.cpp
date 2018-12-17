@@ -284,6 +284,7 @@ IPAddress IPAddress::get_any_addr() const {
 
 void IPAddress::init_ipv4_any() {
   is_valid_ = true;
+  std::memset(&ipv4_addr_, 0, sizeof(ipv4_addr_));
   ipv4_addr_.sin_family = AF_INET;
   ipv4_addr_.sin_addr.s_addr = INADDR_ANY;
   ipv4_addr_.sin_port = 0;
@@ -291,6 +292,7 @@ void IPAddress::init_ipv4_any() {
 
 void IPAddress::init_ipv6_any() {
   is_valid_ = true;
+  std::memset(&ipv6_addr_, 0, sizeof(ipv6_addr_));
   ipv6_addr_.sin6_family = AF_INET6;
   ipv6_addr_.sin6_addr = in6addr_any;
   ipv6_addr_.sin6_port = 0;
