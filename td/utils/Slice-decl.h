@@ -79,6 +79,18 @@ class Slice {
   constexpr Slice(const char (&a)[N]) : s_(a), len_(N - 1) {
   }
 
+  Slice &operator=(string &&s) = delete;
+
+  template <size_t N>
+  constexpr Slice &operator=(char (&a)[N]) = delete;
+
+  template <size_t N>
+  constexpr Slice &operator=(const char (&a)[N]) {
+    s_ = a;
+    len_ = N - 1;
+    return *this;
+  }
+
   bool empty() const;
   size_t size() const;
 
@@ -162,6 +174,18 @@ class CSlice : public Slice {
   }
 
   CSlice() : CSlice("") {
+  }
+
+  CSlice &operator=(string &&s) = delete;
+
+  template <size_t N>
+  constexpr CSlice &operator=(char (&a)[N]) = delete;
+
+  template <size_t N>
+  constexpr CSlice &operator=(const char (&a)[N]) {
+    s_ = a;
+    len_ = N - 1;
+    return *this;
   }
 
   const char *c_str() const {
