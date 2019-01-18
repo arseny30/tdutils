@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstring>
+#include <type_traits>
 
 namespace td {
 
@@ -54,12 +55,14 @@ class ConstAs {
 
 }  // namespace detail
 
-template <class ToT, class FromT>
+template <class ToT, class FromT,
+          std::enable_if_t<std::is_trivially_copyable<ToT>::value && std::is_trivially_copyable<FromT>::value, int> = 0>
 detail::As<ToT> as(FromT *from) {
   return detail::As<ToT>(from);
 }
 
-template <class ToT, class FromT>
+template <class ToT, class FromT,
+          std::enable_if_t<std::is_trivially_copyable<ToT>::value && std::is_trivially_copyable<FromT>::value, int> = 0>
 const detail::ConstAs<ToT> as(const FromT *from) {
   return detail::ConstAs<ToT>(from);
 }
