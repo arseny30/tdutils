@@ -28,7 +28,7 @@ class AtomicRefCnt {
   }
 
  private:
-  std::atomic<uint64> cnt_;
+  std::atomic<uint64> cnt_{0};
 };
 
 template <class DataT, class DeleterT>
