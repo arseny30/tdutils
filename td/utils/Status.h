@@ -337,6 +337,7 @@ class Result {
     other.status_ = Status::Error<-2>();
   }
   Result &operator=(Result &&other) {
+    CHECK(this != &other);
     if (status_.is_ok()) {
       value_.~T();
     }
