@@ -1,3 +1,4 @@
+#include "td/utils/common.h"
 #include "td/utils/HazardPointers.h"
 #include "td/utils/logging.h"
 #include "td/utils/port/thread.h"

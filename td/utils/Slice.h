@@ -1,5 +1,6 @@
 #pragma once
 
+#include "td/utils/common.h"
 #include "td/utils/Slice-decl.h"
 
 #include <cstring>

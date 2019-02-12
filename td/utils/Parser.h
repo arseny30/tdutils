@@ -1,5 +1,6 @@
 #pragma once
 
+#include "td/utils/common.h"
 #include "td/utils/format.h"
 #include "td/utils/logging.h"
 #include "td/utils/Slice.h"
