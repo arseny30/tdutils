@@ -89,7 +89,6 @@ class MpscPollableQueue {
 }  // namespace td
 
 #else
-#include "td/utils/logging.h"
 
 namespace td {
 
