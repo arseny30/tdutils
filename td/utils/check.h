@@ -9,9 +9,9 @@
 
 // clang-format off
 #ifdef NDEBUG
-  #define DCHECK CHECK
-#else
   #define DCHECK TD_DUMMY_CHECK
+#else
+  #define DCHECK CHECK
 #endif
 // clang-format on
 
