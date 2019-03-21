@@ -10,6 +10,7 @@
 
 #if !TD_WINDOWS
 #include <getopt.h>
+#include <unistd.h>
 #endif
 
 namespace td {
