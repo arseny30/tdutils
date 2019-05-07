@@ -43,7 +43,7 @@ vector<T> full_split(T s, char delimiter = ' ') {
   }
 }
 
-string implode(vector<string> v, char delimiter = ' ');
+string implode(const vector<string> &v, char delimiter = ' ');
 
 namespace detail {
 
