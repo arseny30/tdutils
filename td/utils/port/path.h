@@ -6,6 +6,7 @@
 #include "td/utils/Status.h"
 
 #include <functional>
+#include <type_traits>
 #include <utility>
 
 namespace td {
@@ -44,7 +45,7 @@ class WalkPath {
     return do_run(path, func);
   }
   template <class F, class R = decltype(std::declval<F>()("", Type::ExitDir))>
-  static TD_WARN_UNUSED_RESULT  std::enable_if_t<!std::is_same<R, Action>::value, Status> run(CSlice path, F &&func) {
+  static TD_WARN_UNUSED_RESULT std::enable_if_t<!std::is_same<R, Action>::value, Status> run(CSlice path, F &&func) {
     return do_run(path, [&](CSlice name, Type type) {
       func(name, type);
       return Action::Continue;
