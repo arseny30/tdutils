@@ -1,6 +1,6 @@
 #pragma once
-
 #include "td/utils/common.h"
+#include "td/utils/check.h"
 
 #if TD_MSVC
 #include <intrin.h>
@@ -13,18 +13,53 @@
 #ifdef bswap64
 #undef bswap64
 #endif
-
 namespace td {
+int32 count_leading_zeroes32(uint32 x);
+int32 count_leading_zeroes64(uint64 x);
+int32 count_trailing_zeroes32(uint32 x);
+int32 count_trailing_zeroes64(uint64 x);
+uint32 bswap32(uint32 x);
+uint64 bswap64(uint64 x);
+int32 count_bits32(uint32 x);
+int32 count_bits64(uint64 x);
 
-inline int32 count_leading_zeroes32(uint32 x);
-inline int32 count_leading_zeroes64(uint64 x);
-inline int32 count_trailing_zeroes32(uint32 x);
-inline int32 count_trailing_zeroes64(uint64 x);
-inline uint32 bswap32(uint32 x);
-inline uint64 bswap64(uint64 x);
-inline int32 count_bits32(uint32 x);
-inline int32 count_bits64(uint64 x);
+inline uint32 bits_negate32(uint32 x) {
+  return ~x + 1;
+}
 
+inline uint64 bits_negate64(uint64 x) {
+  return ~x + 1;
+}
+
+inline uint32 lower_bit32(uint32 x) {
+  return x & bits_negate32(x);
+}
+
+inline uint64 lower_bit64(uint64 x) {
+  return x & bits_negate64(x);
+}
+
+//TODO: optimize
+inline int32 count_leading_zeroes_non_zero32(uint32 x) {
+  DCHECK(x != 0);
+  return count_leading_zeroes32(x);
+}
+inline int32 count_leading_zeroes_non_zero64(uint64 x) {
+  DCHECK(x != 0);
+  return count_leading_zeroes64(x);
+}
+inline int32 count_trailing_zeroes_non_zero32(uint32 x) {
+  DCHECK(x != 0);
+  return count_trailing_zeroes32(x);
+}
+inline int32 count_trailing_zeroes_non_zero64(uint64 x) {
+  DCHECK(x != 0);
+  return count_trailing_zeroes64(x);
+}
+
+//
+// Platform specific implementation
+//
 #if TD_MSVC
 
 inline int32 count_leading_zeroes32(uint32 x) {
@@ -78,11 +113,9 @@ inline int32 count_trailing_zeroes64(uint64 x) {
 inline uint32 bswap32(uint32 x) {
   return _byteswap_ulong(x);
 }
-
 inline uint64 bswap64(uint64 x) {
   return _byteswap_uint64(x);
 }
-
 inline int32 count_bits32(uint32 x) {
   return __popcnt(x);
 }
@@ -208,23 +241,4 @@ inline int32 count_bits64(uint64 x) {
 }
 
 #endif
-
-//TODO: optimize
-inline int32 count_leading_zeroes_non_zero32(uint32 x) {
-  DCHECK(x != 0);
-  return count_leading_zeroes32(x);
-}
-inline int32 count_leading_zeroes_non_zero64(uint64 x) {
-  DCHECK(x != 0);
-  return count_leading_zeroes64(x);
-}
-inline int32 count_trailing_zeroes_non_zero32(uint32 x) {
-  DCHECK(x != 0);
-  return count_trailing_zeroes32(x);
-}
-inline int32 count_trailing_zeroes_non_zero64(uint64 x) {
-  DCHECK(x != 0);
-  return count_trailing_zeroes64(x);
-}
-
 }  // namespace td

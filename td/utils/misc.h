@@ -10,6 +10,7 @@
 #include <limits>
 #include <type_traits>
 #include <utility>
+#include <string>
 
 namespace td {
 
@@ -303,8 +304,8 @@ string url_encode(Slice str);
 
 namespace detail {
 template <class T, class U>
-struct is_same_signedness
-    : public std::integral_constant<bool, std::is_signed<T>::value == std::is_signed<U>::value> {};
+struct is_same_signedness : public std::integral_constant<bool, std::is_signed<T>::value == std::is_signed<U>::value> {
+};
 
 template <class T, class Enable = void>
 struct safe_undeflying_type {
@@ -390,6 +391,8 @@ template <typename T>
 detail::reversion_wrapper<T> reversed(T &iterable) {
   return {iterable};
 }
+
+string buffer_to_hex(Slice buffer);
 
 string zero_encode(Slice data);
 

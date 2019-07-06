@@ -21,6 +21,7 @@ class SpinLock {
     bool next() {
       cnt++;
       if (cnt < 50) {
+        //TODO pause
         return true;
       } else {
         td::this_thread::yield();
