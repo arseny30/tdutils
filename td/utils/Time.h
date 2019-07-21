@@ -3,8 +3,6 @@
 #include "td/utils/common.h"
 #include "td/utils/port/Clocks.h"
 
-#include <atomic>
-
 namespace td {
 
 class Time {
@@ -69,8 +67,8 @@ class Timestamp {
   double at() const {
     return at_;
   }
-  double at_unix() {
-    return at_ + td::Clocks::system() - Time::now();
+  double at_unix() const {
+    return at_ + Clocks::system() - Time::now();
   }
 
   double in() const {

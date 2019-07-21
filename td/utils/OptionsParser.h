@@ -6,7 +6,6 @@
 #include "td/utils/StringBuilder.h"
 
 #include <functional>
-#include <string>
 
 namespace td {
 

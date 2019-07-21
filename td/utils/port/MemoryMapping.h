@@ -6,9 +6,6 @@
 #include "td/utils/Status.h"
 
 namespace td {
-namespace detail {
-class MemoryMappingImpl;
-}
 
 class MemoryMapping {
  public:
@@ -41,7 +38,9 @@ class MemoryMapping {
   ~MemoryMapping();
 
  private:
-  std::unique_ptr<detail::MemoryMappingImpl> impl_;
-  explicit MemoryMapping(std::unique_ptr<detail::MemoryMappingImpl> impl);
+  class Impl;
+  unique_ptr<Impl> impl_;
+  explicit MemoryMapping(unique_ptr<Impl> impl);
 };
+
 }  // namespace td

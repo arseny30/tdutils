@@ -10,6 +10,7 @@
 #endif
 
 namespace td {
+
 void OptionsParser::set_description(std::string description) {
   description_ = std::move(description);
 }

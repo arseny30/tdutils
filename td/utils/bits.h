@@ -1,6 +1,6 @@
 #pragma once
+
 #include "td/utils/common.h"
-#include "td/utils/check.h"
 
 #if TD_MSVC
 #include <intrin.h>
@@ -13,7 +13,9 @@
 #ifdef bswap64
 #undef bswap64
 #endif
+
 namespace td {
+
 int32 count_leading_zeroes32(uint32 x);
 int32 count_leading_zeroes64(uint64 x);
 int32 count_trailing_zeroes32(uint32 x);
@@ -113,9 +115,11 @@ inline int32 count_trailing_zeroes64(uint64 x) {
 inline uint32 bswap32(uint32 x) {
   return _byteswap_ulong(x);
 }
+
 inline uint64 bswap64(uint64 x) {
   return _byteswap_uint64(x);
 }
+
 inline int32 count_bits32(uint32 x) {
   return __popcnt(x);
 }
@@ -241,4 +245,5 @@ inline int32 count_bits64(uint64 x) {
 }
 
 #endif
+
 }  // namespace td

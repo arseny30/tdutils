@@ -1,8 +1,8 @@
 #pragma once
 
 #include "td/utils/common.h"
-#include "td/utils/port/thread.h"
 #include "td/utils/logging.h"
+#include "td/utils/port/thread.h"
 
 #include <atomic>
 #include <condition_variable>

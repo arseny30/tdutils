@@ -51,7 +51,7 @@ class SpanImpl {
       return false;
     }
     for (size_t i = 0; i < size(); i++) {
-      if ((*this)[i] != other[i]) {
+      if (!((*this)[i] == other[i])) {
         return false;
       }
     }
@@ -109,11 +109,11 @@ template <class T>
 using MutableSpan = detail::SpanImpl<T, T>;
 
 template <class T>
-auto span(const T *ptr, size_t size) {
+Span<T> span(const T *ptr, size_t size) {
   return Span<T>(ptr, size);
 }
 template <class T>
-auto mutable_span(T *ptr, size_t size) {
+MutableSpan<T> mutable_span(T *ptr, size_t size) {
   return MutableSpan<T>(ptr, size);
 }
 

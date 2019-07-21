@@ -1,4 +1,9 @@
 #include "td/utils/MpmcQueue.h"
+
 namespace td {
-detail::MpmcStat stat_;
-}
+namespace detail {
+
+MpmcStat stat_;
+
+}  // namespace detail
+}  // namespace td
