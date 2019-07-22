@@ -76,6 +76,7 @@ class IPAddress {
   void init_ipv4_any();
   void init_ipv6_any();
 };
+
 StringBuilder &operator<<(StringBuilder &builder, const IPAddress &address);
 
 }  // namespace td
