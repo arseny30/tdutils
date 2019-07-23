@@ -123,7 +123,6 @@ TEST(Port, Writev) {
 
 #include <algorithm>
 #include <mutex>
-#include <set>
 
 static std::mutex m;
 static std::vector<std::string> ptrs;
@@ -191,9 +190,9 @@ TEST(Post, SignalsAndThread) {
     }
     std::sort(ptrs.begin(), ptrs.end());
     CHECK(ptrs == ans);
-    ASSERT_EQ(10u, std::set<int *>(addrs.begin(), addrs.end()).size());
+    std::sort(addrs.begin(), addrs.end());
+    ASSERT_TRUE(std::unique(addrs.begin(), addrs.end()) == addrs.end());
     //LOG(ERROR) << addrs;
   }
-  //ASSERT_EQ(10u, ptrs.size());
 }
 #endif
