@@ -21,7 +21,7 @@ namespace detail {
 
 class KQueue final : public PollBase {
  public:
-  KQueue();
+  KQueue() = default;
   KQueue(const KQueue &) = delete;
   KQueue &operator=(const KQueue &) = delete;
   KQueue(KQueue &&) = delete;
@@ -45,10 +45,10 @@ class KQueue final : public PollBase {
   }
 
  private:
-  vector<struct kevent> events;
-  int changes_n;
-  int kq;
-  ListNode list_root;
+  vector<struct kevent> events_;
+  int changes_n_;
+  NativeFd kq_;
+  ListNode list_root_;
 
   int update(int nevents, const timespec *timeout, bool may_fail = false);
 
