@@ -1,7 +1,6 @@
 #include "td/utils/base64.h"
 
 #include "td/utils/common.h"
-#include "td/utils/format.h"
 #include "td/utils/Slice.h"
 #include "td/utils/Status.h"
 

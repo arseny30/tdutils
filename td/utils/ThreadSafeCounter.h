@@ -1,9 +1,12 @@
 #pragma once
 
+#include "td/utils/common.h"
+#include "td/utils/Slice.h"
 #include "td/utils/StringBuilder.h"
 #include "td/utils/ThreadLocalStorage.h"
 
 #include <array>
+#include <atomic>
 #include <mutex>
 
 namespace td {
