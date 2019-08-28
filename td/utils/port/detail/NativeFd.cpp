@@ -20,7 +20,9 @@ namespace td {
 class FdSet {
  public:
   void on_create_fd(NativeFd::Fd fd) {
-    CHECK(is_valid(fd));
+    if (!is_valid(fd)) {
+      return;
+    }
     if (is_stdio(fd)) {
       return;
     }
@@ -46,7 +48,9 @@ class FdSet {
   }
 
   void on_close_fd(NativeFd::Fd fd) {
-    CHECK(is_valid(fd));
+    if (!is_valid(fd)) {
+      return;
+    }
     if (is_stdio(fd)) {
       return;
     }
