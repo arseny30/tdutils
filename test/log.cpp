@@ -70,7 +70,7 @@ TEST(Log, TsLogger) {
     class FileLog : public td::LogInterface {
      public:
       FileLog() {
-        file_log_.init("tmplog", std::numeric_limits<td::int64>::max(), false);
+        file_log_.init("tmplog", std::numeric_limits<td::int64>::max(), false).ensure();
         ts_log_.init(&file_log_);
       }
       ~FileLog() {
@@ -102,7 +102,7 @@ TEST(Log, TsLogger) {
     class FileLog : public td::LogInterface {
      public:
       FileLog() {
-        file_log_.init("tmplog", std::numeric_limits<td::int64>::max(), false);
+        file_log_.init("tmplog", std::numeric_limits<td::int64>::max(), false).ensure();
       }
       ~FileLog() {
       }
