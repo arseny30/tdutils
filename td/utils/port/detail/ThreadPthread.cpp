@@ -26,7 +26,7 @@ unsigned ThreadPthread::hardware_concurrency() {
   }
 #endif
 
-// *BSD
+#if TD_FREEBSD || TD_OPENBSD || TD_NETBSD
 #if defined(HW_AVAILCPU) && defined(CTL_HW)
   {
     int mib[2] = {CTL_HW, HW_AVAILCPU};
@@ -47,6 +47,7 @@ unsigned ThreadPthread::hardware_concurrency() {
       return res;
     }
   }
+#endif
 #endif
 
   // Just in case
