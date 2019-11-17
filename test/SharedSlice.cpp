@@ -3,6 +3,9 @@
 #include "td/utils/SharedSlice.h"
 #include "td/utils/tests.h"
 
+char disable_linker_warning_about_empty_file_tdutils_test_shared_slice_cpp TD_UNUSED;
+
+#if !TD_THREAD_UNSUPPORTED
 TEST(SharedSlice, Hands) {
   {
     td::SharedSlice h("hello");
@@ -78,3 +81,4 @@ TEST(SharedSlice, Hands) {
     }
   }
 }
+#endif

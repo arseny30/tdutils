@@ -16,6 +16,9 @@
 // LOG uses thread local LogInterface
 // void append(CSlice slice, int log_level);
 
+char disable_linker_warning_about_empty_file_tdutils_test_log_cpp TD_UNUSED;
+
+#if !TD_THREAD_UNSUPPORTED
 template <class Log>
 class LogBenchmark : public td::Benchmark {
  public:
@@ -119,3 +122,4 @@ TEST(Log, TsLogger) {
     return td::make_unique<FileLog>();
   });
 }
+#endif
