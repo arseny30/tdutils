@@ -2,7 +2,6 @@
 
 #include "td/utils/common.h"
 #include "td/utils/logging.h"
-#include "td/utils/misc.h"
 #include "td/utils/Slice.h"
 #include "td/utils/StorerBase.h"
 #include "td/utils/UInt.h"
@@ -16,7 +15,6 @@ class TlStorerUnsafe {
 
  public:
   explicit TlStorerUnsafe(unsigned char *buf) : buf_(buf) {
-    LOG_CHECK(is_aligned_pointer<4>(buf_)) << buf_;
   }
 
   TlStorerUnsafe(const TlStorerUnsafe &other) = delete;
