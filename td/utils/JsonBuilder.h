@@ -295,18 +295,6 @@ class JsonScope {
   JsonScope &operator<<(double x) {
     return *this << JsonFloat(x);
   }
-  template <class T>
-  JsonScope &operator<<(const T *x);  // not implemented
-  template <size_t N>
-  JsonScope &operator<<(const char (&x)[N]) {
-    return *this << JsonString(Slice(x));
-  }
-  JsonScope &operator<<(const char *x) {
-    return *this << JsonString(Slice(x));
-  }
-  JsonScope &operator<<(const string &x) {
-    return *this << JsonString(Slice(x));
-  }
   JsonScope &operator<<(Slice x) {
     return *this << JsonString(x);
   }
@@ -395,12 +383,8 @@ class JsonObjectScope : public JsonScope {
     jb_->print_offset();
     *sb_ << "}";
   }
-  template <class S, class T>
-  JsonObjectScope &operator<<(std::pair<S, T> key_value) {
-    return (*this)(key_value.first, key_value.second);
-  }
-  template <class S, class T>
-  JsonObjectScope &operator()(S &&key, T &&value) {
+  template <class T>
+  JsonObjectScope &operator()(Slice key, T &&value) {
     CHECK(is_active());
     if (is_first_) {
       *sb_ << ",";
@@ -584,7 +568,7 @@ class JsonValue : public Jsonable {
       case Type::Object: {
         auto object = scope->enter_object();
         for (auto &key_value : get_object()) {
-          object(JsonString(key_value.first), key_value.second);
+          object(key_value.first, key_value.second);
         }
         break;
       }
