@@ -1,5 +1,6 @@
 #include "td/utils/benchmark.h"
 #include "td/utils/ConcurrentHashTable.h"
+#include "td/utils/misc.h"
 #include "td/utils/port/thread.h"
 #include "td/utils/SpinLock.h"
 #include "td/utils/tests.h"
@@ -204,8 +205,8 @@ class HashMapBenchmark : public td::Benchmark {
       size_t r = n * (i + 1) / threads_n;
       threads.emplace_back([l, r, this] {
         for (size_t i = l; i < r; i++) {
-          auto x = int((i + 1) * mul_ % n_) + 3;
-          auto y = int(i + 2);
+          auto x = td::narrow_cast<int>((i + 1) * mul_ % n_) + 3;
+          auto y = td::narrow_cast<int>(i + 2);
           hash_map->insert(x, y);
         }
       });
@@ -217,8 +218,8 @@ class HashMapBenchmark : public td::Benchmark {
 
   void tear_down() override {
     for (int i = 0; i < n_; i++) {
-      auto x = int((i + 1) * mul_ % n_) + 3;
-      auto y = int(i + 2);
+      auto x = td::narrow_cast<int>((i + 1) * mul_ % n_) + 3;
+      auto y = td::narrow_cast<int>(i + 2);
       ASSERT_EQ(y, hash_map->find(x, -1));
     }
     queries.clear();
