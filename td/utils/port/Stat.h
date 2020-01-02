@@ -12,6 +12,7 @@ struct Stat {
   bool is_dir_;
   bool is_reg_;
   int64 size_;
+  int64 real_size_;
   uint64 atime_nsec_;
   uint64 mtime_nsec_;
 };
