@@ -98,7 +98,7 @@ FdSet &get_fd_set() {
 
 Status NativeFd::validate() const {
 #if TD_FD_DEBUG
-  return get_fd_set().validate(fd_.get());
+  return get_fd_set().validate(fd_);
 #else
   return Status::OK();
 #endif
@@ -107,13 +107,13 @@ Status NativeFd::validate() const {
 NativeFd::NativeFd(Fd fd) : fd_(fd) {
   VLOG(fd) << *this << " create";
 #if TD_FD_DEBUG
-  get_fd_set().on_create_fd(fd_.get());
+  get_fd_set().on_create_fd(fd_);
 #endif
 }
 
 NativeFd::NativeFd(Fd fd, bool nolog) : fd_(fd) {
 #if TD_FD_DEBUG
-  get_fd_set().on_create_fd(fd_.get());
+  get_fd_set().on_create_fd(fd_);
 #endif
 }
 
@@ -121,18 +121,26 @@ NativeFd::NativeFd(Fd fd, bool nolog) : fd_(fd) {
 NativeFd::NativeFd(Socket socket) : fd_(reinterpret_cast<Fd>(socket)), is_socket_(true) {
   VLOG(fd) << *this << " create";
 #if TD_FD_DEBUG
-  get_fd_set().on_create_fd(fd_.get());
+  get_fd_set().on_create_fd(fd_);
 #endif
 }
 #endif
 
-NativeFd &NativeFd::operator=(NativeFd &&from) {
-  CHECK(this != &from);
-  close();
-  fd_ = std::move(from.fd_);
+NativeFd::NativeFd(NativeFd &&other) : fd_(other.fd_) {
 #if TD_PORT_WINDOWS
-  is_socket_ = from.is_socket_;
+  is_socket_ = other.is_socket_;
 #endif
+  other.fd_ = empty_fd();
+}
+
+NativeFd &NativeFd::operator=(NativeFd &&other) {
+  CHECK(this != &other);
+  close();
+  fd_ = other.fd_;
+#if TD_PORT_WINDOWS
+  is_socket_ = other.is_socket_;
+#endif
+  other.fd_ = empty_fd();
   return *this;
 }
 
@@ -141,7 +149,7 @@ NativeFd::~NativeFd() {
 }
 
 NativeFd::operator bool() const {
-  return fd_.get() != empty_fd();
+  return fd_ != empty_fd();
 }
 
 NativeFd::Fd NativeFd::empty_fd() {
@@ -153,7 +161,7 @@ NativeFd::Fd NativeFd::empty_fd() {
 }
 
 NativeFd::Fd NativeFd::fd() const {
-  return fd_.get();
+  return fd_;
 }
 
 NativeFd::Socket NativeFd::socket() const {
@@ -161,7 +169,7 @@ NativeFd::Socket NativeFd::socket() const {
   return fd();
 #elif TD_PORT_WINDOWS
   CHECK(is_socket_);
-  return reinterpret_cast<Socket>(fd_.get());
+  return reinterpret_cast<Socket>(fd_);
 #endif
 }
 
@@ -225,13 +233,13 @@ void NativeFd::close() {
     auto error = OS_ERROR("Close fd");
     LOG(ERROR) << error;
   }
-  fd_ = {};
+  fd_ = empty_fd();
 }
 
 NativeFd::Fd NativeFd::release() {
   VLOG(fd) << *this << " release";
-  auto res = fd_.get();
-  fd_ = {};
+  auto res = fd_;
+  fd_ = empty_fd();
 #if TD_FD_DEBUG
   get_fd_set().on_close_fd(res);
 #endif
