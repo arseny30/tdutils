@@ -83,6 +83,9 @@ T utf8_utf16_truncate(T str, size_t length) {
 
 template <class T>
 T utf8_substr(T str, size_t offset) {
+  if (offset == 0) {
+    return str;
+  }
   auto offset_pos = utf8_truncate(str, offset).size();
   return str.substr(offset_pos);
 }
@@ -94,6 +97,9 @@ T utf8_substr(T str, size_t offset, size_t length) {
 
 template <class T>
 T utf8_utf16_substr(T str, size_t offset) {
+  if (offset == 0) {
+    return str;
+  }
   auto offset_pos = utf8_utf16_truncate(str, offset).size();
   return str.substr(offset_pos);
 }
