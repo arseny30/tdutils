@@ -2,21 +2,10 @@
 
 namespace td {
 
-class ClocksBase {
- public:
-  using Duration = double;
+struct Clocks {
+  static double monotonic();
+
+  static double system();
 };
-
-// TODO: (maybe) write system specific functions.
-class ClocksDefault {
- public:
-  using Duration = ClocksBase::Duration;
-
-  static Duration monotonic();
-
-  static Duration system();
-};
-
-using Clocks = ClocksDefault;
 
 }  // namespace td
