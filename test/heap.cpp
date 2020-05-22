@@ -4,9 +4,7 @@
 #include "td/utils/Heap.h"
 #include "td/utils/Random.h"
 
-#include <algorithm>
 #include <cstdio>
-#include <cstdlib>
 #include <set>
 #include <utility>
 
