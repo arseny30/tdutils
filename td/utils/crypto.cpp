@@ -9,6 +9,8 @@
 #include "td/utils/port/thread_local.h"
 #include "td/utils/Random.h"
 #include "td/utils/ScopeGuard.h"
+#include "td/utils/StackAllocator.h"
+#include "td/utils/StringBuilder.h"
 
 #if TD_HAVE_OPENSSL
 #include <openssl/aes.h>
@@ -32,6 +34,8 @@
 #endif
 
 #include <algorithm>
+#include <cerrno>
+#include <cstring>
 #include <mutex>
 #include <utility>
 

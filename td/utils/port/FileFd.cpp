@@ -20,6 +20,8 @@
 #include <utility>
 
 #if TD_PORT_POSIX
+#include <cerrno>
+
 #include <fcntl.h>
 #include <sys/file.h>
 #include <sys/types.h>
