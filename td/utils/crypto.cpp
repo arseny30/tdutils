@@ -2,7 +2,6 @@
 
 #include "td/utils/as.h"
 #include "td/utils/BigNum.h"
-#include "td/utils/bits.h"
 #include "td/utils/common.h"
 #include "td/utils/logging.h"
 #include "td/utils/misc.h"
@@ -43,7 +42,7 @@
 
 namespace td {
 
-struct alignas(8) AesBlock {
+struct AesBlock {
   uint64 hi;
   uint64 lo;
 
@@ -57,10 +56,9 @@ struct alignas(8) AesBlock {
     res.lo = lo ^ b.lo;
     return res;
   }
-  AesBlock &operator^=(const AesBlock &b) {
+  void operator^=(const AesBlock &b) {
     hi ^= b.hi;
     lo ^= b.lo;
-    return *this;
   }
 
   void load(const uint8 *from) {
@@ -81,6 +79,8 @@ struct alignas(8) AesBlock {
     return res;
   }
 };
+static_assert(sizeof(AesBlock) == 16, "");
+static_assert(sizeof(AesBlock) == AES_BLOCK_SIZE, "");
 
 class XorBytes {
  public:
@@ -101,7 +101,7 @@ class XorBytes {
   size_t n;
 
   template <size_t N>
-  struct alignas(16) Block {
+  struct alignas(N) Block {
     uint8 data[N];
     Block operator^(const Block &b) const & {
       Block res;
@@ -128,8 +128,8 @@ class XorBytes {
 };
 
 struct AesCtrCounterPack {
-  static constexpr size_t N = 32;
-  AesBlock blocks[N];
+  static constexpr size_t BLOCK_COUNT = 32;
+  AesBlock blocks[BLOCK_COUNT];
   uint8 *raw() {
     return reinterpret_cast<uint8 *>(this);
   }
@@ -138,7 +138,7 @@ struct AesCtrCounterPack {
   }
 
   size_t size() const {
-    return N * 16;
+    return sizeof(blocks);
   }
 
   Slice as_slice() const {
@@ -150,13 +150,13 @@ struct AesCtrCounterPack {
 
   void init(AesBlock block) {
     blocks[0] = block;
-    for (size_t i = 1; i < N; i++) {
+    for (size_t i = 1; i < BLOCK_COUNT; i++) {
       blocks[i] = blocks[i - 1].inc();
     }
   }
   void rotate() {
-    blocks[0] = blocks[N - 1].inc();
-    for (size_t i = 1; i < N; i++) {
+    blocks[0] = blocks[BLOCK_COUNT - 1].inc();
+    for (size_t i = 1; i < BLOCK_COUNT; i++) {
       blocks[i] = blocks[i - 1].inc();
     }
   }
@@ -367,7 +367,6 @@ int pq_factorize(Slice pq_str, string *p_str, string *q_str) {
 class AesState::Impl {
  public:
   EVP_CIPHER_CTX *ctx{nullptr};
-  bool encrypt{false};
 
   Impl() = default;
   Impl(const Impl &from) = delete;
@@ -400,12 +399,10 @@ void AesState::init(Slice key, bool encrypt) {
     LOG_IF(FATAL, res != 1);
   }
   EVP_CIPHER_CTX_set_padding(impl_->ctx, 0);
-  impl_->encrypt = encrypt;
 }
 
 void AesState::encrypt(const uint8 *src, uint8 *dst, int size) {
   CHECK(impl_ != nullptr);
-  CHECK(impl_->encrypt);
   CHECK(impl_->ctx != nullptr);
   CHECK(size % 16 == 0);
   int len;
@@ -416,7 +413,6 @@ void AesState::encrypt(const uint8 *src, uint8 *dst, int size) {
 
 void AesState::decrypt(const uint8 *src, uint8 *dst, int size) {
   CHECK(impl_ != nullptr);
-  CHECK(!impl_->encrypt);
   CHECK(impl_->ctx != nullptr);
   CHECK(size % 16 == 0);
   int len;
@@ -463,6 +459,7 @@ class AesIgeState::Impl {
   AesState state;
   AesBlock iv;
   AesBlock iv2;
+
   void encrypt(Slice from, MutableSlice to) {
     CHECK(from.size() % AES_BLOCK_SIZE == 0);
     CHECK(to.size() >= from.size());
@@ -470,7 +467,8 @@ class AesIgeState::Impl {
     auto in = from.ubegin();
     auto out = to.ubegin();
 
-    AesBlock tmp, tmp2;
+    AesBlock tmp;
+    AesBlock tmp2;
 
     while (len) {
       tmp.load(in);
@@ -486,6 +484,7 @@ class AesIgeState::Impl {
       out += AES_BLOCK_SIZE;
     }
   }
+
   void decrypt(Slice from, MutableSlice to) {
     CHECK(from.size() % AES_BLOCK_SIZE == 0);
     CHECK(to.size() >= from.size());
@@ -493,7 +492,8 @@ class AesIgeState::Impl {
     auto in = from.ubegin();
     auto out = to.ubegin();
 
-    AesBlock tmp, tmp2;
+    AesBlock tmp;
+    AesBlock tmp2;
 
     while (len) {
       tmp.load(in);
@@ -591,10 +591,8 @@ class AesCtrState::Impl {
         fill();
       }
       size_t min_n = td::min(n, current.size());
-      auto curr = current.ubegin();
-      XorBytes::run(src, curr, dst, min_n);
+      XorBytes::run(src, current.ubegin(), dst, min_n);
       src += min_n;
-      curr += min_n;
       dst += min_n;
       n -= min_n;
       current.remove_prefix(min_n);

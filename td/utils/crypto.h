@@ -23,7 +23,9 @@ class AesState {
   ~AesState();
 
   void init(Slice key, bool encrypt);
+
   void encrypt(const uint8 *src, uint8 *dst, int size);
+
   void decrypt(const uint8 *src, uint8 *dst, int size);
 
  private:
@@ -44,8 +46,11 @@ struct AesIgeState {
   AesIgeState(AesIgeState &&from);
   AesIgeState &operator=(AesIgeState &&from);
   ~AesIgeState();
+
   void init(Slice key, Slice iv, bool encrypt);
+
   void encrypt(Slice from, MutableSlice to);
+
   void decrypt(Slice from, MutableSlice to);
 
  private:
