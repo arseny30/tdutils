@@ -34,6 +34,8 @@ class OptionParser {
 
   void add_option(char short_key, Slice long_key, Slice description, std::function<void(void)> callback);
 
+  void add_check(std::function<Status()> check);
+
   // returns found non-option parameters
   Result<vector<char *>> run(int argc, char *argv[]) TD_WARN_UNUSED_RESULT;
 
@@ -41,6 +43,7 @@ class OptionParser {
 
  private:
   vector<Option> options_;
+  vector<std::function<Status()>> checks_;
   string description_;
 };
 
