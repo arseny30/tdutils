@@ -7,6 +7,7 @@
 
 #include <tuple>
 #include <utility>
+#include <set>
 
 namespace td {
 namespace format {
@@ -326,6 +327,10 @@ StringBuilder &operator<<(StringBuilder &sb, const std::pair<A, B> &p) {
 
 template <class T>
 StringBuilder &operator<<(StringBuilder &stream, const vector<T> &vec) {
+  return stream << format::as_array(vec);
+}
+template <class T>
+StringBuilder &operator<<(StringBuilder &stream, const std::set<T> &vec) {
   return stream << format::as_array(vec);
 }
 

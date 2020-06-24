@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include "td/utils/common.h"
@@ -10,7 +11,6 @@
 #include <mutex>
 
 namespace td {
-
 template <size_t N>
 class ThreadSafeMultiCounter {
  public:
@@ -24,6 +24,13 @@ class ThreadSafeMultiCounter {
     int64 res = 0;
     tls_.for_each([&](auto &value) { res += value[index].load(std::memory_order_relaxed); });
     return res;
+  }
+  void clear() {
+    tls_.for_each([&](auto &value) {
+      for (auto &x : value) {
+        x = 0;
+      }
+    });
   }
 
  private:
@@ -74,7 +81,7 @@ class NamedThreadSafeCounter {
       }
     }
     CHECK(names_.size() < N);
-    names_.emplase_back(name.begin(), name.size());
+    names_.emplace_back(name.begin(), name.size());
     return get_counter_ref(names_.size() - 1);
   }
 
@@ -93,6 +100,11 @@ class NamedThreadSafeCounter {
     for (size_t i = 0; i < names_.size(); i++) {
       f(names_[i], counter_.sum(i));
     }
+  }
+
+  void clear() {
+    std::unique_lock<std::mutex> guard(mutex_);
+    counter_.clear();
   }
 
   friend StringBuilder &operator<<(StringBuilder &sb, const NamedThreadSafeCounter &counter) {
