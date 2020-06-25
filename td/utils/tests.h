@@ -7,7 +7,6 @@
 #include "td/utils/port/thread.h"
 #include "td/utils/Random.h"
 #include "td/utils/Slice.h"
-#include "td/utils/Span.h"
 #include "td/utils/Status.h"
 
 #include <atomic>
@@ -26,17 +25,19 @@ class RandomSteps {
  public:
   struct Step {
     std::function<void()> func;
-    td::uint32 weight;
+    uint32 weight;
   };
-  RandomSteps(std::vector<Step> steps) : steps_(std::move(steps)) {
-    for (auto &step : steps_) {
+
+  explicit RandomSteps(vector<Step> steps) : steps_(std::move(steps)) {
+    for (const auto &step : steps_) {
       steps_sum_ += step.weight;
     }
   }
+
   template <class Random>
-  void step(Random &rnd) {
+  void step(Random &rnd) const {
     auto w = rnd() % steps_sum_;
-    for (auto &step : steps_) {
+    for (const auto &step : steps_) {
       if (w < step.weight) {
         step.func();
         break;
@@ -46,8 +47,8 @@ class RandomSteps {
   }
 
  private:
-  std::vector<Step> steps_;
-  td::int32 steps_sum_ = 0;
+  vector<Step> steps_;
+  int32 steps_sum_ = 0;
 };
 
 class RegressionTester {

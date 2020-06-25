@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "td/utils/common.h"
@@ -8,6 +7,7 @@
 #include <atomic>
 
 namespace td {
+
 template <class T>
 class ThreadLocalStorage {
  public:
@@ -45,4 +45,5 @@ class ThreadLocalStorage {
     return nodes_[thread_id];
   }
 };
+
 }  // namespace td

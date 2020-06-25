@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "td/utils/common.h"
@@ -11,6 +10,7 @@
 #include <mutex>
 
 namespace td {
+
 template <size_t N>
 class ThreadSafeMultiCounter {
  public:
@@ -22,11 +22,11 @@ class ThreadSafeMultiCounter {
   int64 sum(size_t index) const {
     CHECK(index < N);
     int64 res = 0;
-    tls_.for_each([&](auto &value) { res += value[index].load(std::memory_order_relaxed); });
+    tls_.for_each([&res](auto &value) { res += value[index].load(std::memory_order_relaxed); });
     return res;
   }
   void clear() {
-    tls_.for_each([&](auto &value) {
+    tls_.for_each([](auto &value) {
       for (auto &x : value) {
         x = 0;
       }

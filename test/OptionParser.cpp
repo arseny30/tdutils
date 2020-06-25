@@ -1,9 +1,7 @@
-
 #include "td/utils/common.h"
 #include "td/utils/misc.h"
 #include "td/utils/OptionParser.h"
 #include "td/utils/Slice.h"
-#include "td/utils/Status.h"
 #include "td/utils/tests.h"
 
 TEST(OptionParser, run) {

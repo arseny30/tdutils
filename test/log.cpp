@@ -1,4 +1,3 @@
-
 #include "td/utils/benchmark.h"
 #include "td/utils/FileLog.h"
 #include "td/utils/format.h"

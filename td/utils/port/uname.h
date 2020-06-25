@@ -6,4 +6,4 @@ namespace td {
 
 Slice get_operating_system_version();
 
-}
+}  // namespace td

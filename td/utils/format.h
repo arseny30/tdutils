@@ -5,9 +5,9 @@
 #include "td/utils/Slice.h"
 #include "td/utils/StringBuilder.h"
 
+#include <set>
 #include <tuple>
 #include <utility>
-#include <set>
 
 namespace td {
 namespace format {

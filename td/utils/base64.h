@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "td/utils/common.h"
@@ -22,6 +21,8 @@ bool is_base64_characters(Slice input);
 bool is_base64url_characters(Slice input);
 
 string base64_filter(Slice input);
+
 string base32_encode(Slice input, bool upper_case = false);
 Result<string> base32_decode(Slice base32);
+
 }  // namespace td

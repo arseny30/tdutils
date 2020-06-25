@@ -344,10 +344,7 @@ class JsonArrayScope : public JsonScope {
   }
   void leave() {
     jb_->dec_offset();
-    if (jb_->is_pretty()) {
-      *sb_ << "\n";
-      jb_->print_offset();
-    }
+    jb_->print_offset();
     *sb_ << "]";
   }
   template <class T>
@@ -366,10 +363,7 @@ class JsonArrayScope : public JsonScope {
     } else {
       is_first_ = true;
     }
-    if (jb_->is_pretty()) {
-      *sb_ << "\n";
-      jb_->print_offset();
-    }
+    jb_->print_offset();
     return jb_->enter_value();
   }
 
@@ -391,10 +385,7 @@ class JsonObjectScope : public JsonScope {
   }
   void leave() {
     jb_->dec_offset();
-    if (jb_->is_pretty()) {
-      *sb_ << "\n";
-      jb_->print_offset();
-    }
+    jb_->print_offset();
     *sb_ << "}";
   }
   template <class T>
@@ -405,10 +396,7 @@ class JsonObjectScope : public JsonScope {
     } else {
       is_first_ = true;
     }
-    if (jb_->is_pretty()) {
-      *sb_ << "\n";
-      jb_->print_offset();
-    }
+    jb_->print_offset();
     jb_->enter_value() << key;
     if (jb_->is_pretty()) {
       *sb_ << " : ";

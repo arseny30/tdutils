@@ -8,7 +8,7 @@
 
 #if !TD_THREAD_UNSUPPORTED
 template <class W>
-void test_waiter_stress_one_one() {
+static void test_waiter_stress_one_one() {
   td::Stage run;
   td::Stage check;
 
@@ -54,15 +54,17 @@ void test_waiter_stress_one_one() {
     thread.join();
   }
 }
+
 TEST(MpmcEagerWaiter, stress_one_one) {
   test_waiter_stress_one_one<td::MpmcEagerWaiter>();
 }
+
 TEST(MpmcSleepyWaiter, stress_one_one) {
   test_waiter_stress_one_one<td::MpmcSleepyWaiter>();
 }
 
 template <class W>
-void test_waiter_stress() {
+static void test_waiter_stress() {
   td::Stage run;
   td::Stage check;
 
@@ -124,9 +126,11 @@ void test_waiter_stress() {
     thread.join();
   }
 }
+
 TEST(MpmcEagerWaiter, stress_multi) {
   test_waiter_stress<td::MpmcEagerWaiter>();
 }
+
 TEST(MpmcSleepyWaiter, stress_multi) {
   test_waiter_stress<td::MpmcSleepyWaiter>();
 }
