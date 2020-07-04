@@ -5,6 +5,7 @@
 
 #include <atomic>
 #include <cstring>
+#include <memory>
 #include <type_traits>
 
 namespace td {
