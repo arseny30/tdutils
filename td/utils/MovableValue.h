@@ -18,8 +18,8 @@ class MovableValue {
     }
     return *this;
   }
-  MovableValue(const MovableValue &) = delete;
-  MovableValue &operator=(const MovableValue &) = delete;
+  MovableValue(const MovableValue &) = default;
+  MovableValue &operator=(const MovableValue &) = default;
   ~MovableValue() = default;
 
   void clear() {
