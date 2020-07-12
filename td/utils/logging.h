@@ -126,8 +126,9 @@ struct LogOptions {
     return level.exchange(new_level);
   }
 
-  static LogOptions plain() {
-    return LogOptions{0, false, false};
+  static const LogOptions &plain() {
+    static LogOptions plain_options{0, false, false};
+    return plain_options;
   }
 
   constexpr LogOptions() = default;
@@ -144,8 +145,8 @@ struct LogOptions {
     add_info = other.add_info;
     return *this;
   }
-  LogOptions(LogOptions &&) = default;             // i.e. deleted
-  LogOptions &operator=(LogOptions &&) = default;  // i.e. deleted
+  LogOptions(LogOptions &&) = delete;
+  LogOptions &operator=(LogOptions &&) = delete;
   ~LogOptions() = default;
 };
 
