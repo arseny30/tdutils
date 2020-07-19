@@ -39,7 +39,7 @@
 #ifndef PSAPI_VERSION
 #define PSAPI_VERSION 1
 #endif
-#include <psapi.h>
+#include <Psapi.h>
 
 #endif
 
