@@ -84,9 +84,6 @@ class PollableFdInfo : private ListNode {
   void clear_flags(PollFlags flags) {
     flags_.clear_flags(flags);
   }
-  //PollFlags get_flags() const {
-  //return flags_.read_flags();
-  //}
   PollFlags sync_with_poll() const {
     return flags_.read_flags();
   }
