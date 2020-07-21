@@ -5,6 +5,7 @@
 #include "td/utils/port/detail/Iocp.h"
 #include "td/utils/port/detail/NativeFd.h"
 #include "td/utils/port/PollFlags.h"
+#include "td/utils/port/detail/PollableFd.h"
 #include "td/utils/port/thread.h"
 #include "td/utils/ScopeGuard.h"
 #include "td/utils/Slice.h"
@@ -96,7 +97,7 @@ class BufferedStdinImpl : public Iocp::Callback {
   }
 
   Result<size_t> flush_read(size_t max_read = std::numeric_limits<size_t>::max()) TD_WARN_UNUSED_RESULT {
-    info_.get_flags();
+    info_.sync_with_poll();
     info_.clear_flags(PollFlags::Read());
     reader_.sync_with_writer();
     return reader_.size();
@@ -190,7 +191,8 @@ class BufferedStdinImpl {
 
   Result<size_t> flush_read(size_t max_read = std::numeric_limits<size_t>::max()) TD_WARN_UNUSED_RESULT {
     size_t result = 0;
-    while (::td::can_read(*this) && max_read) {
+    ::td::sync_with_poll(*this);
+    while (::td::can_read_local(*this) && max_read) {
       MutableSlice slice = writer_.prepare_append().truncate(max_read);
       TRY_RESULT(x, file_fd_.read(slice));
       slice.truncate(x);
