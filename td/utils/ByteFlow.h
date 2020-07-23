@@ -244,7 +244,9 @@ class ByteFlowSource : public ByteFlowInterface {
     parent_ = nullptr;
   }
   void wakeup() final {
-    CHECK(parent_);
+    if (!parent_) {
+      return;
+    }
     parent_->wakeup();
   }
   size_t get_need_size() final {
