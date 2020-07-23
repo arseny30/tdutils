@@ -373,4 +373,5 @@ class ByteFlowMoveSink : public ByteFlowInterface {
   ChainBufferReader *input_ = nullptr;
   ChainBufferWriter *output_ = nullptr;
 };
+
 }  // namespace td
