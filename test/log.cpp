@@ -2,6 +2,7 @@
 #include "td/utils/FileLog.h"
 #include "td/utils/format.h"
 #include "td/utils/logging.h"
+#include "td/utils/MemoryLog.h"
 #include "td/utils/port/path.h"
 #include "td/utils/port/thread.h"
 #include "td/utils/Slice.h"
@@ -48,13 +49,13 @@ class LogBenchmark : public td::Benchmark {
       if (i % 10000 == 0) {
         log_->rotate();
       }
-      log_->append(str);
+      log_->append(str, 1);
     }
   }
 
  private:
   std::string name_;
-  td::unique_ptr<Log> log_;
+  td::unique_ptr<td::LogInterface> log_;
   int threads_n_{0};
   std::function<td::unique_ptr<Log>()> creator_;
   std::vector<td::thread> threads_;
@@ -65,10 +66,13 @@ static void bench_log(std::string name, int threads_n, F &&f) {
   bench(LogBenchmark<typename decltype(f())::element_type>(std::move(name), threads_n, std::move(f)));
 };
 
-TEST(Log, TsLogger) {
-  bench_log("NewTsFileLog", 4,
+TEST(Log, Bench) {
+  bench_log("MemoryLog", 4, [] { return td::make_unique<td::MemoryLog<1 << 20>>(); });
+
+  bench_log("TsFileLog", 4,
             [] { return td::TsFileLog::create("tmplog", std::numeric_limits<td::int64>::max(), false).move_as_ok(); });
-  bench_log("TsFileLog", 8, [] {
+
+  bench_log("FileLog + TsLog", 8, [] {
     class FileLog : public td::LogInterface {
      public:
       FileLog() {
@@ -77,8 +81,8 @@ TEST(Log, TsLogger) {
       }
       ~FileLog() {
       }
-      void append(td::CSlice slice) override {
-        ts_log_.append(slice, -1);
+      void append(td::CSlice slice, int log_level) override {
+        ts_log_.append(slice, log_level);
       }
       std::vector<std::string> get_file_paths() override {
         return file_log_.get_file_paths();
@@ -94,7 +98,7 @@ TEST(Log, TsLogger) {
   bench_log("noop", 4, [] {
     class NoopLog : public td::LogInterface {
      public:
-      void append(td::CSlice slice) override {
+      void append(td::CSlice slice, int log_level) override {
       }
     };
     return td::make_unique<NoopLog>();
@@ -108,8 +112,8 @@ TEST(Log, TsLogger) {
       }
       ~FileLog() {
       }
-      void append(td::CSlice slice) override {
-        file_log_.append(slice, -1);
+      void append(td::CSlice slice, int log_level) override {
+        file_log_.append(slice, log_level);
       }
       std::vector<std::string> get_file_paths() override {
         return file_log_.get_file_paths();
