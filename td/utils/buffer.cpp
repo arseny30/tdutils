@@ -1,7 +1,6 @@
 #include "td/utils/buffer.h"
 
 #include "td/utils/port/thread_local.h"
-
 #include "td/utils/ThreadSafeCounter.h"
 
 #include <cstddef>
@@ -20,7 +19,7 @@ TD_THREAD_LOCAL BufferAllocator::BufferRawTls *BufferAllocator::buffer_raw_tls; 
 
 std::atomic<size_t> BufferAllocator::buffer_mem;
 
-static td::ThreadSafeCounter buffer_slice_size_;
+static ThreadSafeCounter buffer_slice_size_;
 
 int64 BufferAllocator::get_buffer_slice_size() {
   return buffer_slice_size_.sum();
