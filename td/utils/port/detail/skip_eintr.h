@@ -1,7 +1,9 @@
 #pragma once
 
+#if TD_PORT_POSIX
 #include <cerrno>
 #include <type_traits>
+#endif
 
 namespace td {
 
